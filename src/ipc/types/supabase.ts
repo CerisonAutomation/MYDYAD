@@ -168,6 +168,17 @@ export const supabaseContracts = {
     }),
     output: z.void(),
   }),
+
+  // Manual paste of dyad:// deep link URL (workaround for dev mode redirect issues)
+  pasteCallbackUrl: defineContract({
+    channel: "supabase:paste-callback-url",
+    input: z.object({
+      url: z
+        .string()
+        .describe("The dyad://supabase-oauth-return URL to process"),
+    }),
+    output: z.void(),
+  }),
 } as const;
 
 // =============================================================================

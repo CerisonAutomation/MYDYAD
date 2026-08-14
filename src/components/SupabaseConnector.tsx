@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   acknowledgeConnectionFlow,
   cancelConnectionFlow,
@@ -8,7 +8,7 @@ import {
 } from "@/hooks/useConnectionFlow";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { ipc, type SupabaseProject } from "@/ipc/types";
@@ -58,6 +58,58 @@ import {
 } from "@/components/ui/tooltip";
 import { useTheme } from "@/contexts/ThemeContext";
 import { isSupabaseConnected } from "@/lib/schemas";
+
+function PasteCallbackInput() {
+  const [url, setUrl] = useState("");
+  const [pasting, setPastating] = useState(false);
+
+  const handlePaste = async () => {
+    if (!url.trim()) return;
+    setPastating(true);
+    try {
+      await ipc.supabase.pasteCallbackUrl({ url: url.trim() });
+      toast.success("Supabase connected successfully!");
+      setUrl("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to process callback URL",
+      );
+    } finally {
+      setPastating(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 flex flex-col gap-2">
+      <Label className="text-xs text-muted-foreground">
+        Paste the dyad:// URL from your browser after authorizing:
+      </Label>
+      <div className="flex gap-2">
+        <Input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="dyad://supabase-oauth-return?token=..."
+          className="text-xs font-mono"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              void handlePaste();
+            }
+          }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void handlePaste()}
+          disabled={pasting || !url.trim()}
+        >
+          {pasting ? "Connecting..." : "Paste"}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function SupabaseConnector({ appId }: { appId: number }) {
   const { t } = useTranslation(["home", "common"]);
@@ -608,6 +660,16 @@ export function SupabaseConnector({ appId }: { appId: number }) {
           </Button>
         </div>
       )}
+
+      {/* Manual paste workaround for dev mode redirect issues */}
+      <div className="border-t pt-3">
+        <details className="group">
+          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+            Having trouble connecting? Paste callback URL manually
+          </summary>
+          <PasteCallbackInput />
+        </details>
+      </div>
     </div>
   );
 }

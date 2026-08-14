@@ -29,6 +29,7 @@ import { supabaseContracts } from "../types/supabase";
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
 import { assertNoNeonProject } from "../utils/neon_utils";
 import { runOAuthReturnExchange } from "./connection_flow_handlers";
+import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_handler";
 import { IS_TEST_BUILD } from "../utils/test_utils";
 
 const logger = log.scope("supabase_handlers");
@@ -410,6 +411,55 @@ export function registerSupabaseHandlers() {
       logger.info(
         `Set fake Supabase project ${fakeProjectId} for app ${appId} during testing.`,
       );
+    },
+  );
+
+  // Manual paste of dyad:// deep link URL (workaround for dev mode redirect issues)
+  createTypedHandler(
+    supabaseContracts.pasteCallbackUrl,
+    async (_event, { url }) => {
+      let parsed: URL;
+      try {
+        parsed = new URL(url);
+      } catch {
+        throw new DyadError(
+          "Invalid URL. Paste the dyad://supabase-oauth-return URL from your browser.",
+          DyadErrorKind.Validation,
+        );
+      }
+
+      if (parsed.protocol !== "dyad:") {
+        throw new DyadError(
+          `Expected dyad:// protocol, got ${parsed.protocol}`,
+          DyadErrorKind.Validation,
+        );
+      }
+
+      const token = parsed.searchParams.get("token");
+      const refreshToken = parsed.searchParams.get("refreshToken");
+      const expiresIn = Number(parsed.searchParams.get("expiresIn"));
+
+      if (!token || !refreshToken || !expiresIn) {
+        throw new DyadError(
+          "URL missing token, refreshToken, or expiresIn parameters",
+          DyadErrorKind.Validation,
+        );
+      }
+
+      const outcome = await runOAuthReturnExchange("supabase", async () => {
+        await handleSupabaseOAuthReturn({ token, refreshToken, expiresIn });
+      });
+
+      if (!outcome.ok) {
+        if (!outcome.claimed) {
+          throw new DyadError(
+            `Failed to save credentials: ${outcome.error instanceof Error ? outcome.error.message : String(outcome.error)}`,
+            DyadErrorKind.Unknown,
+          );
+        }
+      }
+
+      logger.log("Successfully processed pasted Supabase callback URL");
     },
   );
 }
