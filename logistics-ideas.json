@@ -1,0 +1,26 @@
+[
+  {
+    "text": "Web fetches arrive at a central hub that deduplicates and batches identical URL requests across all renderer tabs into single fetches, returning cached responses like a distribution center splitting a pallet.",
+    "rationale": "Hub-and-spoke batching eliminates redundant network calls when multiple Electron windows or tabs request the same resource simultaneously."
+  },
+  {
+    "text": "Queue web scrape jobs into a priority FIFO with backpressure, processing them in a single background worker thread so the main process never blocks on I/O like a warehouse conveyor.",
+    "rationale": "Queue-based scraping with backpressure prevents memory blowups when thousands of URLs are enqueued, processing at a rate the network can sustain."
+  },
+  {
+    "text": "Code search runs just-in-time: the query is held until the user pauses typing, then dispatched to a pre-built index that was lazily constructed only after the first search attempt, like JIT inventory pulled from a supplier only when an order lands.",
+    "rationale": "Just-in-time indexing avoids expensive upfront codebase indexing while keeping first-result latency acceptable through a debounce-triggered lazy init."
+  },
+  {
+    "text": "Image generation requests from all app instances are routed through a single shared generation pool that reuses partially warmed model weights across requests, treating the GPU like a last-mile delivery truck making multiple drops per trip.",
+    "rationale": "Hub-and-spoke image generation with shared warm weights amortizes model load time across concurrent generation requests, cutting per-request latency."
+  },
+  {
+    "text": "Web search results are batched and returned in sorted 'delivery windows' — the fastest providers respond first into a streaming accumulator, while slower providers fill in later slots, like packages arriving at different drop-off times.",
+    "rationale": "Parallel multi-provider web search with streaming accumulator lets the fastest provider deliver results immediately while others backfill, optimizing perceived latency."
+  },
+  {
+    "text": "Code search indexes are distributed across partitioned shards like regional warehouses, each shard holding a subset of the codebase, and queries fan out to all shards then merge results like a cross-dock consolidation.",
+    "rationale": "Partitioned code search with fan-out and merge scales search to large codebases by parallelizing across shards and consolidating results at the edge."
+  }
+]

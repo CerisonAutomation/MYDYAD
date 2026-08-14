@@ -1,0 +1,97 @@
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "reserveTokensFloor": 100000
+      }
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*git\\s+.*--(no-verify|no-gpg-sign)'; then echo 'BLOCKED: --no-verify and --no-gpg-sign flags are not allowed. Run the commit without bypass flags so that pre-commit hooks execute properly.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*rm\\s+-rf\\s+/'; then echo 'BLOCKED: Dangerous rm -rf / command detected. Use trash or remove files individually.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*git\\s+push\\s+.*--force\\b' && ! printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*git\\s+push\\s+.*--force-with-lease'; then echo 'BLOCKED: git push --force is not allowed. Use --force-with-lease for safer force pushes.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*git\\s+reset\\s+--hard'; then echo 'BLOCKED: git reset --hard is dangerous and loses uncommitted changes. Use git stash or git reset --soft instead.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*git\\s+checkout\\s+.*\\s+--\\s+\\.'; then echo 'BLOCKED: git checkout -- . discards all uncommitted changes. Use git restore or stash changes first.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*git\\s+clean\\s+-fd'; then echo 'BLOCKED: git clean -fd removes untracked files permanently. Use git clean -fdi for interactive mode.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*sudo\\s+'; then echo 'BLOCKED: sudo commands are not allowed. Use appropriate permissions or ask for elevated access.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*chmod\\s+777'; then echo 'BLOCKED: chmod 777 is a security risk. Use more restrictive permissions (e.g., chmod 755 or chmod 644).' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*curl\\s+.*\\|\\s*(bash|sh|zsh)'; then echo 'BLOCKED: Piping curl output to shell is dangerous. Download and inspect scripts first.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*wget\\s+.*\\|\\s*(bash|sh|zsh)'; then echo 'BLOCKED: Piping wget output to shell is dangerous. Download and inspect scripts first.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*docker\\s+rm\\s+-f'; then echo 'BLOCKED: docker rm -f removes containers without confirmation. Use docker stop first.' >&2; exit 2; fi"
+        }
+      },
+      {
+        "matcher": "Bash",
+        "hook": {
+          "type": "command",
+          "command": "if printf '%s' \"$TOOL_INPUT\" | grep -qE '(^|&&|;|\\|)\\s*docker\\s+rmi\\s+-f'; then echo 'BLOCKED: docker rmi -f removes images without confirmation. Remove containers first.' >&2; exit 2; fi"
+        }
+      }
+    ]
+  }
+}

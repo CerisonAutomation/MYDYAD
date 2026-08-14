@@ -1,0 +1,1 @@
+- generic [active] [ref=e1]: '{"jsonrpc":"2.0","id":null,"error":{"code":-32000,"message":"Method not allowed: stateless server offers no standalone SSE stream (GET) or session (DELETE)."}}'

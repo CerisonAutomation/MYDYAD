@@ -1,0 +1,148 @@
+import fs from "node:fs";
+import * as path from "path";
+import {
+  NEXTJS_CONFIG_FILES,
+  VITE_CONFIG_FILES,
+  type AppFrameworkType,
+} from "@/lib/framework_constants";
+
+// LRU cache for framework detection — the result rarely changes for a given path.
+const frameworkCache = new Map<string, AppFrameworkType | null>();
+const FRAMEWORK_CACHE_MAX = 100;
+
+function cacheFrameworkResult(
+  appPath: string,
+  result: AppFrameworkType | null,
+): AppFrameworkType | null {
+  if (frameworkCache.size >= FRAMEWORK_CACHE_MAX) {
+    const oldest = frameworkCache.keys().next().value;
+    if (oldest !== undefined) frameworkCache.delete(oldest);
+  }
+  frameworkCache.set(appPath, result);
+  return result;
+}
+
+// Cache for Next.js major version detection
+const nextVersionCache = new Map<string, number | null>();
+const NEXT_VERSION_CACHE_MAX = 100;
+
+function cacheNextVersion(
+  appPath: string,
+  result: number | null,
+): number | null {
+  if (nextVersionCache.size >= NEXT_VERSION_CACHE_MAX) {
+    const oldest = nextVersionCache.keys().next().value;
+    if (oldest !== undefined) nextVersionCache.delete(oldest);
+  }
+  nextVersionCache.set(appPath, result);
+  return result;
+}
+
+/**
+ * Detect the framework type for an app by checking config files and package.json.
+ *
+ * Vite apps with a Nitro server layer (added via `enable_nitro`) are reported
+ * as `"vite-nitro"`. Detection looks for `nitro.config.{ts,js,mjs}` first, then
+ * falls back to `nitro` in package.json deps — either is sufficient since the
+ * tool writes the config file and installs the package together.
+ */
+export function detectFrameworkType(appPath: string): AppFrameworkType | null {
+  const cached = frameworkCache.get(appPath);
+  if (cached !== undefined) return cached;
+
+  let result: AppFrameworkType | null;
+  try {
+    for (const config of NEXTJS_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        result = "nextjs";
+        return cacheFrameworkResult(appPath, result);
+      }
+    }
+
+    let isVite = false;
+    for (const config of VITE_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        isVite = true;
+        break;
+      }
+    }
+
+    let packageJsonDeps: Record<string, string> | null = null;
+    const packageJsonPath = path.join(appPath, "package.json");
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      const deps: Record<string, string> = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
+      packageJsonDeps = deps;
+      if (!isVite && deps.next) {
+        result = "nextjs";
+        return cacheFrameworkResult(appPath, result);
+      }
+      if (!isVite && deps.vite) isVite = true;
+    }
+
+    if (isVite) {
+      result = hasNitro(appPath, packageJsonDeps) ? "vite-nitro" : "vite";
+      return cacheFrameworkResult(appPath, result);
+    }
+
+    result = "other";
+    return cacheFrameworkResult(appPath, result);
+  } catch {
+    result = null;
+    return cacheFrameworkResult(appPath, result);
+  }
+}
+
+function hasNitro(
+  appPath: string,
+  deps: Record<string, string> | null,
+): boolean {
+  const nitroConfigs = [
+    "nitro.config.ts",
+    "nitro.config.js",
+    "nitro.config.mjs",
+  ];
+  for (const config of nitroConfigs) {
+    if (fs.existsSync(path.join(appPath, config))) return true;
+  }
+  return Boolean(deps?.nitro);
+}
+
+/**
+ * Read the Next.js major version from the app's package.json.
+ * Returns null when next is not installed or the version string is non-numeric
+ * (e.g. "latest", "canary", a git URL).
+ */
+export function detectNextJsMajorVersion(appPath: string): number | null {
+  const cached = nextVersionCache.get(appPath);
+  if (cached !== undefined) return cached;
+
+  let result: number | null;
+  try {
+    const packageJsonPath = path.join(appPath, "package.json");
+    if (!fs.existsSync(packageJsonPath)) {
+      result = null;
+      return cacheNextVersion(appPath, result);
+    }
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    const nextVersion =
+      packageJson.dependencies?.next ?? packageJson.devDependencies?.next;
+    if (typeof nextVersion !== "string") {
+      result = null;
+      return cacheNextVersion(appPath, result);
+    }
+    const match = nextVersion.match(/\d+/);
+    if (!match) {
+      result = null;
+      return cacheNextVersion(appPath, result);
+    }
+    result = parseInt(match[0], 10);
+    return cacheNextVersion(appPath, result);
+  } catch {
+    result = null;
+    return cacheNextVersion(appPath, result);
+  }
+}

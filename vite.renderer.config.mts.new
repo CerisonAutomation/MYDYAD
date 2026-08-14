@@ -1,0 +1,67 @@
+import { defineConfig } from "vite";
+import path from "path";
+import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
+import tailwindcss from "@tailwindcss/vite";
+import electron from "vite-plugin-electron";
+import pkg from "./package.json";
+import type { ConfigEnv } from "vite";
+
+export default defineConfig(({ mode }: ConfigEnv) => ({
+  plugins: [
+    electron([
+      {
+        // Main-Process entry file for the Electron App.
+        entry: "src/main.ts",
+        vite: {
+          build: {
+            rollupOptions: {
+              external: [
+                "electron",
+                ...builtinModules,
+                // Native modules that must be loaded from disk
+                "better-sqlite3",
+                "dyad-keychain-reader",
+                "node-pty",
+                "mustardscript",
+                "pg",
+              ],
+            },
+          },
+        },
+      },
+      {
+        entry: "src/preload.ts",
+        onstart(args) {
+          args.reload();
+        },
+        vite: {
+          build: {
+            rollupOptions: {
+              external: ["electron"],
+            },
+          },
+        },
+      },
+    ]),
+    react(),
+    svgr(),
+    tailwindcss(),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      // Stub out PostHog - no tracking
+      "posthog-js": path.resolve(__dirname, "./src/lib/stubs/posthog-js.ts"),
+      "posthog-js/react": path.resolve(
+        __dirname,
+        "./src/lib/stubs/posthog-js-react.ts",
+      ),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [(await import("tailwindcss")).default],
+    },
+  },
+}));
