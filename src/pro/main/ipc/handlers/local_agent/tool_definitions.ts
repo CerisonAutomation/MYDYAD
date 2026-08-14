@@ -138,6 +138,9 @@ import { regressionDetectorTool } from "./tools/regression_detector";
 import { colorContrastTool } from "./tools/color_contrast";
 import { cssAnalyzerTool } from "./tools/css_analyzer";
 import { autoQualityTool } from "./tools/auto_quality";
+import { browserControlTool } from "./tools/browser_control";
+import { takeScreenshotTool } from "./tools/take_screenshot";
+import { domSnapshotTool } from "./tools/dom_snapshot";
 import type { LanguageModelV3ToolResultOutput } from "@ai-sdk/provider";
 import {
   escapeXmlAttr,
@@ -317,6 +320,10 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   withAnalysisGuard(colorContrastTool),
   withAnalysisGuard(cssAnalyzerTool),
   withAnalysisGuard(autoQualityTool),
+  // Browser automation tools
+  browserControlTool,
+  takeScreenshotTool,
+  domSnapshotTool,
 ];
 // ============================================================================
 // Agent Tool Name Type (derived from TOOL_DEFINITIONS)
