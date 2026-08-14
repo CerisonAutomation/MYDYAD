@@ -8,7 +8,6 @@
 
 import { z } from "zod";
 import log from "electron-log";
-import { chromium } from "playwright";
 import {
   ToolDefinition,
   AgentContext,
@@ -18,6 +17,7 @@ import {
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { smartTruncateSafe } from "./text_utils";
 import { assertNotPrivateIp } from "./network_utils";
+import { getPage, resolveTargetUrl, waitForPageReady } from "./browser_session";
 
 const logger = log.scope("dom_snapshot");
 
@@ -242,39 +242,20 @@ export const domSnapshotTool: ToolDefinition<DomSnapshotArgs> = {
       `<dyad-dom-snapshot ${buildAttributes(args)}>Launching browser...</dyad-dom-snapshot>`,
     );
 
-    let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
+    let page;
 
     try {
-      browser = await chromium.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-        ],
-      });
-
-      const page = await browser.newPage();
+      page = await getPage();
 
       // Determine the target URL
-      const targetUrl = args.url;
-      if (!targetUrl) {
-        throw new DyadError(
-          "No URL provided and app preview URL resolution is not yet implemented. Please provide a URL parameter.",
-          DyadErrorKind.Validation,
-        );
-      }
+      const targetUrl = resolveTargetUrl(args.url, ctx.appId);
 
       ctx.onXmlStream(
         `<dyad-dom-snapshot ${buildAttributes(args, { url: targetUrl })}>Navigating to ${escapeXmlContent(targetUrl)}...</dyad-dom-snapshot>`,
       );
 
       // Navigate to the URL
-      await page.goto(targetUrl, {
-        waitUntil: "networkidle",
-        timeout: NAVIGATION_TIMEOUT_MS,
-      });
+      await waitForPageReady(page, targetUrl, NAVIGATION_TIMEOUT_MS);
 
       ctx.onXmlStream(
         `<dyad-dom-snapshot ${buildAttributes(args, { url: targetUrl })}>Extracting DOM tree...</dyad-dom-snapshot>`,
@@ -501,13 +482,7 @@ export const domSnapshotTool: ToolDefinition<DomSnapshotArgs> = {
         DyadErrorKind.Unknown,
       );
     } finally {
-      if (browser) {
-        try {
-          await browser.close();
-        } catch {
-          // Ignore close errors
-        }
-      }
+      // Browser is managed by the shared session — no cleanup needed here
     }
   },
 };

@@ -10,7 +10,9 @@ import {
   escapeXmlContent,
 } from "./types";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { DYAD_MEDIA_DIR_NAME } from "@/ipc/utils/media_path_utils";
+import { DYAD_SCREENSHOT_DIR_NAME } from "@/ipc/utils/media_path_utils";
+import { getPage, resolveTargetUrl, waitForPageReady } from "./browser_session";
+import type { Page, Browser } from "playwright";
 
 const logger = log.scope("browser_control");
 
@@ -20,7 +22,12 @@ const logger = log.scope("browser_control");
 
 const navigateAction = z.object({
   action: z.literal("navigate"),
-  url: z.string().describe("URL to navigate to"),
+  url: z
+    .string()
+    .optional()
+    .describe(
+      "URL to navigate to (optional — defaults to the running app's preview URL)",
+    ),
 });
 
 const clickAction = z.object({
@@ -102,7 +109,11 @@ const batchAction = z.object({
   steps: z
     .array(
       z.object({
-        action: z.string().describe("Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page)"),
+        action: z
+          .string()
+          .describe(
+            "Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page)",
+          ),
         params: z
           .record(z.string(), z.unknown())
           .describe("Parameters for the action"),
@@ -135,7 +146,7 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 
 ### Supported Actions
 
-- **navigate** — Go to a URL. Provide \`url\`.
+- **navigate** — Go to a URL. Provide \`url\` (optional — defaults to the running app's preview URL).
 - **click** — Click an element by CSS selector. Provide \`selector\`. Optional \`wait_ms\` to pause after click.
 - **type** — Type text into an input field. Provide \`selector\` and \`text\`.
 - **scroll** — Scroll the page in a direction. Provide \`direction\` (up/down/left/right). Optional \`amount\` in pixels (default 500).
@@ -161,31 +172,22 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 // Playwright Helpers
 // ============================================================================
 
-type PlaywrightBrowser = Awaited<
-  ReturnType<typeof import("playwright").chromium.launch>
+type PlaywrightPage = Awaited<
+  ReturnType<import("playwright").Browser["newPage"]>
 >;
-type PlaywrightPage = Awaited<ReturnType<PlaywrightBrowser["newPage"]>>;
-
-async function launchBrowser(): Promise<PlaywrightBrowser> {
-  const { chromium } = await import("playwright");
-  return chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-}
 
 async function saveScreenshot(
   screenshotBuffer: Buffer,
   appPath: string,
 ): Promise<string> {
-  const mediaDir = path.join(appPath, DYAD_MEDIA_DIR_NAME);
+  const mediaDir = path.join(appPath, DYAD_SCREENSHOT_DIR_NAME);
   await fs.mkdir(mediaDir, { recursive: true });
 
   const hash = crypto.randomBytes(8).toString("hex");
   const timestamp = Date.now();
   const fileName = `screenshot-${timestamp}-${hash}.png`;
   const filePath = path.join(mediaDir, fileName);
-  const relativePath = path.join(DYAD_MEDIA_DIR_NAME, fileName);
+  const relativePath = path.join(DYAD_SCREENSHOT_DIR_NAME, fileName);
 
   await fs.writeFile(filePath, screenshotBuffer);
   return relativePath;
@@ -212,13 +214,14 @@ function validateHttpUrl(url: string): void {
 
 async function executeNavigate(
   page: PlaywrightPage,
-  args: z.infer<typeof navigateAction>,
+  url: string,
 ): Promise<string> {
-  validateHttpUrl(args.url);
-  const response = await page.goto(args.url, { waitUntil: "domcontentloaded" });
+  validateHttpUrl(url);
+  await waitForPageReady(page, url);
+  const response = await page.goto(url, { waitUntil: "domcontentloaded" });
   const status = response?.status() ?? "unknown";
   const title = await page.title();
-  return `Navigated to ${args.url} (status: ${status}, title: "${title}")`;
+  return `Navigated to ${url} (status: ${status}, title: "${title}")`;
 }
 
 async function executeClick(
@@ -417,8 +420,7 @@ async function executeReadPage(
           node.type = el.getAttribute("type") ?? undefined;
         if (el.hasAttribute("placeholder"))
           node.placeholder = el.getAttribute("placeholder") ?? undefined;
-        if (el instanceof HTMLInputElement)
-          node.checked = el.checked;
+        if (el instanceof HTMLInputElement) node.checked = el.checked;
 
         const children: RefNode[] = [];
         for (const child of el.children) {
@@ -513,7 +515,9 @@ async function executeBatch(
       results.push(`[${i + 1}/${args.steps.length}] ${actionName}: ${result}`);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      results.push(`[${i + 1}/${args.steps.length}] ${actionName}: ERROR - ${msg}`);
+      results.push(
+        `[${i + 1}/${args.steps.length}] ${actionName}: ERROR - ${msg}`,
+      );
       // Continue with remaining steps
     }
 
@@ -542,7 +546,9 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
   getConsentPreview: (args) => {
     switch (args.action) {
       case "navigate":
-        return `Navigate browser to: "${args.url}"`;
+        return args.url
+          ? `Navigate browser to: "${args.url}"`
+          : "Navigate to running app";
       case "click":
         return `Click element: "${args.selector}"`;
       case "type":
@@ -568,8 +574,7 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
 
     switch (args.action) {
       case "navigate":
-        if (!args.url) return undefined;
-        return `<dyad-browser action="navigate" url="${escapeXmlAttr(args.url)}">`;
+        return `<dyad-browser action="navigate"${args.url ? ` url="${escapeXmlAttr(args.url)}"` : ""}>`;
       case "click":
         if (!args.selector) return undefined;
         return `<dyad-browser action="click" selector="${escapeXmlAttr(args.selector)}">`;
@@ -600,7 +605,7 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
     let initialXml: string;
     switch (args.action) {
       case "navigate":
-        initialXml = `<dyad-browser action="navigate" url="${escapeXmlAttr(args.url)}">`;
+        initialXml = `<dyad-browser action="navigate"${args.url ? ` url="${escapeXmlAttr(args.url)}"` : ""}>`;
         break;
       case "click":
         initialXml = `<dyad-browser action="click" selector="${escapeXmlAttr(args.selector)}">`;
@@ -630,16 +635,18 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
 
     ctx.onXmlStream(initialXml);
 
-    let browser: PlaywrightBrowser | undefined;
     try {
-      browser = await launchBrowser();
-      const page = await browser.newPage();
+      const page = await getPage();
+      const targetUrl = resolveTargetUrl(
+        "url" in args ? args.url : undefined,
+        ctx.appId,
+      );
 
       let result: string;
 
       switch (args.action) {
         case "navigate":
-          result = await executeNavigate(page, args);
+          result = await executeNavigate(page, targetUrl);
           break;
         case "click":
           result = await executeClick(page, args);
@@ -679,12 +686,6 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         `<dyad-browser action="${escapeXmlAttr(args.action)}"></dyad-browser>`,
       );
       throw error;
-    } finally {
-      if (browser) {
-        await browser.close().catch((closeErr) => {
-          logger.warn("Failed to close browser:", closeErr);
-        });
-      }
     }
   },
 };

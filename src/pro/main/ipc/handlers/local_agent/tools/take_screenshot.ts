@@ -10,7 +10,8 @@ import {
   escapeXmlContent,
 } from "./types";
 import { resolveTargetAppPath } from "./resolve_app_context";
-import { DYAD_MEDIA_DIR_NAME } from "@/ipc/utils/media_path_utils";
+import { DYAD_SCREENSHOT_DIR_NAME } from "@/ipc/utils/media_path_utils";
+import { getPage, resolveTargetUrl, waitForPageReady } from "./browser_session";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("take_screenshot");
@@ -50,7 +51,7 @@ const takeScreenshotSchema = z.object({
     ),
 });
 
-const DESCRIPTION = `Capture a screenshot of a URL or the current preview panel. Saves the image to the app's .dyad/media directory for visual verification.
+const DESCRIPTION = `Capture a screenshot of a URL or the running app's preview. Saves the image to the app's .dyad/screenshot directory for visual verification.
 
 ### When to Use
 - Verifying visual appearance of a web page or app preview
@@ -59,14 +60,14 @@ const DESCRIPTION = `Capture a screenshot of a URL or the current preview panel.
 - Checking how a page renders at a specific viewport size
 
 ### Behavior
-- If \`url\` is provided, launches a headless browser and navigates to that URL
-- If \`url\` is omitted, captures the current preview panel
+- If \`url\` is provided, navigates to that URL
+- If \`url\` is omitted, auto-detects the running app's preview URL
 - Use \`full_page: true\` to capture the entire scrollable page
 - Use \`selector\` to capture a specific element (e.g. ".hero-section", "#app")
-- Images are saved to \`<app>/.dyad/media/screenshot-<timestamp>-<random>.png\`
+- Images are saved to \`<app>/.dyad/screenshot/screenshot-<timestamp>-<random>.png\`
 
 ### After Capture
-The tool returns the file path in .dyad/media. The screenshot can be referenced or copied elsewhere in the project as needed.
+The tool returns the file path in .dyad/screenshot. The screenshot can be referenced or copied elsewhere in the project as needed.
 `;
 
 /**
@@ -76,14 +77,14 @@ async function saveScreenshot(
   screenshotBuffer: Buffer,
   appPath: string,
 ): Promise<string> {
-  const mediaDir = path.join(appPath, DYAD_MEDIA_DIR_NAME);
+  const mediaDir = path.join(appPath, DYAD_SCREENSHOT_DIR_NAME);
   await fs.mkdir(mediaDir, { recursive: true });
 
   const hash = crypto.randomBytes(4).toString("hex");
   const timestamp = Date.now();
   const fileName = `screenshot-${timestamp}-${hash}.png`;
   const filePath = path.join(mediaDir, fileName);
-  const relativePath = path.join(DYAD_MEDIA_DIR_NAME, fileName);
+  const relativePath = path.join(DYAD_SCREENSHOT_DIR_NAME, fileName);
 
   await fs.writeFile(filePath, screenshotBuffer);
 
@@ -91,7 +92,7 @@ async function saveScreenshot(
 }
 
 /**
- * Take a screenshot of a URL using Playwright headless Chromium.
+ * Take a screenshot of a URL using the shared browser session.
  */
 async function screenshotUrl(
   url: string,
@@ -102,51 +103,31 @@ async function screenshotUrl(
     selector?: string;
   },
 ): Promise<Buffer> {
-  const { chromium } = await import("playwright");
+  const page = await getPage();
 
-  const width = options.width ?? 1280;
-  const height = options.height ?? 720;
+  await waitForPageReady(page, url, 30_000);
 
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const context = await browser.newContext({
-      viewport: { width, height },
-    });
-    const page = await context.newPage();
+  let screenshotBuffer: Buffer;
 
-    try {
-      await page.goto(url, {
-        waitUntil: "networkidle",
-        timeout: 30_000,
-      });
-
-      let screenshotBuffer: Buffer;
-
-      if (options.selector) {
-        const element = await page.$(options.selector);
-        if (!element) {
-          throw new DyadError(
-            `Element matching selector "${options.selector}" not found on page`,
-            DyadErrorKind.Validation,
-          );
-        }
-        screenshotBuffer = (await element.screenshot({
-          type: "png",
-        })) as Buffer;
-      } else {
-        screenshotBuffer = (await page.screenshot({
-          fullPage: options.fullPage ?? false,
-          type: "png",
-        })) as Buffer;
-      }
-
-      return screenshotBuffer;
-    } finally {
-      await context.close();
+  if (options.selector) {
+    const element = await page.$(options.selector);
+    if (!element) {
+      throw new DyadError(
+        `Element matching selector "${options.selector}" not found on page`,
+        DyadErrorKind.Validation,
+      );
     }
-  } finally {
-    await browser.close();
+    screenshotBuffer = (await element.screenshot({
+      type: "png",
+    })) as Buffer;
+  } else {
+    screenshotBuffer = (await page.screenshot({
+      fullPage: options.fullPage ?? false,
+      type: "png",
+    })) as Buffer;
   }
+
+  return screenshotBuffer;
 }
 
 export const takeScreenshotTool: ToolDefinition<
@@ -182,23 +163,14 @@ export const takeScreenshotTool: ToolDefinition<
     );
 
     try {
-      let screenshotBuffer: Buffer;
+      const targetUrl = resolveTargetUrl(args.url, ctx.appId);
 
-      if (args.url) {
-        screenshotBuffer = await screenshotUrl(args.url, {
-          fullPage: args.full_page,
-          width: args.width,
-          height: args.height,
-          selector: args.selector,
-        });
-      } else {
-        // No URL provided — capture the preview panel
-        // Use a fallback local file approach for the preview panel
-        throw new DyadError(
-          "Preview panel screenshot is not yet supported. Please provide a URL to capture.",
-          DyadErrorKind.Validation,
-        );
-      }
+      const screenshotBuffer = await screenshotUrl(targetUrl, {
+        fullPage: args.full_page,
+        width: args.width,
+        height: args.height,
+        selector: args.selector,
+      });
 
       const relativePath = await saveScreenshot(
         screenshotBuffer,
