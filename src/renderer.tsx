@@ -4,6 +4,29 @@ import { router } from "./router";
 import { RouterProvider } from "@tanstack/react-router";
 import { PostHogProvider } from "posthog-js/react";
 import posthog from "posthog-js";
+import log from "electron-log";
+
+// Fix EIO/ENOTTY/EBADF errors when renderer console transport writes to a
+// closed file descriptor (happens during shutdown or packaged builds).
+// Mirrors the same protection already applied to the main process in main.ts.
+try {
+  const consoleTransport = (log as any).transports?.console;
+  if (consoleTransport && typeof consoleTransport.writeFn === "function") {
+    const originalWriteFn = consoleTransport.writeFn;
+    consoleTransport.writeFn = (args: any) => {
+      try {
+        originalWriteFn(args);
+      } catch (e: any) {
+        if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF") {
+          return;
+        }
+        throw e;
+      }
+    };
+  }
+} catch {
+  // Transport override is best-effort — not critical
+}
 import {
   getTelemetryUserId,
   isTelemetryOptedIn,
