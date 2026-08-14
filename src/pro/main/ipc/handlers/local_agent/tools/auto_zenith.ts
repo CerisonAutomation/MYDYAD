@@ -337,80 +337,115 @@ Mode Selection:
           break;
         }
 
-        // Execute based on mode
-        if (mode === "autonomy") {
-          // Full autonomy - no human gates
-          result = {
-            task: args.task,
-            mode: "autonomy",
-            status: "executing",
-            message: "Running in full autonomy mode - no human gates",
-            phases: [
-              "Intake",
-              "Stage Map",
-              "Optimize",
-              "Delegate",
-              "Verify",
-              "Critique",
-              "Deliver",
-              "Iterate",
-            ],
+        // Read actual project status from package.json
+        let projectStatus: Record<string, unknown> = {};
+        try {
+          const packageJsonPath = path.join(ctx.appPath, "package.json");
+          const packageJsonContent = await fs.readFile(
+            packageJsonPath,
+            "utf-8",
+          );
+          const pkg = JSON.parse(packageJsonContent);
+          projectStatus = {
+            name: pkg.name || "unknown",
+            version: pkg.version || "unversioned",
+            scripts: pkg.scripts ? Object.keys(pkg.scripts) : [],
+            dependencies: pkg.dependencies
+              ? Object.keys(pkg.dependencies).length
+              : 0,
+            devDependencies: pkg.devDependencies
+              ? Object.keys(pkg.devDependencies).length
+              : 0,
           };
-        } else if (mode === "mixed") {
-          // Mixed - 2 human gates
-          result = {
-            task: args.task,
-            mode: "mixed",
-            status: "executing",
-            message: "Running in mixed mode - 2 human gates",
-            human_gates: [
-              "Phase 0 → Phase 1: Brainstorming review",
-              "Phase 6 → Phase 7: Critique findings",
-            ],
-          };
-        } else {
-          // Structured - 4+ human gates
-          result = {
-            task: args.task,
-            mode: "structured",
-            status: "executing",
-            message: "Running in structured mode - 4+ human gates",
-            phases: [
-              "Stage Map",
-              "Adversarial Review",
-              "Delegate",
-              "Verify",
-              "Self-Critique",
-              "Iterate",
-            ],
-          };
+        } catch {
+          projectStatus = { error: "No package.json found" };
         }
+
+        // Check for common project files
+        let projectFiles: string[] = [];
+        try {
+          const entries = await fs.readdir(ctx.appPath);
+          projectFiles = entries.filter(
+            (e) => !e.startsWith(".") && e !== "node_modules" && e !== "dist",
+          );
+        } catch {
+          // ignore
+        }
+
+        result = {
+          task: args.task,
+          mode,
+          status: "executing",
+          message: `Running in ${mode} mode for task: ${args.task}`,
+          project_status: projectStatus,
+          project_files: projectFiles.slice(0, 20),
+          risk_profile: {
+            composite_score: riskProfile.composite_score,
+            threat_summary: riskProfile.threat_summary,
+          },
+        };
         break;
       }
 
       case "reflect": {
-        // Phase D: Reflection
+        // Perform actual git log analysis
+        const { execSync } = await import("node:child_process");
+        let gitLog: string[] = [];
+        let recentCommits: Array<{
+          hash: string;
+          date: string;
+          subject: string;
+        }> = [];
+        try {
+          const logOutput = execSync(
+            'git log --oneline --format="%h|%ai|%s" -10',
+            { cwd: ctx.appPath, encoding: "utf-8", timeout: 5000 },
+          );
+          gitLog = logOutput.trim().split("\n").filter(Boolean);
+          recentCommits = gitLog.map((line) => {
+            const [hash, date, ...subjectParts] = line.split("|");
+            return {
+              hash: hash || "",
+              date: date || "",
+              subject: subjectParts.join("|"),
+            };
+          });
+        } catch {
+          gitLog = ["Git log unavailable"];
+        }
+
+        let branchInfo = "unknown";
+        try {
+          branchInfo = execSync("git branch --show-current", {
+            cwd: ctx.appPath,
+            encoding: "utf-8",
+            timeout: 3000,
+          }).trim();
+        } catch {
+          // ignore
+        }
+
+        const riskProfile = assessRisk(args.task, args.context);
+
         result = {
           reflection: {
-            mode_fit: "Mode selection was appropriate for the risk profile",
-            improvements: [
-              "Consider more detailed threat modeling",
-              "Add specific rollback commands",
-              "Challenge more assumptions",
-            ],
-            decision_log_entry: {
-              timestamp: new Date().toISOString(),
-              task: args.task,
-              risk_score: 5.0,
-              mode: "mixed",
-              escalation: false,
-              outcome: "success",
-            },
+            task: args.task,
+            branch: branchInfo,
+            recent_activity: recentCommits,
+            total_recent_commits: recentCommits.length,
+            activity_summary:
+              recentCommits.length > 0
+                ? `Latest commit: "${recentCommits[0].subject}" on ${recentCommits[0].date}`
+                : "No recent git activity found",
+            mode_fit: `Mode "${args.mode_override || selectMode(riskProfile)}" selected for composite risk score ${riskProfile.composite_score.toFixed(1)}`,
           },
-          self_critique: {
-            weakness: "Risk scoring could be more granular",
-            missed: "Did not consider team familiarity",
-            wrong_assumption: "Assumed all dependencies were stable",
+          decision_log_entry: {
+            timestamp: new Date().toISOString(),
+            task: args.task,
+            risk_score: riskProfile.composite_score,
+            mode: args.mode_override || selectMode(riskProfile),
+            branch: branchInfo,
+            commits_reviewed: recentCommits.length,
           },
         };
         break;
@@ -434,27 +469,111 @@ Mode Selection:
       }
 
       case "list_patterns": {
-        result = {
-          proven_patterns: [
-            {
-              pattern: "Single file edits",
+        // Detect actual code patterns in the project
+        const detectedPatterns: Array<{
+          pattern: string;
+          risk_profile: string;
+          recommended_mode: string;
+          count: number;
+        }> = [];
+
+        try {
+          const entries = await fs.readdir(ctx.appPath, {
+            withFileTypes: true,
+          });
+          const dirs = entries
+            .filter((e) => e.isDirectory())
+            .map((e) => e.name);
+          const files = entries.filter((e) => e.isFile()).map((e) => e.name);
+
+          // Detect framework patterns
+          if (dirs.includes("src") || dirs.includes("app")) {
+            detectedPatterns.push({
+              pattern: "Source directory structure (src/ or app/)",
               risk_profile: "low",
               recommended_mode: "autonomy",
-              verification_count: 15,
-            },
-            {
-              pattern: "Component creation",
+              count: 1,
+            });
+          }
+          if (dirs.includes("components") || dirs.includes("pages")) {
+            detectedPatterns.push({
+              pattern: "Component-based architecture",
               risk_profile: "medium",
               recommended_mode: "mixed",
-              verification_count: 8,
-            },
-            {
-              pattern: "Architecture refactoring",
-              risk_profile: "high",
-              recommended_mode: "structured",
-              verification_count: 3,
-            },
-          ],
+              count: 1,
+            });
+          }
+          if (
+            dirs.includes("tests") ||
+            dirs.includes("__tests__") ||
+            files.some((f) => f.includes(".test.") || f.includes(".spec."))
+          ) {
+            detectedPatterns.push({
+              pattern: "Test suite present",
+              risk_profile: "low",
+              recommended_mode: "autonomy",
+              count: 1,
+            });
+          }
+          if (files.includes("tsconfig.json")) {
+            detectedPatterns.push({
+              pattern: "TypeScript project",
+              risk_profile: "low",
+              recommended_mode: "autonomy",
+              count: 1,
+            });
+          }
+          if (
+            files.includes("docker-compose.yml") ||
+            files.includes("Dockerfile")
+          ) {
+            detectedPatterns.push({
+              pattern: "Docker configuration present",
+              risk_profile: "medium",
+              recommended_mode: "mixed",
+              count: 1,
+            });
+          }
+          if (dirs.includes(".github") || dirs.includes(".gitlab-ci.yml")) {
+            detectedPatterns.push({
+              pattern: "CI/CD pipeline configured",
+              risk_profile: "low",
+              recommended_mode: "autonomy",
+              count: 1,
+            });
+          }
+
+          // Check for package.json scripts
+          try {
+            const pkgContent = await fs.readFile(
+              path.join(ctx.appPath, "package.json"),
+              "utf-8",
+            );
+            const pkg = JSON.parse(pkgContent);
+            if (pkg.scripts) {
+              const scriptNames = Object.keys(pkg.scripts);
+              detectedPatterns.push({
+                pattern: `Package scripts: ${scriptNames.join(", ")}`,
+                risk_profile: "low",
+                recommended_mode: "autonomy",
+                count: scriptNames.length,
+              });
+            }
+          } catch {
+            // Not a Node.js project
+          }
+        } catch {
+          detectedPatterns.push({
+            pattern: "Could not read project directory",
+            risk_profile: "high",
+            recommended_mode: "structured",
+            count: 0,
+          });
+        }
+
+        result = {
+          detected_patterns: detectedPatterns,
+          summary: `Found ${detectedPatterns.length} pattern(s) in the project`,
         };
         break;
       }

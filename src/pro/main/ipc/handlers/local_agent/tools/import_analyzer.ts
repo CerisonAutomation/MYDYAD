@@ -125,6 +125,15 @@ export const importAnalyzerTool: ToolDefinition<
           directory: args.file_path,
         });
         const fullPath = path.join(targetAppPath, safeRelative);
+        // Skip files larger than 1MB
+        try {
+          const stat = await fs.stat(fullPath);
+          if (stat.size > 1024 * 1024) {
+            return "File too large to analyze (over 1MB).";
+          }
+        } catch {
+          // File doesn't exist or can't be stat'd, continue to read error
+        }
         const content = await fs.readFile(fullPath, "utf-8");
         analyzeFile(args.file_path, content);
       } else {
@@ -150,6 +159,13 @@ export const importAnalyzerTool: ToolDefinition<
               continue;
             }
             if (!/\.(tsx?|jsx?)$/.test(entry.name)) continue;
+            // Skip files larger than 1MB
+            try {
+              const stat = await fs.stat(fullPath);
+              if (stat.size > 1024 * 1024) continue;
+            } catch {
+              continue;
+            }
             try {
               const content = await fs.readFile(fullPath, "utf-8");
               const rel = path.relative(targetAppPath, fullPath);

@@ -12,6 +12,8 @@
 
 import { z } from "zod";
 import { ToolDefinition, AgentContext, escapeXmlContent } from "./types";
+import { assertNotPrivateIp } from "./network_utils";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 
 const logger = log.scope("multifetch");
@@ -116,6 +118,7 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
         url: string,
         attempt = 0,
       ): Promise<void> => {
+        assertNotPrivateIp(url);
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), timeout_ms);
 
@@ -147,7 +150,13 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
           }
 
           const contentType = response.headers.get("content-type") || "";
-          let content = await response.text();
+          const MAX_RESPONSE_BYTES = 100_000;
+          const buffer = await response.arrayBuffer();
+          let content = new TextDecoder().decode(
+            buffer.byteLength > MAX_RESPONSE_BYTES
+              ? buffer.slice(0, MAX_RESPONSE_BYTES)
+              : buffer,
+          );
 
           if (extract_text && contentType.includes("text/html")) {
             // Simple HTML to text extraction
@@ -170,6 +179,7 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
           results.push({ url, status: response.status, content });
         } catch (error) {
           clearTimeout(timeout);
+          if (error instanceof DyadError) throw error;
           if (attempt < max_retries) {
             const delay = Math.pow(2, attempt) * 1000;
             await new Promise((r) => setTimeout(r, delay));

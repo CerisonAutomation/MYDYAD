@@ -162,6 +162,31 @@ import { DyadError, DyadErrorKind, isDyadError } from "./errors/dyad_error";
 log.errorHandler.startCatching();
 log.eventLogger.startLogging();
 log.scope.labelPadding = false;
+
+// Fix EIO errors when writing to console after stream is closed (e.g., child process exit)
+// This wraps the console transport's writeFn with error handling for broken pipes
+try {
+  const consoleTransport = (log as any).transports?.console;
+  if (consoleTransport && typeof consoleTransport.writeFn === "function") {
+    const originalWriteFn = consoleTransport.writeFn;
+    consoleTransport.writeFn = (args: any) => {
+      try {
+        originalWriteFn(args);
+      } catch (e: any) {
+        // Swallow EIO errors (broken pipe) and ENOTTY (inappropriate ioctl)
+        // These happen when a child process exits while we're still trying to log
+        if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF") {
+          // Silently ignore — the stream is gone
+          return;
+        }
+        // Re-throw other errors
+        throw e;
+      }
+    };
+  }
+} catch {
+  // If transport override fails, continue without it — not critical
+}
 const execFileAsync = promisify(execFile);
 
 // Prefer the Dyad-managed pnpm (if installed) for everything spawned from the
@@ -373,6 +398,18 @@ if (fs.existsSync(gitDir)) {
 }
 
 // https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app#main-process-mainjs
+//
+// IMPORTANT: In dev mode, ALL Electron apps share `com.github.Electron` as
+// their bundle identifier. macOS routes dyad:// deep links to whichever
+// Electron app registered the protocol last. If ZCode, Claude, or another
+// Electron app is running, they may intercept the redirect intended for Dyad.
+//
+// Production builds use `appBundleId: "sh.dyad.app"` in forge.config.ts to
+// give Dyad a unique identity — the redirect always goes to Dyad in production.
+//
+// In dev mode, we aggressively re-register on every startup to maximize the
+// chance that Dyad claims the protocol. The user should also close other
+// Electron apps before connecting Supabase/Neon integrations.
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
     app.setAsDefaultProtocolClient("dyad", process.execPath, [

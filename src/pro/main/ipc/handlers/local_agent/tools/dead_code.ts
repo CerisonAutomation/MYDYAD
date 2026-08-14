@@ -1,6 +1,7 @@
 import { z } from "zod";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 import {
   ToolDefinition,
   AgentContext,
@@ -14,6 +15,8 @@ import log from "electron-log";
 import { walkDirectory } from "./file_utils";
 
 const logger = log.scope("dead_code");
+
+const READ_TIMEOUT_MS = 5_000;
 
 const deadCodeSchema = z.object({
   app_name: z
@@ -163,15 +166,33 @@ export const deadCodeTool: ToolDefinition<z.infer<typeof deadCodeSchema>> = {
           directory: args.file,
         });
         const filePath = path.join(targetAppPath, safeRelative);
-        const content = await fs.readFile(filePath, "utf-8");
+        const content = await Promise.race([
+          fs.readFile(filePath, "utf-8"),
+          sleep(READ_TIMEOUT_MS).then(() => {
+            throw new Error("Read timeout");
+          }),
+        ]);
         reports = [analyzeFile(args.file, content)];
       } else {
         const files = await walkDirectory(targetAppPath, {
           filePattern: /\.(ts|tsx|js|jsx)$/,
+          maxDepth: 10,
         });
         for (const file of files) {
           try {
-            const content = await fs.readFile(file, "utf-8");
+            // Skip files larger than 1MB to prevent memory issues
+            try {
+              const stat = await fs.stat(file);
+              if (stat.size > 1024 * 1024) continue;
+            } catch {
+              continue;
+            }
+            const content = await Promise.race([
+              fs.readFile(file, "utf-8"),
+              sleep(READ_TIMEOUT_MS).then(() => {
+                throw new Error("Read timeout");
+              }),
+            ]);
             const relativePath = path.relative(targetAppPath, file);
             const report = analyzeFile(relativePath, content);
             if (report.items.length > 0) reports.push(report);

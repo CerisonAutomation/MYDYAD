@@ -1,6 +1,7 @@
 import { db } from "../../db";
 import { mcpServers } from "../../db/schema";
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
+import log from "electron-log";
 import { eq } from "drizzle-orm";
 
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -52,10 +53,20 @@ export class McpManager {
   private disposeAllPromise: Promise<void> | undefined;
 
   async getClient(serverId: number): Promise<MCPClient> {
-    while (true) {
+    let attempts = 0;
+    while (attempts < 10) {
       const disposal = this.disposeAllPromise ?? this.disposals.get(serverId);
       if (!disposal) break;
-      await disposal;
+      const timeout = new Promise<void>((resolve) =>
+        setTimeout(resolve, 30_000),
+      );
+      await Promise.race([disposal, timeout]);
+      attempts++;
+    }
+    if (attempts >= 10) {
+      log.warn(
+        `MCP server ${serverId} disposal took too many attempts, breaking loop`,
+      );
     }
 
     const existing = this.clients.get(serverId);

@@ -8,6 +8,7 @@ import {
   escapeXmlContent,
 } from "./types";
 import { resolveTargetAppPath } from "./resolve_app_context";
+import { walkDirectory } from "./file_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 
@@ -39,16 +40,6 @@ interface TestPlan {
   testCases: string[];
   coverage: number;
 }
-
-const EXCLUDE_DIRS = new Set([
-  "node_modules",
-  ".git",
-  "dist",
-  "build",
-  "__pycache__",
-  ".next",
-  "coverage",
-]);
 
 async function detectTestFramework(appPath: string): Promise<string> {
   try {
@@ -123,32 +114,6 @@ function generateTestStub(functionName: string, framework: string): string {
 });`;
 }
 
-async function walkDirectory(
-  dir: string,
-  exclude: Set<string>,
-  files: string[] = [],
-): Promise<string[]> {
-  try {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (exclude.has(entry.name)) continue;
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        await walkDirectory(fullPath, exclude, files);
-      } else if (
-        entry.name.match(/\.(ts|tsx|js|jsx)$/) &&
-        !entry.name.includes(".test.") &&
-        !entry.name.includes(".spec.")
-      ) {
-        files.push(fullPath);
-      }
-    }
-  } catch {
-    // Skip inaccessible directories
-  }
-  return files;
-}
-
 function buildAttributes(
   args: Partial<z.infer<typeof testPlanSchema>>,
   plan?: TestPlan,
@@ -199,10 +164,13 @@ export const testPlanTool: ToolDefinition<z.infer<typeof testPlanSchema>> = {
 
       if (!targetFile) {
         // Find file with most functions (riskiest untested)
-        const files = await walkDirectory(targetAppPath, EXCLUDE_DIRS);
+        const files = await walkDirectory(targetAppPath, {
+          filePattern: /\.(ts|tsx|js|jsx)$/,
+        });
         let maxFunctions = 0;
 
         for (const file of files) {
+          if (file.includes(".test.") || file.includes(".spec.")) continue;
           try {
             const content = await fs.readFile(file, "utf-8");
             const functions = extractTestableFunctions(content);

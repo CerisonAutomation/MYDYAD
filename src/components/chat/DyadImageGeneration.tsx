@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useState, type ReactNode } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
 import { Eye, ImageIcon } from "lucide-react";
 import { useAtomValue } from "jotai";
 import { CustomTagState } from "./stateTypes";
@@ -42,6 +43,7 @@ export const DyadImageGeneration: React.FC<DyadImageGenerationProps> = ({
     setImageError(false);
   }, [imagePath]);
   const state = node?.properties?.state;
+  useAutoCollapse(state, setIsExpanded);
   const inProgress = state === "pending";
   const aborted = state === "aborted";
 

@@ -1,7 +1,7 @@
 /**
  * Code Research Tool
  *
- * Research open-source repositories to understand implementation details.
+ * Research codebase repositories to understand implementation details.
  * Based on code-research skill with parallel query decomposition.
  *
  * Features:
@@ -12,6 +12,8 @@
  */
 
 import { z } from "zod";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import type { AgentContext, ToolDefinition } from "./types";
 
 const codeResearchSchema = z.object({
@@ -133,47 +135,175 @@ function decomposeQuestion(question: string): string[] {
   return angles;
 }
 
-// Simulate research (in production, would use GitHub API)
-function simulateResearch(
-  repo: string,
-  question: string,
-  angles: string[],
-): ResearchResult {
-  const findings: ResearchFinding[] = angles.map((angle) => ({
-    angle,
-    files: [
-      {
-        path: `src/${angle.replace(/\s+/g, "_").slice(0, 20)}.ts`,
-        relevance: 0.8 + Math.random() * 0.2,
-        snippet: `// Implementation of ${angle}...`,
-      },
-      {
-        path: `lib/${angle.replace(/\s+/g, "_").slice(0, 15)}.ts`,
-        relevance: 0.7 + Math.random() * 0.2,
-        snippet: `// Related utilities for ${angle}...`,
-      },
-    ],
-    summary: `Found implementation patterns for ${angle}`,
-    key_insights: [
-      `Key function: ${angle.replace(/\s+/g, "_")}Handler`,
-      `Pattern: Factory pattern with dependency injection`,
-      `Configuration: Environment-based with defaults`,
-    ],
-  }));
+// Walk directory tree collecting files that match extensions
+async function walkForResearch(
+  dir: string,
+  maxFiles: number,
+  collected: string[] = [],
+): Promise<string[]> {
+  if (collected.length >= maxFiles) return collected;
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (collected.length >= maxFiles) break;
+      const fullPath = path.join(dir, entry.name);
+      if (
+        entry.isDirectory() &&
+        !entry.name.startsWith(".") &&
+        entry.name !== "node_modules" &&
+        entry.name !== "dist" &&
+        entry.name !== "build"
+      ) {
+        await walkForResearch(fullPath, maxFiles, collected);
+      } else if (
+        entry.isFile() &&
+        /\.(ts|tsx|js|jsx|py|go|java|rb|php|rs|vue|svelte|css|scss)$/.test(
+          entry.name,
+        )
+      ) {
+        collected.push(fullPath);
+      }
+    }
+  } catch {
+    // Skip inaccessible directories
+  }
+  return collected;
+}
+
+// Search a single file for a query string, returning line snippets with context
+function searchFileContent(
+  content: string,
+  queryTerms: string[],
+): { snippet: string; line: number; relevance: number } | null {
+  const lines = content.split("\n");
+  const queryLower = queryTerms.map((t) => t.toLowerCase());
+  let bestLine = -1;
+  let bestScore = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const lineLower = lines[i].toLowerCase();
+    let score = 0;
+    for (const term of queryLower) {
+      if (lineLower.includes(term)) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestLine = i;
+    }
+  }
+
+  if (bestLine === -1) return null;
+
+  // Build snippet with surrounding context
+  const start = Math.max(0, bestLine - 1);
+  const end = Math.min(lines.length - 1, bestLine + 2);
+  const snippetLines = [];
+  for (let i = start; i <= end; i++) {
+    const prefix = i === bestLine ? ">>> " : "    ";
+    snippetLines.push(`${prefix}${lines[i]}`);
+  }
+
+  const relevance = Math.min(1.0, 0.5 + bestScore * 0.15);
 
   return {
-    repo,
+    snippet: snippetLines.join("\n"),
+    line: bestLine + 1,
+    relevance,
+  };
+}
+
+// Perform real research by searching the local codebase
+async function searchCodebase(
+  appPath: string,
+  _repo: string,
+  question: string,
+  angles: string[],
+): Promise<ResearchResult> {
+  const MAX_FILES = 500;
+  const files = await walkForResearch(appPath, MAX_FILES);
+
+  const findings: ResearchFinding[] = [];
+
+  for (const angle of angles) {
+    const angleTerms = angle
+      .split(/\s+/)
+      .filter((w) => w.length > 2)
+      .slice(0, 5);
+
+    const angleHits: ResearchFinding["files"] = [];
+
+    // Search by file name match
+    for (const filePath of files) {
+      const basename = path.basename(filePath).toLowerCase();
+      let nameScore = 0;
+      for (const term of angleTerms) {
+        if (basename.includes(term.toLowerCase())) nameScore++;
+      }
+      if (nameScore > 0) {
+        const relativePath = path.relative(appPath, filePath);
+        angleHits.push({
+          path: relativePath,
+          relevance: Math.min(1.0, 0.6 + nameScore * 0.15),
+          snippet: `[File: ${relativePath}]`,
+        });
+      }
+    }
+
+    // Search by content match
+    for (const filePath of files) {
+      try {
+        const stat = await fs.stat(filePath);
+        if (stat.size > 512 * 1024) continue; // Skip large files
+        const content = await fs.readFile(filePath, "utf-8");
+        const relativePath = path.relative(appPath, filePath);
+        const hit = searchFileContent(content, angleTerms);
+        if (hit && !angleHits.some((h) => h.path === relativePath)) {
+          angleHits.push({
+            path: relativePath,
+            relevance: hit.relevance,
+            snippet: hit.snippet,
+          });
+        }
+      } catch {
+        // Skip unreadable files
+      }
+    }
+
+    // Sort by relevance and take top results
+    angleHits.sort((a, b) => b.relevance - a.relevance);
+    const topHits = angleHits.slice(0, 5);
+
+    findings.push({
+      angle,
+      files: topHits,
+      summary:
+        topHits.length > 0
+          ? `Found ${topHits.length} relevant file(s) for "${angle}"`
+          : `No files matched angle "${angle}"`,
+      key_insights: topHits
+        .slice(0, 3)
+        .map(
+          (h) =>
+            `Relevant file: ${h.path} (relevance: ${h.relevance.toFixed(2)})`,
+        ),
+    });
+  }
+
+  // Extract unique patterns (top-level directories of findings)
+  const allPaths = findings.flatMap((f) => f.files.map((file) => file.path));
+  const uniquePatterns = [...new Set(allPaths.map((p) => path.dirname(p)))]
+    .filter((d) => d !== ".")
+    .slice(0, 5);
+
+  return {
+    repo: _repo,
     question,
     findings,
-    synthesis: `Research on ${repo} for "${question}" revealed ${angles.length} key areas with consistent patterns across the codebase.`,
-    patterns: [
-      "Factory pattern for creating instances",
-      "Middleware chain for request processing",
-      "Configuration-driven behavior",
-      "Event-driven architecture for loose coupling",
-    ],
-    file_references: findings.flatMap((f) => f.files.map((file) => file.path)),
-    confidence: 0.85,
+    synthesis: `Searched ${files.length} files in the codebase for "${question}". Found ${allPaths.length} matching file(s) across ${angles.length} research angle(s).`,
+    patterns: uniquePatterns.map((d) => `Directory structure: ${d}`),
+    file_references: allPaths,
+    confidence:
+      allPaths.length > 0 ? Math.min(0.95, 0.5 + allPaths.length * 0.05) : 0.2,
   };
 }
 
@@ -232,8 +362,13 @@ Output: Structured findings with file references`,
       `<dyad-code-research angles="${angles.length}">Running parallel searches...</dyad-code-research>`,
     );
 
-    // Simulate research (in production, would use GitHub API)
-    const result = simulateResearch(args.repo, args.question, angles);
+    // Real research using local codebase
+    const result = await searchCodebase(
+      ctx.appPath,
+      args.repo,
+      args.question,
+      angles,
+    );
 
     const elapsed = Date.now() - startTime;
 

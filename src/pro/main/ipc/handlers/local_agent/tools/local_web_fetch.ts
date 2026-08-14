@@ -10,6 +10,7 @@
  */
 
 import log from "electron-log";
+import { assertNotPrivateIp } from "./network_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("local_web_fetch");
@@ -40,20 +41,41 @@ export async function localWebFetch(
   try {
     // Validate URL
     new URL(url);
+    assertNotPrivateIp(url);
 
     logger.log(`Fetching URL: ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-      signal: AbortSignal.timeout(timeout),
-      redirect: "follow",
-    });
+    const fetchHeaders = {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7",
+      "Accept-Language": "en-US,en;q=0.9",
+    };
+
+    // Follow redirects manually, validating each target for SSRF
+    let currentUrl = url;
+    let response: Response | undefined;
+    for (let i = 0; i < 5; i++) {
+      response = await fetch(currentUrl, {
+        headers: fetchHeaders,
+        signal: AbortSignal.timeout(timeout),
+        redirect: "manual",
+      });
+      if ([301, 302, 307, 308].includes(response.status)) {
+        const location = response.headers.get("location");
+        if (!location) break;
+        const redirectUrl = new URL(location, currentUrl).toString();
+        assertNotPrivateIp(redirectUrl);
+        currentUrl = redirectUrl;
+      } else {
+        break;
+      }
+    }
+
+    if (!response) {
+      throw new DyadError("No response received", DyadErrorKind.External);
+    }
 
     if (!response.ok) {
       throw new DyadError(

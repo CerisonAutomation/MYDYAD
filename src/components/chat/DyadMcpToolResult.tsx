@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
+import { CustomTagState } from "./stateTypes";
 import { CheckCircle } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
 import {
@@ -21,6 +23,8 @@ export const DyadMcpToolResult: React.FC<DyadMcpToolResultProps> = ({
   const serverName: string = node?.properties?.serverName || "";
   const toolName: string = node?.properties?.toolName || "";
   const [expanded, setExpanded] = useState(false);
+  const state = node?.properties?.state as CustomTagState;
+  useAutoCollapse(state, setExpanded);
 
   const raw = typeof children === "string" ? children : String(children ?? "");
 

@@ -184,8 +184,10 @@ export function withAnalysisGuard<T>(
       const cached = getCachedResult(tool.name, appPath);
       if (cached) {
         logger.log(`Cache hit for ${tool.name} on ${appPath}`);
-        // Still emit the XML for UI feedback
-        ctx.onXmlComplete(cached);
+        // Return cached result directly — do NOT call onXmlComplete here
+        // because the cached value is the tool's return text, not the full
+        // XML the tool emits during execution. The handler will use the
+        // return value as the tool result text for the agent.
         return cached;
       }
 

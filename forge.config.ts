@@ -142,9 +142,14 @@ const config: ForgeConfig = {
   packagerConfig: {
     // E2E test builds install local file: dependencies as links on Windows.
     // Dereference them so packaging does not require symlink privileges in the temp app.
-    // Local file: native packages install as symlinks; dereference them so the
+    // Local file: native packages install as symlinks; dereference so the
     // packaged app contains loadable runtime files.
     derefSymlinks: true,
+    // Unique bundle ID so macOS can distinguish Dyad from other Electron apps
+    // (ZCode, Claude, etc.) when routing dyad:// deep links. Without this,
+    // ALL Electron apps share com.github.Electron and the protocol redirects
+    // to whichever one macOS picked last — not necessarily Dyad.
+    appBundleId: "sh.dyad.app",
     windowsSign: isWindowsSigningEnabled ? windowsSign : undefined,
     afterCopy: [
       (buildPath, _electronVersion, platform, arch, callback) => {

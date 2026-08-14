@@ -101,6 +101,7 @@ import { gitBlameTool } from "./tools/git_blame";
 import { gitBranchesTool } from "./tools/git_branches";
 import { gitDiffStagedTool } from "./tools/git_diff_staged";
 import { gitLogFileTool } from "./tools/git_log_file";
+import { gitStashTool } from "./tools/git_stash";
 import { pythonAstSummaryTool } from "./tools/python_ast_summary";
 import { tsAstSummaryTool } from "./tools/ts_ast_summary";
 import { githubIssuesTool } from "./tools/github_issues";
@@ -280,6 +281,7 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   gitBranchesTool,
   gitDiffStagedTool,
   gitLogFileTool,
+  gitStashTool,
   pythonAstSummaryTool,
   withAnalysisGuard(tsAstSummaryTool),
   githubIssuesTool,

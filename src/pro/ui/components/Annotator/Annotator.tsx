@@ -313,13 +313,32 @@ export const Annotator = ({
   };
 
   // Update transformer selection
+  // Use a small delay to ensure the Transformer component is mounted
   useEffect(() => {
-    if (selectedId && transformerRef.current && stageRef.current) {
-      const node = stageRef.current.findOne("#" + selectedId);
-      if (node) {
+    if (!selectedId || !stageRef.current) return;
+
+    // Find the node first
+    const node = stageRef.current.findOne("#" + selectedId);
+    if (!node) return;
+
+    // The Transformer is conditionally rendered, so we need to wait for it
+    // Use a microtask to ensure the DOM has updated
+    const attachTransformer = () => {
+      if (transformerRef.current) {
         transformerRef.current.nodes([node]);
-        transformerRef.current.getLayer().batchDraw();
+        transformerRef.current.getLayer()?.batchDraw();
       }
+    };
+
+    // Try immediately, then retry with requestAnimationFrame
+    if (transformerRef.current) {
+      attachTransformer();
+    } else {
+      // Transformer not yet mounted, wait for next frame
+      const raf = requestAnimationFrame(() => {
+        attachTransformer();
+      });
+      return () => cancelAnimationFrame(raf);
     }
   }, [selectedId, shapes]);
 

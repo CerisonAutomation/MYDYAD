@@ -1,6 +1,7 @@
 import type React from "react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
 import { ScanSearch } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
 import { CustomTagState } from "./stateTypes";
@@ -36,12 +37,7 @@ export const DyadExploreCode: React.FC<DyadExploreCodeProps> = ({
   const state = node?.properties?.state as CustomTagState;
   const inProgress = state === "pending";
   const [isContentVisible, setIsContentVisible] = useState(inProgress);
-
-  useEffect(() => {
-    if (!inProgress && isContentVisible) {
-      setIsContentVisible(false);
-    }
-  }, [inProgress]);
+  useAutoCollapse(state, setIsContentVisible);
   const aborted = state === "aborted";
   const errored = state === "error";
   const query = node?.properties?.query || "";

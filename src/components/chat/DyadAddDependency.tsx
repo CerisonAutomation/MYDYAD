@@ -1,6 +1,8 @@
 import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
+import { CustomTagState } from "./stateTypes";
 
 import { ipc } from "@/ipc/types";
 
@@ -29,6 +31,8 @@ export const DyadAddDependency: React.FC<DyadAddDependencyProps> = ({
     ? node.properties.packages.split(" ").filter(Boolean)
     : [];
   const [isContentVisible, setIsContentVisible] = useState(false);
+  const state = node?.properties?.state as CustomTagState;
+  useAutoCollapse(state, setIsContentVisible);
   const hasChildren = !!children;
 
   return (

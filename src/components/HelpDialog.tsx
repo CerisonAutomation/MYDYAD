@@ -19,6 +19,7 @@ import {
   MessageSquareIcon,
   CopyIcon,
   Loader2Icon,
+  DownloadIcon,
 } from "lucide-react";
 import { ipc } from "@/ipc/types";
 import {
@@ -32,7 +33,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { helpDialogAtom } from "@/atoms/helpDialogAtom";
 import { type SessionDebugBundle, type SystemDebugInfo } from "@/ipc/types";
-import { showError } from "@/lib/toast";
+import { showError, showSuccess } from "@/lib/toast";
 import { useTranslation } from "react-i18next";
 import { HelpBotDialog } from "./HelpBotDialog";
 import { useSettings } from "@/hooks/useSettings";
@@ -264,6 +265,7 @@ export function HelpDialog() {
   const onClose = () => setHelpDialog({ open: false });
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [screen, setScreen] = useState<DialogScreen>("main");
   const [direction, setDirection] = useState(0);
   const [debugBundle, setDebugBundle] = useState<SessionDebugBundle | null>(
@@ -317,6 +319,7 @@ export function HelpDialog() {
   const resetDialogState = () => {
     setIsLoading(false);
     setIsUploading(false);
+    setIsExporting(false);
     setScreen("main");
     setDirection(0);
     setDebugBundle(null);
@@ -427,6 +430,33 @@ ${formatLogsSection(debugInfo)}
       );
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleExportDebugBundle = async () => {
+    if (!selectedChatId) {
+      showError("Please select a chat first to export a debug bundle.");
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const bundle = await ipc.misc.getSessionDebugBundle(selectedChatId);
+      const json = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dyad-debug-bundle-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showSuccess("Debug bundle exported successfully.");
+    } catch (error) {
+      console.error("Failed to export debug bundle:", error);
+      showError("Failed to export debug bundle. Please try again.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -613,6 +643,33 @@ ${formatLogsSection(debugInfo)}
               <BugIcon className="mr-2 h-4 w-4" />{" "}
               {isLoading ? "Preparing Report..." : "Report a Bug"}
             </Button>
+          </div>
+
+          {/* Export Debug Bundle */}
+          <div className="border rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <DownloadIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-semibold">Export Debug Bundle</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Download a JSON file with diagnostic information about your
+              current chat session, including system info, settings, and logs.
+            </p>
+            <Button
+              variant="outline"
+              onClick={handleExportDebugBundle}
+              disabled={isExporting || !selectedChatId}
+              className="w-full bg-(--background-lightest)"
+            >
+              <DownloadIcon className="mr-2 h-4 w-4" />{" "}
+              {isExporting ? "Exporting..." : "Export Debug Bundle"}
+            </Button>
+            {!selectedChatId && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <AlertCircleIcon className="h-3 w-3 shrink-0" />
+                Open a chat first to export a debug bundle.
+              </p>
+            )}
           </div>
         </div>
       </div>

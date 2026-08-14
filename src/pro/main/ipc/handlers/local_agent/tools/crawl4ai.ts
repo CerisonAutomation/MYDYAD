@@ -5,6 +5,7 @@ import {
   escapeXmlAttr,
   escapeXmlContent,
 } from "./types";
+import { assertNotPrivateIp } from "./network_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 
@@ -59,6 +60,8 @@ async function fetchAndExtract(
     );
   }
 
+  assertNotPrivateIp(url);
+
   // Use local web fetch implementation with timeout
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
@@ -74,7 +77,13 @@ async function fetchAndExtract(
     clearTimeout(timeout);
   }
 
-  const html = await response.text();
+  const MAX_HTML_BYTES = 200_000;
+  const buffer = await response.arrayBuffer();
+  const html = new TextDecoder().decode(
+    buffer.byteLength > MAX_HTML_BYTES
+      ? buffer.slice(0, MAX_HTML_BYTES)
+      : buffer,
+  );
 
   // Extract title
   const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);

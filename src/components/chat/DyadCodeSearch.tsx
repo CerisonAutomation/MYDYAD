@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState, type ReactNode } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
 import { FileCode } from "lucide-react";
 import { CustomTagState } from "./stateTypes";
 import {
@@ -23,9 +24,10 @@ export const DyadCodeSearch: React.FC<DyadCodeSearchProps> = ({
   node,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const state = node?.properties?.state as CustomTagState;
+  useAutoCollapse(state, setIsExpanded);
   const query =
     node?.properties?.query || (typeof children === "string" ? children : "");
-  const state = node?.properties?.state as CustomTagState;
   const appName = node?.properties?.appName || "";
   const inProgress = state === "pending";
 

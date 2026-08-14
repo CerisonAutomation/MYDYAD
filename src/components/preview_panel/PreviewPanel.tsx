@@ -44,6 +44,8 @@ import { useSettings } from "@/hooks/useSettings";
 import { showError } from "@/lib/toast";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { useLatestConsoleEntry } from "@/preview_console/hooks";
+import { usePreviewIframeController } from "@/preview_iframe/usePreviewIframe";
+import { selectPreviewError } from "@/preview_iframe/state";
 import { useTestRecorder } from "@/hooks/useTestRecorder";
 import { RecordingBannerHost } from "./RecordingBannerHost";
 
@@ -126,6 +128,18 @@ export function PreviewPanel() {
   const queryClient = useQueryClient();
   const key = usePreviewReloadToken(selectedAppId);
   const latestConsoleEntry = useLatestConsoleEntry(selectedAppId);
+
+  // Auto-expand console when a preview error is detected
+  const { state: previewIframeState } =
+    usePreviewIframeController(selectedAppId);
+  const previewError = selectPreviewError(previewIframeState);
+  const prevErrorRef = useRef<unknown>(undefined);
+  useEffect(() => {
+    if (previewError && !prevErrorRef.current) {
+      setIsConsoleOpen(true);
+    }
+    prevErrorRef.current = previewError;
+  }, [previewError]);
   // Above the previewMode switch below, so a tab change doesn't end a recording
   // or drop the events that keep the review bar honest.
   const { recorder, recorderReloadKey } = useHoistedRecorder();

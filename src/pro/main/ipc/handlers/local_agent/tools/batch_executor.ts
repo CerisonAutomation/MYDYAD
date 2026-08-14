@@ -14,6 +14,7 @@ import * as path from "node:path";
 import { ToolDefinition, AgentContext, escapeXmlContent } from "./types";
 import { resolveTargetAppPath } from "./resolve_app_context";
 import { resolveDirectoryWithinAppPath } from "./path_safety";
+import { assertNotPrivateIp } from "./network_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 
@@ -215,11 +216,31 @@ export const batchExecutorTool: ToolDefinition<
                 DyadErrorKind.Validation,
               );
             }
+            assertNotPrivateIp(url);
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 15_000);
             try {
               const response = await fetch(url, { signal: controller.signal });
-              output = await response.text();
+              const MAX_FETCH_BYTES = 50_000;
+              const reader = response.body?.getReader();
+              if (reader) {
+                const chunks: Uint8Array[] = [];
+                let received = 0;
+                for (;;) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  chunks.push(value);
+                  received += value.length;
+                  if (received >= MAX_FETCH_BYTES) break;
+                }
+                reader.cancel();
+                const decoder = new TextDecoder();
+                output = decoder
+                  .decode(Buffer.concat(chunks))
+                  .slice(0, MAX_FETCH_BYTES);
+              } else {
+                output = (await response.text()).slice(0, MAX_FETCH_BYTES);
+              }
             } finally {
               clearTimeout(timeout);
             }

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
 import { Wrench } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
@@ -60,6 +61,7 @@ export const DyadMcpToolCall: React.FC<DyadMcpToolCallProps> = ({
   const toolName: string = node?.properties?.toolName || "";
   const autoApprovedReason: string = node?.properties?.autoApprovedReason || "";
   const [expanded, setExpanded] = useState(false);
+  useAutoCollapse(state, setExpanded);
 
   const merged = state !== undefined;
   const raw = typeof children === "string" ? children : String(children ?? "");

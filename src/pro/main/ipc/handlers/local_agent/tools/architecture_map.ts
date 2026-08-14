@@ -201,6 +201,7 @@ export const architectureMapTool: ToolDefinition<
     try {
       const files = await walkDirectory(targetAppPath, {
         filePattern: /\.(ts|tsx|js|jsx)$/,
+        maxDepth: 10,
       });
       const modules: Module[] = [];
 

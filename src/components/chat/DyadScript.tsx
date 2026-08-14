@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ipc } from "@/ipc/types";
 import { CodeHighlight } from "./CodeHighlight";
+import type { CustomTagState } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 import {
   DyadBadge,
   DyadCard,
@@ -28,6 +30,8 @@ export const DyadScript: React.FC<DyadScriptProps> = ({ node, children }) => {
   const executionMs: string = node?.properties?.executionMs || "";
   const fullOutputPath: string = node?.properties?.fullOutputPath || "";
   const [expanded, setExpanded] = useState(false);
+  const state = node?.properties?.state as CustomTagState;
+  useAutoCollapse(state, setExpanded);
 
   const raw = typeof children === "string" ? children : String(children ?? "");
   const payload = useMemo<ScriptPayload>(() => {

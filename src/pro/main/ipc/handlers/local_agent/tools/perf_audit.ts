@@ -225,6 +225,13 @@ export const perfAuditTool: ToolDefinition<z.infer<typeof perfAuditSchema>> = {
 
       for (const file of files) {
         try {
+          // Skip files larger than 1MB to prevent memory issues
+          try {
+            const stat = await fs.stat(file);
+            if (stat.size > 1024 * 1024) continue;
+          } catch {
+            continue;
+          }
           const content = await fs.readFile(file, "utf-8");
           const relativePath = path.relative(targetAppPath, file);
           const report = analyzeFile(relativePath, content);

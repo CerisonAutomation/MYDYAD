@@ -23,6 +23,7 @@ import { DyadThink } from "./DyadThink";
 import { CodeHighlight } from "./CodeHighlight";
 import { useAtomValue } from "jotai";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
 import {
   useChatStreamPreview,
   useChatStreamState,
@@ -469,7 +470,11 @@ const MemoBlockCustomTag = React.memo(
     block: CustomTagBlock;
     isStreaming: boolean;
   }) {
-    return <>{renderCustomTag(block, { isStreaming })}</>;
+    return (
+      <ToolCardErrorBoundary toolName={block.tag}>
+        {renderCustomTag(block, { isStreaming })}
+      </ToolCardErrorBoundary>
+    );
   },
   (prev, next) =>
     prev.block === next.block &&

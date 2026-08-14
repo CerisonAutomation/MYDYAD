@@ -15,6 +15,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
 import type { CustomTagState } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadGitProperties {
   operation?: string;
@@ -128,10 +129,11 @@ export const DyadGit = ({ children, node }: DyadGitProps) => {
   const { t } = useTranslation("chat");
   const [isExpanded, setIsExpanded] = useState(false);
   const properties = node?.properties ?? {};
+  const state = (properties.state ?? "finished") as CustomTagState;
+  useAutoCollapse(state, setIsExpanded);
   const operation = properties.operation || "status";
   const revision = properties.revision || "HEAD";
   const path = properties.path || "";
-  const state = properties.state ?? "finished";
   const detailText = typeof children === "string" ? children.trim() : "";
   const statusDetails = useMemo(
     () =>

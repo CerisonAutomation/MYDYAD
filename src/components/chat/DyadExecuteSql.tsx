@@ -1,6 +1,7 @@
 import type React from "react";
 import type { ReactNode } from "react";
 import { Children, useMemo, useState } from "react";
+import { useAutoCollapse } from "./useAutoCollapse";
 import { AlertTriangle, Database } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
@@ -39,6 +40,7 @@ export const DyadExecuteSql: React.FC<DyadExecuteSqlProps> = ({
   const { t } = useTranslation("chat");
   const [isContentVisible, setIsContentVisible] = useState(false);
   const state = node?.properties?.state as CustomTagState;
+  useAutoCollapse(state, setIsContentVisible);
   const inProgress = state === "pending";
   const aborted = state === "aborted";
   const queryDescription = description || node?.properties?.description;

@@ -16,6 +16,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
+import { VULNERABILITY_PATTERNS } from "./security_scan";
 
 const aiSecurityAuditSchema = z.object({
   operation: z
@@ -63,7 +64,86 @@ interface SecurityReport {
   recommendations: string[];
 }
 
-// Security patterns to detect
+// Metadata enrichment for patterns imported from security_scan.ts
+// Maps vulnerability type to OWASP/CVSS metadata
+const PATTERN_METADATA: Record<
+  string,
+  {
+    category: string;
+    title: string;
+    description: string;
+    cvss_score: number;
+    cwe_id: string;
+    owasp_category: string;
+  }
+> = {
+  sql_injection: {
+    category: "injection",
+    title: "SQL Injection Vulnerability",
+    description: "String concatenation or template literal in SQL query",
+    cvss_score: 9.8,
+    cwe_id: "CWE-89",
+    owasp_category: "A03:2021-Injection",
+  },
+  xss: {
+    category: "xss",
+    title: "Cross-Site Scripting (XSS)",
+    description: "Direct HTML insertion without sanitization",
+    cvss_score: 7.5,
+    cwe_id: "CWE-79",
+    owasp_category: "A03:2021-Injection",
+  },
+  command_injection: {
+    category: "injection",
+    title: "Command Injection Vulnerability",
+    description: "Variable or string concatenation in command execution",
+    cvss_score: 9.8,
+    cwe_id: "CWE-78",
+    owasp_category: "A03:2021-Injection",
+  },
+  hardcoded_secret: {
+    category: "secrets",
+    title: "Hardcoded Secret Detected",
+    description: "Secret value hardcoded in source code",
+    cvss_score: 7.5,
+    cwe_id: "CWE-798",
+    owasp_category: "A07:2021-Identification and Authentication Failures",
+  },
+  weak_crypto: {
+    category: "crypto",
+    title: "Weak Cryptographic Algorithm",
+    description: "Use of weak hash algorithm",
+    cvss_score: 5.0,
+    cwe_id: "CWE-327",
+    owasp_category: "A02:2021-Cryptographic Failures",
+  },
+  path_traversal: {
+    category: "traversal",
+    title: "Path Traversal Vulnerability",
+    description: "Dynamic file path without validation",
+    cvss_score: 7.5,
+    cwe_id: "CWE-22",
+    owasp_category: "A01:2021-Broken Access Control",
+  },
+  insecure_random: {
+    category: "crypto",
+    title: "Insecure Random Number Generator",
+    description: "Math.random() is not cryptographically secure",
+    cvss_score: 3.0,
+    cwe_id: "CWE-330",
+    owasp_category: "A02:2021-Cryptographic Failures",
+  },
+  unsafe_eval: {
+    category: "injection",
+    title: "Code Injection via eval()",
+    description: "Use of eval() or Function() constructor",
+    cvss_score: 8.0,
+    cwe_id: "CWE-95",
+    owasp_category: "A03:2021-Injection",
+  },
+};
+
+// Build enriched security patterns from the shared VULNERABILITY_PATTERNS
 const SECURITY_PATTERNS: Array<{
   pattern: RegExp;
   severity: SecurityFinding["severity"];
@@ -74,105 +154,27 @@ const SECURITY_PATTERNS: Array<{
   cvss_score: number;
   cwe_id: string;
   owasp_category: string;
-}> = [
-  // SQL Injection
-  {
-    pattern: /(?:query|execute|exec)\s*\(\s*['"`].*(?:\+|concat|\$\{)/gi,
-    severity: "critical",
-    category: "injection",
-    title: "SQL Injection Vulnerability",
-    description: "String concatenation in SQL query",
-    recommendation: "Use parameterized queries",
-    cvss_score: 9.8,
-    cwe_id: "CWE-89",
-    owasp_category: "A03:2021-Injection",
-  },
-  // XSS
-  {
-    pattern: /innerHTML\s*=\s*|document\.write\s*\(|\.html\s*\(/gi,
-    severity: "high",
-    category: "xss",
-    title: "Cross-Site Scripting (XSS)",
-    description: "Direct HTML insertion without sanitization",
-    recommendation: "Use textContent or sanitize HTML",
-    cvss_score: 7.5,
-    cwe_id: "CWE-79",
-    owasp_category: "A03:2021-Injection",
-  },
-  // Command Injection
-  {
-    pattern: /exec\s*\(\s*['"`].*(?:\+|concat|\$\{)/gi,
-    severity: "critical",
-    category: "injection",
-    title: "Command Injection Vulnerability",
-    description: "String concatenation in command execution",
-    recommendation: "Use execFile with array arguments",
-    cvss_score: 9.8,
-    cwe_id: "CWE-78",
-    owasp_category: "A03:2021-Injection",
-  },
-  // Hardcoded Secrets
-  {
-    pattern:
-      /(?:api[_-]?key|secret|password|token)\s*[:=]\s*['"`][^'"`]+['"`]/gi,
-    severity: "high",
-    category: "secrets",
-    title: "Hardcoded Secret Detected",
-    description: "Secret value hardcoded in source code",
-    recommendation: "Use environment variables or secrets manager",
-    cvss_score: 7.5,
-    cwe_id: "CWE-798",
-    owasp_category: "A07:2021-Identification and Authentication Failures",
-  },
-  // Weak Crypto
-  {
-    pattern: /(?:md5|sha1)\s*\(/gi,
-    severity: "medium",
-    category: "crypto",
-    title: "Weak Cryptographic Algorithm",
-    description: "Use of weak hash algorithm",
-    recommendation: "Use SHA-256 or stronger",
+}> = VULNERABILITY_PATTERNS.map((vp) => {
+  const meta = PATTERN_METADATA[vp.type] || {
+    category: vp.type,
+    title: vp.message,
+    description: vp.message,
     cvss_score: 5.0,
-    cwe_id: "CWE-327",
-    owasp_category: "A02:2021-Cryptographic Failures",
-  },
-  // Path Traversal
-  {
-    pattern: /(?:readFile|readFileSync)\s*\(\s*(?:req\.|params\.|query\.)/gi,
-    severity: "high",
-    category: "traversal",
-    title: "Path Traversal Vulnerability",
-    description: "User input in file path without validation",
-    recommendation: "Validate and sanitize file paths",
-    cvss_score: 7.5,
-    cwe_id: "CWE-22",
-    owasp_category: "A01:2021-Broken Access Control",
-  },
-  // Insecure Random
-  {
-    pattern: /Math\.random\s*\(\)/gi,
-    severity: "low",
-    category: "crypto",
-    title: "Insecure Random Number Generator",
-    description: "Math.random() is not cryptographically secure",
-    recommendation: "Use crypto.randomBytes() for security",
-    cvss_score: 3.0,
-    cwe_id: "CWE-330",
-    owasp_category: "A02:2021-Cryptographic Failures",
-  },
-  // Eval
-  {
-    pattern: /(?:eval|Function)\s*\(/gi,
-    severity: "high",
-    category: "injection",
-    title: "Code Injection via eval()",
-    description: "Use of eval() or Function() constructor",
-    recommendation: "Avoid eval(), use safer alternatives",
-    cvss_score: 8.0,
-    cwe_id: "CWE-95",
+    cwe_id: "CWE-0",
     owasp_category: "A03:2021-Injection",
-  },
-];
+  };
+  return {
+    pattern: vp.pattern,
+    severity: vp.severity,
+    category: meta.category,
+    title: meta.title,
+    description: meta.description,
+    recommendation: vp.recommendation,
+    cvss_score: meta.cvss_score,
+    cwe_id: meta.cwe_id,
+    owasp_category: meta.owasp_category,
+  };
+});
 
 // Generate unique ID
 function generateId(): string {

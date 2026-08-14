@@ -59,17 +59,20 @@ export function registerShellHandlers() {
       logger.debug("E2E test mode: skipped opening external URL:", url);
       return;
     }
-    // On Linux, dev and packaged builds share the single dyad:// scheme and it's
-    // "last registration wins", so launching the packaged app steals the handler
-    // and OAuth callbacks (dyad://neon-oauth-return, etc.) open packaged instead
-    // of this dev instance. Reclaim the handler just before the browser opens so
-    // the callback routes back here. Best-effort; the helper self-guards platform.
-    if (
-      !app.isPackaged &&
-      process.platform === "linux" &&
-      isDyadOAuthUrl(url)
-    ) {
-      await registerDyadProtocolLinux(app.getPath("userData"));
+    // On Linux and macOS, dev and packaged builds share the single dyad:// scheme
+    // and it's "last registration wins", so other Electron apps (ZCode, Claude)
+    // can steal the handler and OAuth callbacks open the wrong app. Reclaim the
+    // handler just before the browser opens so the callback routes back here.
+    if (!app.isPackaged && isDyadOAuthUrl(url)) {
+      if (process.platform === "linux") {
+        await registerDyadProtocolLinux(app.getPath("userData"));
+      } else if (process.platform === "darwin") {
+        // Re-register dyad:// to this dev instance so macOS routes the
+        // callback here instead of ZCode/Claude/other Electron apps.
+        app.setAsDefaultProtocolClient("dyad", process.execPath, [
+          path.resolve(process.argv[1] ?? ""),
+        ]);
+      }
     }
     await shell.openExternal(url);
     logger.debug("Opened external URL:", url);
