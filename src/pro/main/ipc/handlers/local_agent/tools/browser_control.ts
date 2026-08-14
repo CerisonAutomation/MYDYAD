@@ -81,6 +81,38 @@ const waitForAction = z.object({
     .describe("Maximum time to wait in milliseconds (default: 10000)"),
 });
 
+const readPageAction = z.object({
+  action: z.literal("read_page"),
+  mode: z
+    .enum(["interactive", "all", "viewport"])
+    .optional()
+    .describe(
+      "Which elements to include: interactive (default, forms+links+buttons), all (full DOM), viewport (visible only)",
+    ),
+  depth: z
+    .number()
+    .min(1)
+    .max(20)
+    .optional()
+    .describe("Maximum DOM tree depth (default: 5, max: 20)"),
+});
+
+const batchAction = z.object({
+  action: z.literal("batch"),
+  steps: z
+    .array(
+      z.object({
+        action: z.string().describe("Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page)"),
+        params: z
+          .record(z.string(), z.unknown())
+          .describe("Parameters for the action"),
+      }),
+    )
+    .min(1)
+    .max(20)
+    .describe("Ordered list of actions to execute sequentially"),
+});
+
 const browserControlSchema = z.discriminatedUnion("action", [
   navigateAction,
   clickAction,
@@ -89,6 +121,8 @@ const browserControlSchema = z.discriminatedUnion("action", [
   screenshotAction,
   getTextAction,
   waitForAction,
+  readPageAction,
+  batchAction,
 ]);
 
 type BrowserControlArgs = z.infer<typeof browserControlSchema>;
@@ -97,7 +131,7 @@ type BrowserControlArgs = z.infer<typeof browserControlSchema>;
 // Description
 // ============================================================================
 
-const DESCRIPTION = `Control a browser to interact with web pages — click, type, scroll, navigate, take screenshots. Use for verifying UI changes, testing web apps, and interacting with live pages.
+const DESCRIPTION = `Control a browser to interact with web pages — click, type, scroll, navigate, take screenshots, read page structure. Use for verifying UI changes, testing web apps, and interacting with live pages.
 
 ### Supported Actions
 
@@ -108,6 +142,8 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - **screenshot** — Take a screenshot and save it to the project's .dyad/media directory. Optional \`full_page\` to capture the entire scrollable page.
 - **get_text** — Get the visible text content of an element. Provide \`selector\`.
 - **wait_for** — Wait for an element to appear in the DOM. Provide \`selector\`. Optional \`timeout_ms\` (default 10000).
+- **read_page** — Get a structured representation of the page with interactive elements (forms, links, buttons) labeled with stable refs. Provide \`mode\` (interactive/all/viewport). Optional \`depth\` (default 5).
+- **batch** — Execute multiple actions sequentially. Provide \`steps\` array with {action, params} objects. Max 20 steps.
 
 ### When to Use
 - Verifying that a UI change renders correctly in a real browser
@@ -298,6 +334,198 @@ async function executeWaitFor(
   }
 }
 
+async function executeReadPage(
+  page: PlaywrightPage,
+  args: z.infer<typeof readPageAction>,
+): Promise<string> {
+  const mode = args.mode ?? "interactive";
+  const depth = Math.min(args.depth ?? 5, 20);
+
+  const tree = await page.evaluate(
+    ({ mode, depth }: { mode: string; depth: number }) => {
+      interface RefNode {
+        ref: number;
+        tag: string;
+        role?: string;
+        text?: string;
+        href?: string;
+        type?: string;
+        placeholder?: string;
+        checked?: boolean;
+        children?: RefNode[];
+      }
+
+      let refCounter = 0;
+      const interactiveTags = new Set([
+        "A",
+        "BUTTON",
+        "INPUT",
+        "SELECT",
+        "TEXTAREA",
+        "DETAILS",
+        "SUMMARY",
+      ]);
+      const interactiveRoles = new Set([
+        "button",
+        "link",
+        "textbox",
+        "combobox",
+        "checkbox",
+        "radio",
+        "tab",
+        "menuitem",
+        "option",
+      ]);
+
+      function walk(el: Element, currentDepth: number): RefNode | null {
+        if (currentDepth > depth) return null;
+
+        const tag = el.tagName?.toLowerCase();
+        const role = el.getAttribute("role");
+        const isVisible =
+          el instanceof HTMLElement &&
+          el.offsetParent !== null &&
+          getComputedStyle(el).display !== "none";
+
+        if (!isVisible && mode === "viewport") return null;
+
+        const isInteractive =
+          interactiveTags.has(el.tagName) ||
+          (role && interactiveRoles.has(role));
+
+        if (mode === "interactive" && !isInteractive) {
+          // Still walk children to find nested interactive elements
+          const children: RefNode[] = [];
+          for (const child of el.children) {
+            const childNode = walk(child, currentDepth + 1);
+            if (childNode) children.push(childNode);
+          }
+          return children.length > 0 ? { ref: -1, tag, children } : null;
+        }
+
+        const ref = ++refCounter;
+        const node: RefNode = { ref, tag };
+
+        if (role) node.role = role;
+        if (el instanceof HTMLElement) {
+          const text = el.innerText?.trim().slice(0, 100);
+          if (text) node.text = text;
+        }
+        if (el.hasAttribute("href"))
+          node.href = el.getAttribute("href") ?? undefined;
+        if (el.hasAttribute("type"))
+          node.type = el.getAttribute("type") ?? undefined;
+        if (el.hasAttribute("placeholder"))
+          node.placeholder = el.getAttribute("placeholder") ?? undefined;
+        if (el instanceof HTMLInputElement)
+          node.checked = el.checked;
+
+        const children: RefNode[] = [];
+        for (const child of el.children) {
+          const childNode = walk(child, currentDepth + 1);
+          if (childNode) children.push(childNode);
+        }
+        if (children.length > 0) node.children = children;
+
+        return node;
+      }
+
+      const body = document.body;
+      const result: RefNode[] = [];
+      for (const child of body.children) {
+        const node = walk(child, 0);
+        if (node) result.push(node);
+      }
+      return { refs: refCounter, tree: result };
+    },
+    { mode, depth },
+  );
+
+  const formatNode = (node: any, indent = 0): string => {
+    const pad = "  ".repeat(indent);
+    const parts = [`[${node.ref}] <${node.tag}>`];
+    if (node.role) parts.push(`role="${node.role}"`);
+    if (node.text) parts.push(`"${node.text.slice(0, 60)}"`);
+    if (node.href) parts.push(`href="${node.href}"`);
+    if (node.type) parts.push(`type="${node.type}"`);
+    if (node.placeholder) parts.push(`placeholder="${node.placeholder}"`);
+    if (node.checked !== undefined) parts.push(`checked=${node.checked}`);
+
+    let result = pad + parts.join(" ");
+    if (node.children) {
+      for (const child of node.children) {
+        result += "\n" + formatNode(child, indent + 1);
+      }
+    }
+    return result;
+  };
+
+  const lines = tree.tree.map((n) => formatNode(n)).join("\n");
+  return `Page structure (${tree.refs} interactive elements, mode: ${mode}):\n\n${lines}`;
+}
+
+async function executeBatch(
+  page: PlaywrightPage,
+  args: z.infer<typeof batchAction>,
+  ctx: AgentContext,
+): Promise<string> {
+  const results: string[] = [];
+
+  for (let i = 0; i < args.steps.length; i++) {
+    const step = args.steps[i];
+    const actionName = step.action;
+    const params = step.params;
+
+    ctx.onXmlStream(
+      `<dyad-browser action="batch" step="${i + 1}/${args.steps.length}" subaction="${escapeXmlAttr(actionName)}">`,
+    );
+
+    try {
+      let result: string;
+      switch (actionName) {
+        case "navigate":
+          result = await executeNavigate(page, params as any);
+          break;
+        case "click":
+          result = await executeClick(page, params as any);
+          break;
+        case "type":
+          result = await executeType(page, params as any);
+          break;
+        case "scroll":
+          result = await executeScroll(page, params as any);
+          break;
+        case "screenshot":
+          result = await executeScreenshot(page, params as any, ctx);
+          break;
+        case "get_text":
+          result = await executeGetText(page, params as any);
+          break;
+        case "wait_for":
+          result = await executeWaitFor(page, params as any);
+          break;
+        case "read_page":
+          result = await executeReadPage(page, params as any);
+          break;
+        default:
+          result = `Unknown action: ${actionName}`;
+      }
+      results.push(`[${i + 1}/${args.steps.length}] ${actionName}: ${result}`);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      results.push(`[${i + 1}/${args.steps.length}] ${actionName}: ERROR - ${msg}`);
+      // Continue with remaining steps
+    }
+
+    // Random delay between actions (100-200ms) to appear more natural
+    if (i < args.steps.length - 1) {
+      await page.waitForTimeout(100 + Math.random() * 100);
+    }
+  }
+
+  return results.join("\n");
+}
+
 // ============================================================================
 // Tool Definition
 // ============================================================================
@@ -327,6 +555,10 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         return `Get text from: "${args.selector}"`;
       case "wait_for":
         return `Wait for element: "${args.selector}"`;
+      case "read_page":
+        return `Read page structure (${args.mode ?? "interactive"} mode)`;
+      case "batch":
+        return `Execute ${args.steps.length} browser actions sequentially`;
     }
   },
 
@@ -354,6 +586,10 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
       case "wait_for":
         if (!args.selector) return undefined;
         return `<dyad-browser action="wait_for" selector="${escapeXmlAttr(args.selector)}">`;
+      case "read_page":
+        return `<dyad-browser action="read_page" mode="${escapeXmlAttr(args.mode ?? "interactive")}">`;
+      case "batch":
+        return `<dyad-browser action="batch" steps="${args.steps?.length ?? 0}">`;
     }
   },
 
@@ -383,6 +619,12 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         break;
       case "wait_for":
         initialXml = `<dyad-browser action="wait_for" selector="${escapeXmlAttr(args.selector)}">`;
+        break;
+      case "read_page":
+        initialXml = `<dyad-browser action="read_page" mode="${escapeXmlAttr(args.mode ?? "interactive")}">`;
+        break;
+      case "batch":
+        initialXml = `<dyad-browser action="batch" steps="${args.steps.length}">`;
         break;
     }
 
@@ -416,6 +658,12 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
           break;
         case "wait_for":
           result = await executeWaitFor(page, args);
+          break;
+        case "read_page":
+          result = await executeReadPage(page, args);
+          break;
+        case "batch":
+          result = await executeBatch(page, args, ctx);
           break;
       }
 
