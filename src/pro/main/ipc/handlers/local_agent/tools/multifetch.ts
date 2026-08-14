@@ -14,6 +14,7 @@ import { z } from "zod";
 import { ToolDefinition, AgentContext, escapeXmlContent } from "./types";
 import { assertNotPrivateIp } from "./network_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { smartTruncateSafe } from "./text_utils";
 import log from "electron-log";
 
 const logger = log.scope("multifetch");
@@ -150,13 +151,7 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
           }
 
           const contentType = response.headers.get("content-type") || "";
-          const MAX_RESPONSE_BYTES = 500_000;
-          const buffer = await response.arrayBuffer();
-          let content = new TextDecoder().decode(
-            buffer.byteLength > MAX_RESPONSE_BYTES
-              ? buffer.slice(0, MAX_RESPONSE_BYTES)
-              : buffer,
-          );
+          let content = smartTruncateSafe(await response.text(), 500_000);
 
           if (extract_text && contentType.includes("text/html")) {
             // Simple HTML to text extraction

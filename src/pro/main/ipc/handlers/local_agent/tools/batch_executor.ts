@@ -16,6 +16,7 @@ import { resolveTargetAppPath } from "./resolve_app_context";
 import { resolveDirectoryWithinAppPath } from "./path_safety";
 import { assertNotPrivateIp } from "./network_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { smartTruncateSafe } from "./text_utils";
 import log from "electron-log";
 
 const logger = log.scope("batch_executor");
@@ -221,26 +222,7 @@ export const batchExecutorTool: ToolDefinition<
             const timeout = setTimeout(() => controller.abort(), 15_000);
             try {
               const response = await fetch(url, { signal: controller.signal });
-              const MAX_FETCH_BYTES = 200_000;
-              const reader = response.body?.getReader();
-              if (reader) {
-                const chunks: Uint8Array[] = [];
-                let received = 0;
-                for (;;) {
-                  const { done, value } = await reader.read();
-                  if (done) break;
-                  chunks.push(value);
-                  received += value.length;
-                  if (received >= MAX_FETCH_BYTES) break;
-                }
-                reader.cancel();
-                const decoder = new TextDecoder();
-                output = decoder
-                  .decode(Buffer.concat(chunks))
-                  .slice(0, MAX_FETCH_BYTES);
-              } else {
-                output = (await response.text()).slice(0, MAX_FETCH_BYTES);
-              }
+              output = smartTruncateSafe(await response.text(), 500_000);
             } finally {
               clearTimeout(timeout);
             }
@@ -260,13 +242,7 @@ export const batchExecutorTool: ToolDefinition<
         }
 
         completed.add(task.id);
-        // Truncate large outputs to prevent unbounded memory growth
-        const MAX_OUTPUT_PER_TASK = 200_000;
-        if (output.length > MAX_OUTPUT_PER_TASK) {
-          output =
-            output.slice(0, MAX_OUTPUT_PER_TASK) +
-            `\n\n... (truncated at ${MAX_OUTPUT_PER_TASK} bytes)`;
-        }
+        output = smartTruncateSafe(output, 500_000);
         results.push({ id: task.id, status: "success", output });
 
         ctx.onXmlStream(

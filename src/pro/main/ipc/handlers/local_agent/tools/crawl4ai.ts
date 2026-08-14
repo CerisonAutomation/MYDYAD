@@ -7,6 +7,7 @@ import {
 } from "./types";
 import { assertNotPrivateIp } from "./network_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { smartTruncateSafe } from "./text_utils";
 import log from "electron-log";
 
 const logger = log.scope("crawl4ai");
@@ -77,13 +78,7 @@ async function fetchAndExtract(
     clearTimeout(timeout);
   }
 
-  const MAX_HTML_BYTES = 1_000_000;
-  const buffer = await response.arrayBuffer();
-  const html = new TextDecoder().decode(
-    buffer.byteLength > MAX_HTML_BYTES
-      ? buffer.slice(0, MAX_HTML_BYTES)
-      : buffer,
-  );
+  const html = smartTruncateSafe(await response.text(), 1_000_000);
 
   // Extract title
   const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);

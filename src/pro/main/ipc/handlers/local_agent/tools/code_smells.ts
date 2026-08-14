@@ -18,7 +18,6 @@ const logger = log.scope("code_smells");
 const DEFAULT_MAX_FILES = 1000;
 const MAX_MAX_FILES = 10000;
 const READ_TIMEOUT_MS = 5_000;
-const MAX_SMELLS_PER_FILE = 500;
 const TOTAL_TIMEOUT_MS = 120_000;
 
 const codeSmellsSchema = z.object({
@@ -629,18 +628,15 @@ function analyzeFile(filePath: string, content: string): SmellReport {
   // Simple pattern detectors
   smells.push(...detectSimpleSmells(lines, filePath));
 
-  // Cap per file
-  const cappedSmells = smells.slice(0, MAX_SMELLS_PER_FILE);
-
   // Build summary
   const summary: Record<string, number> = {};
-  for (const s of cappedSmells) {
+  for (const s of smells) {
     summary[s.smell] = (summary[s.smell] || 0) + 1;
   }
 
   // Calculate score
   let score = 100;
-  for (const s of cappedSmells) {
+  for (const s of smells) {
     switch (s.severity) {
       case "critical":
         score -= 15;
@@ -660,7 +656,7 @@ function analyzeFile(filePath: string, content: string): SmellReport {
   return {
     file: filePath,
     score: Math.max(0, score),
-    smells: cappedSmells,
+    smells: smells,
     summary,
   };
 }
