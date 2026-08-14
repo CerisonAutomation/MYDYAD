@@ -65,6 +65,15 @@ function PasteCallbackInput() {
 
   const handlePaste = async () => {
     if (!url.trim()) return;
+
+    // Auto-detect: if user pasted the callback URL, tell them what to do
+    if (url.includes("supabase-oauth.dyad.sh/api/connect-supabase/callback")) {
+      toast.info(
+        "That's the callback URL. After the server processes it, copy the dyad:// URL from your browser's address bar and paste that instead.",
+      );
+      return;
+    }
+
     setPastating(true);
     try {
       await ipc.supabase.pasteCallbackUrl({ url: url.trim() });
@@ -84,13 +93,13 @@ function PasteCallbackInput() {
   return (
     <div className="mt-2 flex flex-col gap-2">
       <Label className="text-xs text-muted-foreground">
-        Paste the dyad:// URL from your browser after authorizing:
+        After authorizing, copy the <b>redirect URL</b> from your browser:
       </Label>
       <div className="flex gap-2">
         <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="dyad://supabase-oauth-return?token=..."
+          placeholder="dyad://supabase-oauth-return?token=... (NOT the callback URL)"
           className="text-xs font-mono"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -107,6 +116,69 @@ function PasteCallbackInput() {
           {pasting ? "Connecting..." : "Paste"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function PatInput() {
+  const [token, setToken] = useState("");
+  const [connecting, setConnecting] = useState(false);
+
+  const handleConnect = async () => {
+    if (!token.trim()) return;
+    setConnecting(true);
+    try {
+      await ipc.supabase.connectWithPat({ token: token.trim() });
+      toast.success("Supabase connected via personal access token!");
+      setToken("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to connect with token",
+      );
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 flex flex-col gap-2">
+      <Label className="text-xs text-muted-foreground">
+        Enter your Supabase personal access token (
+        <a
+          href="https://supabase.com/dashboard/account/tokens"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground"
+        >
+          create one here
+        </a>
+        ):
+      </Label>
+      <div className="flex gap-2">
+        <Input
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          placeholder="sbp_..."
+          className="text-xs font-mono"
+          type="password"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              void handleConnect();
+            }
+          }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void handleConnect()}
+          disabled={connecting || !token.trim()}
+        >
+          {connecting ? "Connecting..." : "Connect"}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Bypasses OAuth — use when browser redirect isn't working.
+      </p>
     </div>
   );
 }
@@ -665,9 +737,19 @@ export function SupabaseConnector({ appId }: { appId: number }) {
       <div className="border-t pt-3">
         <details className="group">
           <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-            Having trouble connecting? Paste callback URL manually
+            Redirect not working? Paste the dyad:// URL manually
           </summary>
           <PasteCallbackInput />
+        </details>
+      </div>
+
+      {/* Direct PAT connection (bypasses OAuth) */}
+      <div className="border-t pt-3">
+        <details className="group">
+          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+            Or connect with a personal access token
+          </summary>
+          <PatInput />
         </details>
       </div>
     </div>

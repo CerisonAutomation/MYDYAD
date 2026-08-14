@@ -129,6 +129,11 @@ async function refreshSupabaseTokenOnce(): Promise<void> {
   const settings = readSettings();
   const refreshToken = settings.supabase?.refreshToken?.value;
 
+  // PATs (personal access tokens) don't expire and don't need refresh
+  if ((settings.supabase as any)?.isPat) {
+    return;
+  }
+
   if (!isTokenExpired(settings.supabase?.expiresIn)) {
     return;
   }

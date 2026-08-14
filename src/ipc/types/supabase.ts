@@ -169,6 +169,15 @@ export const supabaseContracts = {
     output: z.void(),
   }),
 
+  // Connect directly with a Supabase personal access token (bypasses OAuth)
+  connectWithPat: defineContract({
+    channel: "supabase:connect-with-pat",
+    input: z.object({
+      token: z.string().min(1, "Token is required"),
+    }),
+    output: z.void(),
+  }),
+
   // Manual paste of dyad:// deep link URL (workaround for dev mode redirect issues)
   pasteCallbackUrl: defineContract({
     channel: "supabase:paste-callback-url",

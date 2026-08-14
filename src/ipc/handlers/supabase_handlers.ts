@@ -414,6 +414,69 @@ export function registerSupabaseHandlers() {
     },
   );
 
+  // Connect directly with a Supabase personal access token
+  createTypedHandler(
+    supabaseContracts.connectWithPat,
+    async (_event, { token }) => {
+      // Validate the PAT by calling the Management API
+      const response = await fetch(
+        "https://api.supabase.com/v1/organizations",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (!response.ok) {
+        throw new DyadError(
+          "Invalid personal access token. Generate one at https://supabase.com/dashboard/account/tokens",
+          DyadErrorKind.Validation,
+        );
+      }
+
+      const orgs = (await response.json()) as Array<{
+        id: string;
+        slug: string;
+        name: string;
+      }>;
+
+      if (orgs.length === 0) {
+        throw new DyadError(
+          "No organizations found for this token",
+          DyadErrorKind.NotFound,
+        );
+      }
+
+      // Save PAT as the access token for each organization
+      // PATs don't expire and don't need refresh tokens
+      const settings = readSettings();
+      const existingOrgs = settings.supabase?.organizations ?? {};
+
+      const newOrgs: Record<string, any> = { ...existingOrgs };
+      for (const org of orgs) {
+        newOrgs[org.slug] = {
+          accessToken: { value: token },
+          // PATs have no refresh token — mark as PAT so refresh is skipped
+          refreshToken: { value: "" },
+          expiresIn: 365 * 24 * 60 * 60, // 1 year — PATs don't expire
+          isPat: true,
+          name: org.name,
+        };
+      }
+
+      writeSettings({
+        supabase: {
+          ...settings.supabase,
+          organizations: newOrgs,
+          tokenTimestamp: Math.floor(Date.now() / 1000),
+        },
+      });
+
+      logger.log(
+        `Connected ${orgs.length} Supabase organization(s) via personal access token`,
+      );
+    },
+  );
+
   // Manual paste of dyad:// deep link URL (workaround for dev mode redirect issues)
   createTypedHandler(
     supabaseContracts.pasteCallbackUrl,
