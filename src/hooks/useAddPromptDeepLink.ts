@@ -12,8 +12,7 @@ export function useAddPromptDeepLink() {
 
   useEffect(() => {
     if (lastDeepLink?.type === "add-prompt") {
-      const deepLink = lastDeepLink as unknown as AddPromptDeepLinkData;
-      const payload = deepLink.payload;
+      const payload = (lastDeepLink as AddPromptDeepLinkData).payload;
       showInfo(`Prefilled prompt: ${payload.title}`);
       setPrefillData({
         title: payload.title,
