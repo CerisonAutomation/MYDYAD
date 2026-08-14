@@ -282,6 +282,11 @@ async function refreshSupabaseTokenForOrganization(
     );
   }
 
+  // PATs don't expire and don't need refresh
+  if ((org as any).isPat) {
+    return;
+  }
+
   if (!isOrganizationTokenExpired(org)) {
     return;
   }
@@ -376,8 +381,8 @@ export async function getSupabaseClientForOrganization(
     );
   }
 
-  // Check if token needs refreshing
-  if (isOrganizationTokenExpired(org)) {
+  // PATs don't expire and don't need refresh
+  if (!(org as any).isPat && isOrganizationTokenExpired(org)) {
     await withLock(`refresh-supabase-token-${organizationSlug}`, () =>
       refreshSupabaseTokenForOrganization(organizationSlug),
     );

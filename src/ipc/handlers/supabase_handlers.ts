@@ -458,6 +458,7 @@ export function registerSupabaseHandlers() {
           // PATs have no refresh token — mark as PAT so refresh is skipped
           refreshToken: { value: "" },
           expiresIn: 365 * 24 * 60 * 60, // 1 year — PATs don't expire
+          tokenTimestamp: Math.floor(Date.now() / 1000),
           isPat: true,
           name: org.name,
         };

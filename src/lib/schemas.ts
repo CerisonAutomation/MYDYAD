@@ -205,7 +205,7 @@ export const SupabaseOrganizationCredentialsSchema = z.object({
   accessToken: SecretSchema,
   refreshToken: SecretSchema,
   expiresIn: z.number(),
-  tokenTimestamp: z.number(),
+  tokenTimestamp: z.number().optional(),
 });
 export type SupabaseOrganizationCredentials = z.infer<
   typeof SupabaseOrganizationCredentialsSchema
