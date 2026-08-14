@@ -77,7 +77,7 @@ async function fetchAndExtract(
     clearTimeout(timeout);
   }
 
-  const MAX_HTML_BYTES = 200_000;
+  const MAX_HTML_BYTES = 1_000_000;
   const buffer = await response.arrayBuffer();
   const html = new TextDecoder().decode(
     buffer.byteLength > MAX_HTML_BYTES

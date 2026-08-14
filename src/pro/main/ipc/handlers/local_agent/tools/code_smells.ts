@@ -18,8 +18,8 @@ const logger = log.scope("code_smells");
 const DEFAULT_MAX_FILES = 1000;
 const MAX_MAX_FILES = 10000;
 const READ_TIMEOUT_MS = 5_000;
-const MAX_SMELLS_PER_FILE = 200;
-const TOTAL_TIMEOUT_MS = 60_000;
+const MAX_SMELLS_PER_FILE = 500;
+const TOTAL_TIMEOUT_MS = 120_000;
 
 const codeSmellsSchema = z.object({
   app_name: z

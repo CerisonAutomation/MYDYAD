@@ -221,7 +221,7 @@ export const batchExecutorTool: ToolDefinition<
             const timeout = setTimeout(() => controller.abort(), 15_000);
             try {
               const response = await fetch(url, { signal: controller.signal });
-              const MAX_FETCH_BYTES = 50_000;
+              const MAX_FETCH_BYTES = 200_000;
               const reader = response.body?.getReader();
               if (reader) {
                 const chunks: Uint8Array[] = [];
@@ -261,7 +261,7 @@ export const batchExecutorTool: ToolDefinition<
 
         completed.add(task.id);
         // Truncate large outputs to prevent unbounded memory growth
-        const MAX_OUTPUT_PER_TASK = 50_000;
+        const MAX_OUTPUT_PER_TASK = 200_000;
         if (output.length > MAX_OUTPUT_PER_TASK) {
           output =
             output.slice(0, MAX_OUTPUT_PER_TASK) +
