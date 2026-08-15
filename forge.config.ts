@@ -108,6 +108,19 @@ const ignore = (file: string) => {
   if (file.startsWith("/node_modules/@typescript/typescript6")) {
     return false;
   }
+  // Exclude build artifacts and runtime data from packaging
+  if (file.startsWith("/userData") || file.startsWith("\\userData")) {
+    return false;
+  }
+  if (file.startsWith("/out") || file.startsWith("\\out")) {
+    return false;
+  }
+  if (file.startsWith("/release") || file.startsWith("\\release")) {
+    return false;
+  }
+  if (file.startsWith("/.vite") || file.startsWith("\\.vite")) {
+    return false;
+  }
   if (file.startsWith("/node_modules/@typescript/old")) {
     return false;
   }

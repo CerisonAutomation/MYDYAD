@@ -478,6 +478,88 @@ export function registerSupabaseHandlers() {
     },
   );
 
+  // Unified connection: accepts PAT (sbp_...) or project URL (https://xxx.supabase.co)
+  createTypedHandler(
+    supabaseContracts.connectWithCredential,
+    async (_event, { credential }) => {
+      const trimmed = credential.trim();
+
+      // Detect format: PAT (sbp_...) or URL (https://xxx.supabase.co)
+      if (trimmed.startsWith("sbp_")) {
+        // PAT format — delegate to existing handler
+        const patHandler = supabaseContracts.connectWithPat;
+        await fetch("https://api.supabase.com/v1/organizations", {
+          headers: { Authorization: `Bearer ${trimmed}` },
+        }).then(async (response) => {
+          if (!response.ok) {
+            throw new DyadError(
+              "Invalid personal access token. Generate one at https://supabase.com/dashboard/account/tokens",
+              DyadErrorKind.Validation,
+            );
+          }
+          const orgs = (await response.json()) as Array<{
+            id: string;
+            slug: string;
+            name: string;
+          }>;
+          if (orgs.length === 0) {
+            throw new DyadError(
+              "No organizations found for this token",
+              DyadErrorKind.NotFound,
+            );
+          }
+          const settings = readSettings();
+          const existingOrgs = settings.supabase?.organizations ?? {};
+          const newOrgs: Record<string, any> = { ...existingOrgs };
+          for (const org of orgs) {
+            newOrgs[org.slug] = {
+              accessToken: { value: trimmed },
+              refreshToken: { value: "" },
+              expiresIn: 365 * 24 * 60 * 60,
+              tokenTimestamp: Math.floor(Date.now() / 1000),
+              isPat: true,
+              name: org.name,
+            };
+          }
+          writeSettings({
+            supabase: {
+              ...settings.supabase,
+              organizations: newOrgs,
+              tokenTimestamp: Math.floor(Date.now() / 1000),
+            },
+          });
+          logger.log(
+            `Connected ${orgs.length} Supabase organization(s) via credential (PAT)`,
+          );
+        });
+      } else if (
+        trimmed.startsWith("https://") &&
+        trimmed.includes(".supabase.co")
+      ) {
+        // URL format — extract project ID and construct Management API call
+        const urlMatch = trimmed.match(/https:\/\/([^.]+)\.supabase\.co/);
+        if (!urlMatch) {
+          throw new DyadError(
+            "Invalid Supabase URL format. Expected: https://<project-id>.supabase.co",
+            DyadErrorKind.Validation,
+          );
+        }
+        // URL-only connection requires a PAT to access the Management API
+        // Inform the user they need to provide a PAT for full functionality
+        throw new DyadError(
+          "Project URL detected. To connect, use a Personal Access Token (sbp_...) instead. " +
+            "Create one at https://supabase.com/dashboard/account/tokens",
+          DyadErrorKind.Validation,
+        );
+      } else {
+        throw new DyadError(
+          "Invalid credential format. Use a Supabase PAT (sbp_...) or project URL (https://xxx.supabase.co)",
+          DyadErrorKind.Validation,
+        );
+      }
+    },
+  );
+
   // Manual paste of dyad:// deep link URL (workaround for dev mode redirect issues)
   createTypedHandler(
     supabaseContracts.pasteCallbackUrl,

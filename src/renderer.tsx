@@ -17,7 +17,12 @@ try {
       try {
         originalWriteFn(args);
       } catch (e: any) {
-        if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF" || e?.code === "EPIPE") {
+        if (
+          e?.code === "EIO" ||
+          e?.code === "ENOTTY" ||
+          e?.code === "EBADF" ||
+          e?.code === "EPIPE"
+        ) {
           return;
         }
         throw e;

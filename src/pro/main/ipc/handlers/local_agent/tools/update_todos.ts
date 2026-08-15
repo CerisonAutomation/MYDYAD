@@ -18,8 +18,10 @@ const todoSchema = z.object({
 const updateTodosSchema = z.object({
   merge: z
     .boolean()
+    .optional()
+    .default(false)
     .describe(
-      "Whether to merge the todos with the existing todos. If true, the todos will be merged into the existing todos based on the id field. You can leave unchanged properties undefined. If false, the new todos will replace the existing todos.",
+      "Whether to merge the todos with the existing todos. If true, the todos will be merged into the existing todos based on the id field. You can leave unchanged properties undefined. If false (default), the new todos will replace the existing todos.",
     ),
   todos: z
     .array(todoSchema)

@@ -24,14 +24,8 @@ const astGrepSchema = z.object({
   language: z
     .enum(["js", "ts", "jsx", "tsx", "py", "rust", "go", "java", "c", "cpp"])
     .describe("Programming language"),
-  app_name: z
-    .string()
-    .optional()
-    .describe("Optional app name to search in"),
-  directory: z
-    .string()
-    .optional()
-    .describe("Subdirectory to search in"),
+  app_name: z.string().optional().describe("Optional app name to search in"),
+  directory: z.string().optional().describe("Subdirectory to search in"),
   file_pattern: z
     .string()
     .optional()
@@ -90,8 +84,10 @@ Languages: JavaScript, TypeScript, Python, Rust, Go, Java, C/C++.`,
       const cmdArgs = [
         "ast-grep",
         "run",
-        "--pattern", args.pattern,
-        "--lang", args.language,
+        "--pattern",
+        args.pattern,
+        "--lang",
+        args.language,
         "--json",
         searchDir,
       ];

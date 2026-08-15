@@ -222,6 +222,112 @@ async function handleSaveVercelToken(
   }
 }
 
+// --- IPC Handler: Add Vercel Account with Token (multi-account support) ---
+async function handleAddVercelAccount(
+  _event: IpcMainInvokeEvent,
+  { token, name }: { token: string; name?: string },
+): Promise<void> {
+  logger.debug("Adding Vercel account with token");
+
+  if (!token || token.trim() === "") {
+    throw new DyadError("Access token is required.", DyadErrorKind.Auth);
+  }
+
+  try {
+    // Validate the token by making a test API call
+    const v = createVercelClient(token.trim());
+    const authUser = await v.user.getAuthUser();
+    if (!authUser || !authUser.user) {
+      throw new Error(
+        "Invalid access token. Please check your token and try again.",
+      );
+    }
+
+    const user = authUser.user;
+    const accountName = name || user.username || user.email || "Vercel Account";
+
+    // Store in the accounts map
+    const settings = readSettings();
+    const existingAccounts = settings.vercelAccounts ?? {};
+
+    writeSettings({
+      vercelAccounts: {
+        ...existingAccounts,
+        [user.username ?? user.email ?? accountName]: {
+          accessToken: {
+            value: token.trim(),
+          },
+          name: accountName,
+          email: user.email,
+        },
+      },
+    });
+
+    // Also set as the default access token if none exists
+    if (!settings.vercelAccessToken?.value) {
+      writeSettings({
+        vercelAccessToken: {
+          value: token.trim(),
+        },
+      });
+    }
+
+    logger.log(
+      `Successfully added Vercel account: ${accountName} (${user.email})`,
+    );
+  } catch (error: unknown) {
+    logger.error("Error adding Vercel account:", error);
+    throw new DyadError(
+      `Failed to add Vercel account: ${error instanceof Error ? error.message : String(error)}`,
+      DyadErrorKind.Auth,
+    );
+  }
+}
+
+// --- IPC Handler: List Vercel Accounts ---
+async function handleListVercelAccounts(): Promise<
+  Array<{ name: string; email?: string; key: string }>
+> {
+  const settings = readSettings();
+  const accounts = settings.vercelAccounts ?? {};
+  return Object.entries(accounts).map(([key, account]) => ({
+    key,
+    name: account.name || key,
+    email: account.email,
+  }));
+}
+
+// --- IPC Handler: Remove Vercel Account ---
+async function handleRemoveVercelAccount(
+  _event: IpcMainInvokeEvent,
+  { key }: { key: string },
+): Promise<void> {
+  const settings = readSettings();
+  const accounts = settings.vercelAccounts ?? {};
+  delete accounts[key];
+  writeSettings({ vercelAccounts: accounts });
+  logger.log(`Removed Vercel account: ${key}`);
+}
+
+// --- IPC Handler: Switch Vercel Account ---
+async function handleSwitchVercelAccount(
+  _event: IpcMainInvokeEvent,
+  { key }: { key: string },
+): Promise<void> {
+  const settings = readSettings();
+  const accounts = settings.vercelAccounts ?? {};
+  const account = accounts[key];
+  if (!account) {
+    throw new DyadError(`Account not found: ${key}`, DyadErrorKind.NotFound);
+  }
+  writeSettings({
+    vercelAccessToken: {
+      value: account.accessToken.value,
+    },
+  });
+  logger.log(`Switched to Vercel account: ${key}`);
+}
+
 // --- Vercel List Projects Handler ---
 async function handleListVercelProjects(): Promise<VercelProject[]> {
   try {
@@ -291,7 +397,8 @@ async function handleIsProjectAvailable(
   } catch (err: unknown) {
     return {
       available: false,
-      error: (err instanceof Error ? err.message : undefined) || "Unknown error",
+      error:
+        (err instanceof Error ? err.message : undefined) || "Unknown error",
     };
   }
 }
@@ -418,7 +525,9 @@ async function handleCreateProject(
         logger.warn("First deployment failed: No deployment URL returned");
       }
     } catch (deployError: unknown) {
-      logger.warn(`First deployment failed with error: ${deployError instanceof Error ? deployError.message : String(deployError)}`);
+      logger.warn(
+        `First deployment failed with error: ${deployError instanceof Error ? deployError.message : String(deployError)}`,
+      );
       // Don't throw here - project creation was successful, deployment failure is non-critical
     }
 
@@ -598,6 +707,22 @@ export function registerVercelHandlers() {
   // DO NOT LOG this handler because tokens are sensitive
   createTypedHandler(vercelContracts.saveToken, async (event, params) => {
     await handleSaveVercelToken(event, params);
+  });
+
+  createTypedHandler(vercelContracts.addAccount, async (event, params) => {
+    await handleAddVercelAccount(event, params);
+  });
+
+  createTypedHandler(vercelContracts.listAccounts, async () => {
+    return handleListVercelAccounts();
+  });
+
+  createTypedHandler(vercelContracts.removeAccount, async (event, params) => {
+    await handleRemoveVercelAccount(event, params);
+  });
+
+  createTypedHandler(vercelContracts.switchAccount, async (event, params) => {
+    await handleSwitchVercelAccount(event, params);
   });
 
   createTypedHandler(vercelContracts.listProjects, async () => {

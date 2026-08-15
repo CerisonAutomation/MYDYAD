@@ -165,7 +165,10 @@ export async function getNeonClient(): Promise<Api<unknown>> {
           ],
         },
       }),
-      createProjectBranch: async (projectId: string, params: BranchCreateRequest) => {
+      createProjectBranch: async (
+        projectId: string,
+        params: BranchCreateRequest,
+      ) => {
         const branchId = `test-${params.branch?.name || "child"}-branch-id`;
         return {
           data: {

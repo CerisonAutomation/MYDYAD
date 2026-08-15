@@ -455,3 +455,178 @@ function buildNotReadyMessage(url: string, ready: PreviewReadyResult): string {
     `app's dev-server logs, restart it if needed, then retry.`
   );
 }
+
+// ============================================================================
+// Event Blocking & Visual Overlay (from comet-extract patterns)
+// ============================================================================
+
+/**
+ * Block all user input events on a page during agent browser operations.
+ * Prevents race conditions and interference when the agent is driving the browser.
+ * Based on comet-extract's event blocking system.
+ */
+export async function blockUserInput(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const BLOCKED_EVENTS = [
+      "mousedown",
+      "mouseup",
+      "click",
+      "dblclick",
+      "contextmenu",
+      "keydown",
+      "keyup",
+      "keypress",
+      "touchstart",
+      "touchend",
+      "touchmove",
+      "pointerdown",
+      "pointerup",
+      "pointermove",
+      "dragstart",
+      "drag",
+      "dragend",
+      "focus",
+      "blur",
+      "input",
+      "change",
+      "submit",
+    ];
+
+    // Store original handlers for cleanup
+    (window as any).__dyadBlockedHandlers = new Map();
+
+    for (const eventType of BLOCKED_EVENTS) {
+      const handler = (e: Event) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopPropagation();
+      };
+      (window as any).__dyadBlockedHandlers.set(eventType, handler);
+      document.addEventListener(eventType, handler, {
+        capture: true,
+        passive: false,
+      });
+    }
+
+    // Show visual indicator
+    document.documentElement.style.cursor = "progress";
+    document.documentElement.style.setProperty("--dyad-agent-active", "1");
+  });
+}
+
+/**
+ * Unblock all user input events on a page after agent browser operations complete.
+ */
+export async function unblockUserInput(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const handlers = (window as any).__dyadBlockedHandlers;
+    if (handlers) {
+      for (const [eventType, handler] of handlers) {
+        document.removeEventListener(eventType, handler, {
+          capture: true,
+        } as any);
+      }
+      handlers.clear();
+      delete (window as any).__dyadBlockedHandlers;
+    }
+
+    document.documentElement.style.cursor = "";
+    document.documentElement.style.removeProperty("--dyad-agent-active");
+  });
+}
+
+/**
+ * Show a visual overlay on the page indicating agent activity.
+ * Based on comet-extract's animated gradient border overlay.
+ */
+export async function showAgentOverlay(
+  page: Page,
+  status = "Working...",
+): Promise<void> {
+  await page.evaluate((statusText) => {
+    // Remove existing overlay
+    const existing = document.getElementById("dyad-agent-overlay");
+    if (existing) existing.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "dyad-agent-overlay";
+    overlay.innerHTML = `
+      <style>
+        #dyad-agent-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          pointer-events: none;
+          z-index: 999999;
+          animation: dyad-fade-in 300ms ease-out;
+        }
+        @keyframes dyad-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        #dyad-agent-border {
+          position: absolute;
+          inset: 0;
+          border: 3px solid transparent;
+          border-image: conic-gradient(from var(--a, 0deg), #3b82f6, #8b5cf6, #ec4899, #f59e0b, #3b82f6) 1;
+          animation: dyad-rotate-border 2s linear infinite;
+        }
+        @keyframes dyad-rotate-border {
+          from { --a: 0deg; }
+          to { --a: 360deg; }
+        }
+        #dyad-agent-status {
+          position: fixed;
+          bottom: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(15, 23, 42, 0.9);
+          color: #f8fafc;
+          padding: 8px 16px;
+          border-radius: 9999px;
+          font-size: 13px;
+          font-family: system-ui, sans-serif;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          backdrop-filter: blur(8px);
+          pointer-events: auto;
+        }
+        #dyad-agent-dot {
+          width: 8px; height: 8px;
+          background: #3b82f6;
+          border-radius: 50%;
+          animation: dyad-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes dyad-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.3); }
+        }
+        @property --a {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
+      </style>
+      <div id="dyad-agent-border"></div>
+      <div id="dyad-agent-status">
+        <div id="dyad-agent-dot"></div>
+        <span>${statusText}</span>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }, status);
+}
+
+/**
+ * Remove the agent activity overlay.
+ */
+export async function hideAgentOverlay(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const overlay = document.getElementById("dyad-agent-overlay");
+    if (overlay) {
+      overlay.style.animation = "dyad-fade-in 300ms ease-out reverse";
+      setTimeout(() => overlay.remove(), 300);
+    }
+  });
+}

@@ -178,6 +178,20 @@ export const supabaseContracts = {
     output: z.void(),
   }),
 
+  // Unified connection: accepts PAT (sbp_...) or project URL (https://xxx.supabase.co)
+  connectWithCredential: defineContract({
+    channel: "supabase:connect-with-credential",
+    input: z.object({
+      credential: z
+        .string()
+        .min(1, "Credential is required")
+        .describe(
+          "Supabase PAT (sbp_...) or project URL (https://xxx.supabase.co)",
+        ),
+    }),
+    output: z.void(),
+  }),
+
   // Manual paste of dyad:// deep link URL (workaround for dev mode redirect issues)
   pasteCallbackUrl: defineContract({
     channel: "supabase:paste-callback-url",

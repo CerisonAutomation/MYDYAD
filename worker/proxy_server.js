@@ -416,10 +416,10 @@ function rewriteSetCookieHeaders(headers) {
 // forms (`:*`) are invalid syntax and trigger Chrome console warnings
 // ("frame-ancestors does not support the source expression").
 const PROXY_FRAME_ANCESTORS_CSP =
-  "frame-ancestors 'self' file: http://127.0.0.1 http://localhost http://[::1] https://*";
+  "frame-ancestors 'self' file: http://127.0.0.1 http://localhost https://*";
 
 const PROXY_SCRIPT_SRC_CSP =
-  "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://vercel.live; connect-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://vercel.live ws: wss:; frame-src 'self' https://* http://*;";
+  "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://cdn.jsdelivr.net https://fonts.googleapis.com https://vercel.live; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://vercel.live ws: wss:; frame-src 'self' https://* http://*;";
 
 function appendHeader(headers, name, value) {
   const lowerName = name.toLowerCase();
@@ -440,42 +440,15 @@ function appendHeader(headers, name, value) {
 }
 
 function applyProxyFrameAncestorsCsp(headers) {
-  // Replace the app's frame-ancestors directive with the proxy's version
-  // that includes both localhost and 127.0.0.1 origins.
-  // Also add unsafe-eval to script-src for React development mode and Monaco editor.
-  const existingCsp = headers["content-security-policy"];
-  if (existingCsp) {
-    const cspStr = Array.isArray(existingCsp) ? existingCsp[0] : existingCsp;
-    let replaced = cspStr;
+  // Replace the app's CSP directives with proxy-friendly versions.
+  // - frame-ancestors: allow iframe from localhost and 127.0.0.1
+  // - script-src: add blob: for Vite HMR workers + unsafe-eval for React dev mode
+  // - worker-src: allow blob: for Vite HMR workers
+  const proxyCsp = PROXY_SCRIPT_SRC_CSP + "; " + PROXY_FRAME_ANCESTORS_CSP;
 
-    // Add unsafe-eval to script-src if not present
-    if (!replaced.includes("unsafe-eval")) {
-      // Match script-src directive (everything after it until the next semicolon)
-      const scriptSrcMatch = replaced.match(/(script-src[^;]*)/);
-      if (scriptSrcMatch) {
-        const scriptSrcDirective = scriptSrcMatch[1];
-        const updatedScriptSrc = scriptSrcDirective + " 'unsafe-eval'";
-        replaced = replaced.replace(scriptSrcDirective, updatedScriptSrc);
-      }
-    }
-
-    // Remove frame-ancestors and add proxy version
-    replaced =
-      replaced
-        .replace(/frame-ancestors[^;]*;?/gi, "")
-        .trim()
-        .replace(/;\s*$/, "") +
-      "; " +
-      PROXY_FRAME_ANCESTORS_CSP;
-
-    headers["content-security-policy"] = replaced;
-    return headers;
-  }
-  return appendHeader(
-    headers,
-    "content-security-policy",
-    PROXY_FRAME_ANCESTORS_CSP,
-  );
+  // Always use our proxy CSP — it's comprehensive and safe for dev preview
+  headers["content-security-policy"] = proxyCsp;
+  return headers;
 }
 
 /* ----------------------------------------------------------------------- */
@@ -550,9 +523,24 @@ const server = http.createServer((clientReq, clientRes) => {
       contentType.toLowerCase().includes("text/html");
     const inject = wantsInjection && isHtml;
 
+    // Strip headers that prevent iframe embedding. The preview iframe loads
+    // from a different origin (proxy port) than the upstream dev server,
+    // so X-Frame-Options: SAMEORIGIN and restrictive CSP frame-ancestors
+    // would block the preview.
+    delete upRes.headers["x-frame-options"];
+    // Next.js 16.3+ sends COOP/COEP which also block iframe loading
+    delete upRes.headers["cross-origin-opener-policy"];
+    delete upRes.headers["cross-origin-embedder-policy"];
+    delete upRes.headers["cross-origin-resource-policy"];
+    // Strip the ENTIRE upstream CSP header — Electron's CSP handles all security.
+    // Without this, upstream CSPs (e.g. Next.js) block inline scripts, external
+    // resources, and iframe loading in the Dyad preview.
+    delete upRes.headers["content-security-policy"];
+      }
+    }
+
     if (!inject) {
       rewriteSetCookieHeaders(upRes.headers);
-      applyProxyFrameAncestorsCsp(upRes.headers);
       clientRes.writeHead(upRes.statusCode, upRes.headers);
       return void upRes.pipe(clientRes);
     }
@@ -583,7 +571,6 @@ const server = http.createServer((clientReq, clientRes) => {
         delete hdrs["expires"];
         hdrs["cache-control"] = "no-store, must-revalidate";
         rewriteSetCookieHeaders(hdrs);
-        applyProxyFrameAncestorsCsp(hdrs);
 
         clientRes.writeHead(upRes.statusCode, hdrs);
         clientRes.end(patched);

@@ -281,7 +281,8 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
       }
     } catch (error: unknown) {
       console.error("Error saving API key:", error);
-      const message = error instanceof Error ? error.message : "Failed to save API key.";
+      const message =
+        error instanceof Error ? error.message : "Failed to save API key.";
       setSaveError(message);
     } finally {
       setIsSaving(false);
@@ -340,7 +341,8 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
       // Optionally show a success message
     } catch (error: unknown) {
       console.error("Error deleting API key:", error);
-      const message = error instanceof Error ? error.message : "Failed to delete API key.";
+      const message =
+        error instanceof Error ? error.message : "Failed to delete API key.";
       setSaveError(message);
     } finally {
       setIsSaving(false);
@@ -355,7 +357,9 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
         enableDyadPro: enabled,
       });
     } catch (error: unknown) {
-      showError(`Error toggling Agent2 mode: ${error instanceof Error ? error.message : String(error)}`);
+      showError(
+        `Error toggling Agent2 mode: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setIsSaving(false);
     }

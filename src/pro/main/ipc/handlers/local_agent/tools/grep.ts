@@ -1,4 +1,5 @@
 import { z } from "zod";
+import Fuse from "fuse.js";
 import { spawn } from "node:child_process";
 import {
   ToolDefinition,
@@ -70,6 +71,12 @@ const grepSchema = z.object({
     .optional()
     .describe(
       `Maximum number of matches to return (default: ${DEFAULT_LIMIT}, max: ${MAX_LIMIT}). Use include_pattern to narrow results if limit is reached.`,
+    ),
+  fuzzy: z
+    .boolean()
+    .optional()
+    .describe(
+      "Use fuzzy matching instead of exact regex. Great for typo-tolerant searches and natural language queries (e.g. 'auth middleware' instead of 'auth.*middleware').",
     ),
 });
 
@@ -290,6 +297,111 @@ async function runRipgrep({
   });
 }
 
+/**
+ * Fuzzy search using Fuse.js — reads file contents and matches against query.
+ * Great for typo-tolerant searches and natural language queries.
+ */
+async function executeFuzzySearch(
+  args: z.infer<typeof grepSchema>,
+  ctx: AgentContext,
+  appPath: string,
+  limit: number,
+): Promise<string> {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+
+  // Collect files to search
+  const files: { path: string; content: string }[] = [];
+  const exts = new Set([
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".py",
+    ".go",
+    ".css",
+    ".html",
+    ".json",
+    ".md",
+    ".yaml",
+    ".yml",
+    ".sql",
+  ]);
+
+  async function walk(dir: string, depth = 0): Promise<void> {
+    if (depth > 8 || files.length > 500) return;
+    let entries: any[];
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (files.length > 500) break;
+      if (e.isDirectory()) {
+        if (
+          [
+            "node_modules",
+            ".git",
+            ".next",
+            "dist",
+            "out",
+            ".vite",
+            "build",
+            "coverage",
+          ].includes(e.name)
+        )
+          continue;
+        await walk(path.join(dir, e.name), depth + 1);
+      } else if (e.isFile() && exts.has(path.extname(e.name).toLowerCase())) {
+        try {
+          const content = await fs.readFile(path.join(dir, e.name), "utf-8");
+          // Store as lines for line-level matching
+          const lines = content.split("\n");
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].trim().length > 0) {
+              files.push({
+                path: path.relative(appPath, path.join(dir, e.name)),
+                content: lines[i].trim(),
+                _line: i + 1,
+              } as any);
+            }
+          }
+        } catch {
+          /* skip unreadable */
+        }
+      }
+    }
+  }
+
+  await walk(appPath);
+
+  // Fuzzy search with Fuse.js
+  const fuse = new Fuse(files, {
+    keys: ["content", "path"],
+    threshold: 0.4,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+    includeScore: true,
+  });
+
+  const results = fuse.search(args.query, { limit });
+
+  if (results.length === 0) {
+    return `No fuzzy matches found for "${args.query}".`;
+  }
+
+  const lines = results.map((r) => {
+    const f = r.item as any;
+    const score = ((1 - (r.score ?? 0)) * 100).toFixed(0);
+    return ` - ${f.path}:${f._line} (${score}%) — ${f.content.substring(0, 100)}`;
+  });
+
+  return `Found ${results.length} fuzzy match(es) for "${args.query}":\n${lines.join("\n")}`;
+}
+
 export const grepTool: ToolDefinition<z.infer<typeof grepSchema>> = {
   name: "grep",
   description: `Search for a regex pattern or exact literal text in the codebase using ripgrep.
@@ -336,6 +448,11 @@ export const grepTool: ToolDefinition<z.infer<typeof grepSchema>> = {
     const targetAppPath = resolveTargetAppPath(ctx, args.app_name);
     const includePatWasWildcard = args.include_pattern === "*";
     const limit = Math.min(args.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+
+    // Fuzzy mode: use Fuse.js for typo-tolerant, natural-language search
+    if (args.fuzzy) {
+      return await executeFuzzySearch(args, ctx, targetAppPath, limit);
+    }
 
     // `literal` is an explicit opt-in only: when set we search fixed strings,
     // otherwise the query is always treated as a regex (the historical

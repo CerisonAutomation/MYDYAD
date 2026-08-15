@@ -14,14 +14,13 @@ import { resolveTargetAppPath } from "./resolve_app_context";
 
 const treeSitterSchema = z.object({
   file_path: z.string().describe("File to analyze"),
-  app_name: z
-    .string()
-    .optional()
-    .describe("Optional app name to analyze"),
+  app_name: z.string().optional().describe("Optional app name to analyze"),
   query: z
     .string()
     .optional()
-    .describe("Optional tree-sitter query pattern (e.g. '(function_declaration name: (identifier) @name)')"),
+    .describe(
+      "Optional tree-sitter query pattern (e.g. '(function_declaration name: (identifier) @name)')",
+    ),
 });
 
 type TreeSitterArgs = z.infer<typeof treeSitterSchema>;
@@ -142,7 +141,8 @@ function analyzeNode(node: any, result: AnalysisResult, source: string): void {
         for (let j = 0; j < child.childCount; j++) {
           const method = child.child(j);
           if (method?.type === "method_definition") {
-            const methodName = method.childByFieldName?.("name")?.text || "<method>";
+            const methodName =
+              method.childByFieldName?.("name")?.text || "<method>";
             methods.push(methodName);
           }
         }
@@ -163,14 +163,22 @@ function analyzeNode(node: any, result: AnalysisResult, source: string): void {
   }
 
   // Exports
-  if (type === "export_statement" || type === "export_declaration" || type === "export") {
+  if (
+    type === "export_statement" ||
+    type === "export_declaration" ||
+    type === "export"
+  ) {
     const nameNode = node.childByFieldName?.("name");
     const name = nameNode?.text || "<default>";
     result.exports.push({ name, line });
   }
 
   // Comments
-  if (type === "comment" || type === "line_comment" || type === "block_comment") {
+  if (
+    type === "comment" ||
+    type === "line_comment" ||
+    type === "block_comment"
+  ) {
     result.comments.push({ text: node.text.substring(0, 100), line });
   }
 

@@ -139,7 +139,10 @@ export function isPrivateIp(hostname: string): boolean {
  *
  * Call this **before** performing the actual fetch.
  */
-export function assertNotPrivateIp(url: string, options?: { allowLocalhost?: boolean }): void {
+export function assertNotPrivateIp(
+  url: string,
+  options?: { allowLocalhost?: boolean },
+): void {
   let hostname: string;
   try {
     hostname = new URL(url).hostname;
@@ -148,7 +151,10 @@ export function assertNotPrivateIp(url: string, options?: { allowLocalhost?: boo
   }
 
   // Allow localhost for local model services (Ollama, LMStudio) when explicitly permitted
-  if (options?.allowLocalhost && (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1")) {
+  if (
+    options?.allowLocalhost &&
+    (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1")
+  ) {
     return;
   }
 

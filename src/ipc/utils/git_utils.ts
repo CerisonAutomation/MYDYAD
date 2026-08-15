@@ -427,9 +427,7 @@ export async function gitAddSafeDirectory(directory: string): Promise<void> {
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.warn(
-      `Failed to add safe directory '${directory}': ${message}`,
-    );
+    logger.warn(`Failed to add safe directory '${directory}': ${message}`);
   }
 }
 
@@ -1206,9 +1204,7 @@ export async function getFileAtCommit({
     return result.stdout;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error(
-      `Error getting file at commit ${commitHash}: ${message}`,
-    );
+    logger.error(`Error getting file at commit ${commitHash}: ${message}`);
     // File doesn't exist at this commit
     return null;
   }
@@ -1481,10 +1477,7 @@ export async function gitPush({
     const codedError = error as { code?: unknown; message?: unknown };
     if (typeof codedError?.code === "string") throw error;
     const message = error instanceof Error ? error.message : String(error);
-    throw new DyadError(
-      `Git push failed: ${message}`,
-      DyadErrorKind.Conflict,
-    );
+    throw new DyadError(`Git push failed: ${message}`, DyadErrorKind.Conflict);
   }
 }
 

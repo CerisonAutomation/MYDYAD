@@ -29,7 +29,10 @@ vi.mock("node:fs", async () => {
 });
 
 vi.mock("node:fs/promises", async () => {
-  const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
+  const actual =
+    await vi.importActual<typeof import("node:fs/promises")>(
+      "node:fs/promises",
+    );
   const mocks2 = {
     realpath: vi.fn(async (filePath: string) => filePath),
     lstat: vi.fn(async () => ({ isDirectory: () => false })),
@@ -37,7 +40,11 @@ vi.mock("node:fs/promises", async () => {
     unlink: vi.fn(async () => undefined),
     readdir: vi.fn(async () => []),
   };
-  return { ...actual, ...mocks2, default: { ...(actual as any).default, ...mocks2 } };
+  return {
+    ...actual,
+    ...mocks2,
+    default: { ...(actual as any).default, ...mocks2 },
+  };
 });
 
 vi.mock("electron-log", () => ({

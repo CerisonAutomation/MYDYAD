@@ -319,7 +319,8 @@ function UnconnectedVercelConnector({
     setTokenSuccess(false);
 
     try {
-      await ipc.vercel.saveToken({
+      // Use multi-account addAccount handler
+      await ipc.vercel.addAccount({
         token: accessToken.trim(),
       });
       setTokenSuccess(true);

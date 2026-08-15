@@ -39,6 +39,7 @@ export const PNPM_INSTALL_POLICY_ARGS = [
   PNPM_PM_ON_FAIL_IGNORE_ARG,
   "--config.confirmModulesPurge=false",
   "--config.strictDepBuilds=false",
+  "--prefer-offline",
 ];
 
 export const PNPM_MINIMUM_RELEASE_AGE_WARNING_MESSAGE = `${PNPM_MINIMUM_RELEASE_AGE_WARNING_PREFIX}${PNPM_MINIMUM_RELEASE_AGE_VERSION} or newer for the strongest protection`;
@@ -982,6 +983,17 @@ export async function readPnpmIgnoredBuilds(
 export function isPnpmIgnoredBuildsError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes(PNPM_IGNORED_BUILDS_ERROR_CODE);
+}
+
+const PNPM_FROZEN_LOCKFILE_ERROR_CODE = "ERR_PNPM_FROZEN_LOCKFILE";
+
+/**
+ * Detect when --frozen-lockfile fails because the lockfile is out of date.
+ * In this case we can retry without --frozen-lockfile to let pnpm update it.
+ */
+export function isPnpmFrozenLockfileError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes(PNPM_FROZEN_LOCKFILE_ERROR_CODE);
 }
 
 function insertAutoDeniedBuildsIntoContent(

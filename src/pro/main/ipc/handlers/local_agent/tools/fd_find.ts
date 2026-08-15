@@ -15,38 +15,23 @@ import { resolveTargetAppPath } from "./resolve_app_context";
 const execFileAsync = promisify(execFile);
 
 const fdFindSchema = z.object({
-  pattern: z
-    .string()
-    .optional()
-    .describe("Filename pattern (regex) to match"),
+  pattern: z.string().optional().describe("Filename pattern (regex) to match"),
   extension: z
     .string()
     .optional()
     .describe("File extension filter (e.g. 'ts', 'tsx', 'py')"),
-  directory: z
-    .string()
-    .optional()
-    .describe("Subdirectory to search in"),
-  app_name: z
-    .string()
-    .optional()
-    .describe("Optional app name to search in"),
+  directory: z.string().optional().describe("Subdirectory to search in"),
+  app_name: z.string().optional().describe("Optional app name to search in"),
   type: z
     .enum(["file", "directory", "symlink", "executable", "empty", "hidden"])
     .optional()
     .describe("Filter by type"),
-  max_depth: z
-    .number()
-    .optional()
-    .describe("Maximum search depth"),
+  max_depth: z.number().optional().describe("Maximum search depth"),
   exclude: z
     .string()
     .optional()
     .describe("Glob pattern to exclude (e.g. 'node_modules')"),
-  follow_symlinks: z
-    .boolean()
-    .optional()
-    .describe("Follow symbolic links"),
+  follow_symlinks: z.boolean().optional().describe("Follow symbolic links"),
   full_path: z
     .boolean()
     .optional()

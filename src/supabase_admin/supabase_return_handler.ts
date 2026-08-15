@@ -12,8 +12,8 @@ export interface SupabaseOAuthReturnParams {
 
 /**
  * Handles OAuth return by storing organization credentials.
- * If exactly one organization is found, it's stored in the organizations map.
- * Otherwise, it falls back to legacy fields.
+ * Stores ALL organizations the token has access to (not just the first).
+ * Falls back to legacy fields only if no organizations are found.
  */
 export async function handleSupabaseOAuthReturn({
   token,
@@ -37,34 +37,34 @@ export async function handleSupabaseOAuthReturn({
   const settings = readSettings();
 
   if (!errorOccurred && orgs.length > 0) {
-    if (orgs.length > 1) {
-      logger.warn(
-        "Multiple Supabase organizations found unexpectedly, using the first one",
-      );
-    }
-    const organizationSlug = orgs[0].slug;
+    // Store ALL organizations the token has access to
     const existingOrgs = settings.supabase?.organizations ?? {};
+    const newOrgs: Record<string, any> = { ...existingOrgs };
+
+    for (const org of orgs) {
+      newOrgs[org.slug] = {
+        accessToken: {
+          value: token,
+        },
+        refreshToken: {
+          value: refreshToken,
+        },
+        expiresIn,
+        tokenTimestamp: Math.floor(Date.now() / 1000),
+        name: org.name,
+      };
+    }
+
+    logger.info(`Connected ${orgs.length} Supabase organization(s) via OAuth`);
 
     writeSettings({
       supabase: {
         ...settings.supabase,
-        organizations: {
-          ...existingOrgs,
-          [organizationSlug]: {
-            accessToken: {
-              value: token,
-            },
-            refreshToken: {
-              value: refreshToken,
-            },
-            expiresIn,
-            tokenTimestamp: Math.floor(Date.now() / 1000),
-          },
-        },
+        organizations: newOrgs,
       },
     });
   } else {
-    // Fallback to legacy fields
+    // Fallback to legacy fields only if no organizations were found
     writeSettings({
       supabase: {
         ...settings.supabase,

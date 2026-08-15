@@ -206,6 +206,8 @@ export const SupabaseOrganizationCredentialsSchema = z.object({
   refreshToken: SecretSchema,
   expiresIn: z.number(),
   tokenTimestamp: z.number().optional(),
+  isPat: z.boolean().optional(),
+  name: z.string().optional(),
 });
 export type SupabaseOrganizationCredentials = z.infer<
   typeof SupabaseOrganizationCredentialsSchema
@@ -222,6 +224,7 @@ export const SupabaseSchema = z.object({
   refreshToken: SecretSchema.optional(),
   expiresIn: z.number().optional(),
   tokenTimestamp: z.number().optional(),
+  isPat: z.boolean().optional(),
 });
 export type Supabase = z.infer<typeof SupabaseSchema>;
 
@@ -384,6 +387,16 @@ const BaseUserSettingsFields = {
   githubUser: GithubUserSchema.optional(),
   githubAccessToken: SecretSchema.optional(),
   vercelAccessToken: SecretSchema.optional(),
+  vercelAccounts: z
+    .record(
+      z.string(),
+      z.object({
+        accessToken: SecretSchema,
+        name: z.string().optional(),
+        email: z.string().optional(),
+      }),
+    )
+    .optional(),
   supabase: SupabaseSchema.optional(),
   neon: NeonSchema.optional(),
   autoApproveChanges: z.boolean().optional(),

@@ -29,10 +29,13 @@ interface ComponentAnalysis {
  * Extracts the static src value from a JSX opening element's attributes.
  * Handles both StringLiteral and JSXExpressionContainer wrapping a StringLiteral.
  */
-function extractStaticSrc(openingElement: JSXOpeningElement): string | undefined {
+function extractStaticSrc(
+  openingElement: JSXOpeningElement,
+): string | undefined {
   const srcAttr = openingElement.attributes.find(
     (attr: JSXAttribute | Node) =>
-      attr.type === "JSXAttribute" && (attr as JSXAttribute).name?.name === "src",
+      attr.type === "JSXAttribute" &&
+      (attr as JSXAttribute).name?.name === "src",
   ) as JSXAttribute | undefined;
   if (!srcAttr?.value) return undefined;
   if (srcAttr.value.type === "StringLiteral") {
@@ -237,15 +240,17 @@ export function transformContent(
 
         if (shouldModifyText) {
           // Check if all children are text nodes (no nested JSX elements)
-          const hasOnlyTextChildren = path.node.children.every((child: Node) => {
-            // JSXElement means there's a nested component/element
-            if (child.type === "JSXElement") return false;
-            return (
-              child.type === "JSXText" ||
-              (child.type === "JSXExpressionContainer" &&
-                child.expression.type === "StringLiteral")
-            );
-          });
+          const hasOnlyTextChildren = path.node.children.every(
+            (child: Node) => {
+              // JSXElement means there's a nested component/element
+              if (child.type === "JSXElement") return false;
+              return (
+                child.type === "JSXText" ||
+                (child.type === "JSXExpressionContainer" &&
+                  child.expression.type === "StringLiteral")
+              );
+            },
+          );
 
           // Only replace children if there are no nested JSX elements
           if (hasOnlyTextChildren) {
@@ -388,44 +393,49 @@ export function analyzeComponent(
 
   // Check attributes for dynamic styling
   if (foundElement.openingElement.attributes) {
-    foundElement.openingElement.attributes.forEach((attr: JSXAttribute | Node) => {
-      if (
-        attr.type === "JSXAttribute" &&
-        (attr as JSXAttribute).name &&
-        (attr as JSXAttribute).name.name
-      ) {
-        const typedAttr = attr as JSXAttribute;
-        const attrName = typedAttr.name.name;
-        if (attrName === "style" || attrName === "className") {
-          if (typedAttr.value && typedAttr.value.type === "JSXExpressionContainer") {
-            const expr = typedAttr.value.expression;
-            // Check for conditional/logical/template
+    foundElement.openingElement.attributes.forEach(
+      (attr: JSXAttribute | Node) => {
+        if (
+          attr.type === "JSXAttribute" &&
+          (attr as JSXAttribute).name &&
+          (attr as JSXAttribute).name.name
+        ) {
+          const typedAttr = attr as JSXAttribute;
+          const attrName = typedAttr.name.name;
+          if (attrName === "style" || attrName === "className") {
             if (
-              expr.type === "ConditionalExpression" ||
-              expr.type === "LogicalExpression" ||
-              expr.type === "TemplateLiteral"
+              typedAttr.value &&
+              typedAttr.value.type === "JSXExpressionContainer"
             ) {
-              dynamic = true;
-            }
-            // Check for identifiers (variables)
-            if (
-              expr.type === "Identifier" ||
-              expr.type === "MemberExpression"
-            ) {
-              dynamic = true;
-            }
-            // Check for CallExpression (function calls)
-            if (expr.type === "CallExpression") {
-              dynamic = true;
-            }
-            // Check for ObjectExpression (inline objects like style={{...}})
-            if (expr.type === "ObjectExpression") {
-              dynamic = true;
+              const expr = typedAttr.value.expression;
+              // Check for conditional/logical/template
+              if (
+                expr.type === "ConditionalExpression" ||
+                expr.type === "LogicalExpression" ||
+                expr.type === "TemplateLiteral"
+              ) {
+                dynamic = true;
+              }
+              // Check for identifiers (variables)
+              if (
+                expr.type === "Identifier" ||
+                expr.type === "MemberExpression"
+              ) {
+                dynamic = true;
+              }
+              // Check for CallExpression (function calls)
+              if (expr.type === "CallExpression") {
+                dynamic = true;
+              }
+              // Check for ObjectExpression (inline objects like style={{...}})
+              if (expr.type === "ObjectExpression") {
+                dynamic = true;
+              }
             }
           }
         }
-      }
-    });
+      },
+    );
   }
 
   // Check children for static text
@@ -493,9 +503,7 @@ export function analyzeComponent(
           .name === "img"
       ) {
         hasImage = true;
-        imageSrc = extractStaticSrc(
-          record.openingElement as JSXOpeningElement,
-        );
+        imageSrc = extractStaticSrc(record.openingElement as JSXOpeningElement);
         const hasSrcAttr = (
           record.openingElement as JSXOpeningElement
         ).attributes.some(

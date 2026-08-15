@@ -130,7 +130,7 @@ async function refreshSupabaseTokenOnce(): Promise<void> {
   const refreshToken = settings.supabase?.refreshToken?.value;
 
   // PATs (personal access tokens) don't expire and don't need refresh
-  if ((settings.supabase as any)?.isPat) {
+  if (settings.supabase?.isPat) {
     return;
   }
 
@@ -283,7 +283,7 @@ async function refreshSupabaseTokenForOrganization(
   }
 
   // PATs don't expire and don't need refresh
-  if ((org as any).isPat) {
+  if (org.isPat) {
     return;
   }
 
@@ -382,7 +382,7 @@ export async function getSupabaseClientForOrganization(
   }
 
   // PATs don't expire and don't need refresh
-  if (!(org as any).isPat && isOrganizationTokenExpired(org)) {
+  if (!org.isPat && isOrganizationTokenExpired(org)) {
     await withLock(`refresh-supabase-token-${organizationSlug}`, () =>
       refreshSupabaseTokenForOrganization(organizationSlug),
     );

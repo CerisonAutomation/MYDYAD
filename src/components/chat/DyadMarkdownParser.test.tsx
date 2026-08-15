@@ -19,13 +19,15 @@ vi.mock("react-i18next", async () => {
     unknown
   >;
   const readPath = (source: unknown, path: string): unknown =>
-    path.split(".").reduce<unknown>(
-      (current, segment) =>
-        current && typeof current === "object"
-          ? (current as Record<string, unknown>)[segment]
-          : undefined,
-      source,
-    );
+    path
+      .split(".")
+      .reduce<unknown>(
+        (current, segment) =>
+          current && typeof current === "object"
+            ? (current as Record<string, unknown>)[segment]
+            : undefined,
+        source,
+      );
   const interpolate = (
     value: string,
     options: Record<string, unknown>,

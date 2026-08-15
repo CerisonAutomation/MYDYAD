@@ -320,7 +320,7 @@ describe("browserControlTool", () => {
 
     it("rejects an unknown action", () => {
       const result = browserControlTool.inputSchema.safeParse({
-        action: "hover",
+        action: "zoom",
       });
       expect(result.success).toBe(false);
     });

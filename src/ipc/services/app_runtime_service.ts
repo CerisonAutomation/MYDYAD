@@ -16,6 +16,10 @@ import {
   shouldShowPnpmMinimumReleaseAgeWarning,
   type RuntimeMode2,
 } from "@/lib/schemas";
+import {
+  getFrameworkDevPortStrategy,
+  type AppFrameworkType,
+} from "@/lib/framework_constants";
 import { detectFrameworkType } from "@/ipc/utils/framework_utils";
 import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 import type { AppRunInvocationRef } from "@/app_run/state";
@@ -46,6 +50,7 @@ import {
   removeDockerVolumesForApp,
   runningApps,
   stopAppByInfo,
+  disposeProxyWorker,
   type RunningAppInfo,
 } from "@/ipc/utils/process_manager";
 import {
@@ -59,12 +64,14 @@ import {
   getPackageManagerCommandEnv,
   getPnpmMinimumReleaseAgeSupport,
   isPnpmIgnoredBuildsError,
+  isPnpmFrozenLockfileError,
   parsePnpmIgnoredBuildsFromOutput,
   type PackageManager,
   PNPM_PM_ON_FAIL_IGNORE_ARG,
   PNPM_INSTALL_POLICY_ARGS,
   getBestEffortPnpmRebuildCommand,
 } from "@/ipc/utils/socket_firewall";
+import { parseCompilationError } from "@/ipc/utils/dev_server_error_parser";
 import {
   recordAndReportDeniedPnpmBuilds,
   resolvePnpmIgnoredBuilds,
@@ -73,6 +80,7 @@ import {
   getManagedPnpmMajorVersion,
   isPnpmVersionMigrationNeeded,
 } from "@/ipc/utils/pnpm_migration";
+import { detectExistingDevServer } from "@/ipc/utils/dev_server_detector";
 import {
   choosePackageManagerFromSignal,
   getPackageManagerSignal,
@@ -94,50 +102,102 @@ export type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 fixPath();
 
 export function formatCloudSandboxError(error: unknown) {
-  // Cloud sandbox removed — this function is kept for backward compatibility
-  // but errors now come from local execution, not remote API
-  return error instanceof Error ? error.message : String(error);
+  if (!(error instanceof CloudSandboxApiError)) {
+    return error instanceof Error ? error.message : String(error);
+  }
+
+  switch (error.code) {
+    case "sandbox_pro_required":
+      return "Dyad Pro is required to use cloud sandboxes.";
+    case "sandbox_insufficient_credits":
+      return "You need at least 1 credit available to start a cloud sandbox.";
+    case "sandbox_billing_unavailable":
+      return "Dyad couldn’t verify sandbox billing right now. Please try again.";
+    case "sandbox_credits_exhausted":
+      return "This cloud sandbox stopped because your credits ran out.";
+    default:
+      if (error.status === 404) {
+        return "This cloud sandbox is no longer available.";
+      }
+      if (error.status === 401 || error.status === 403) {
+        return "Dyad couldn’t authorize the cloud sandbox request. Please try again.";
+      }
+      if (error.status === 429) {
+        return "Dyad is rate limiting cloud sandbox requests right now. Please try again.";
+      }
+      if (typeof error.status === "number" && error.status >= 500) {
+        return "Dyad’s cloud sandbox service is temporarily unavailable. Please try again.";
+      }
+      return error.message;
+  }
 }
 
 function getPnpmInstallCommand(): string {
-  return `pnpm ${PNPM_INSTALL_POLICY_ARGS.join(" ")} install`;
+  // Try frozen-lockfile first for speed. Fall back to regular install if lockfile is stale.
+  const args = PNPM_INSTALL_POLICY_ARGS.join(" ");
+  return `pnpm ${args} --frozen-lockfile install || pnpm ${args} install`;
+}
+
+/**
+ * Docker-specific pnpm install that:
+ * 1. Uses --store-dir to point at the mounted volume (env vars aren't enough)
+ * 2. Uses --frozen-lockfile to avoid re-resolving (which causes full downloads)
+ * 3. Uses --prefer-offline to hit the local store first
+ */
+function getPnpmDockerInstallCommand(): string {
+  // Try frozen-lockfile first (fast, no re-resolving). If it fails because
+  // the lockfile is out of date, fall back to a regular install that updates it.
+  const args = PNPM_INSTALL_POLICY_ARGS.join(" ");
+  return `pnpm ${args} --frozen-lockfile --store-dir /app/.pnpm-store/v11 install || pnpm ${args} --store-dir /app/.pnpm-store/v11 install`;
 }
 
 function getPnpmRunCommand(): string {
   return `pnpm ${PNPM_PM_ON_FAIL_IGNORE_ARG} run dev`;
 }
 
-/**
- * Build the dev server run command with the correct port flag for the detected framework.
- *
- * - Vite apps use `--port` (e.g. `vite --port 3000`)
- * - Next.js apps use `-p` (e.g. `next dev -p 3000`)
- * - Unknown frameworks default to `--port`
- */
-function buildRunCommandWithPort(appPath: string, port: number): string {
-  const framework = detectFrameworkType(appPath);
-  const pnpmRun = getPnpmRunCommand();
+function getPnpmStaticServeCommand(port: number): string {
+  return `npx --yes serve -l ${port} .`;
+}
 
-  if (framework === "nextjs") {
-    // Next.js uses -p, not --port. The `next dev` command accepts -p.
-    // `pnpm run dev` passes through to `next dev`, so we need to use
-    // the PORT environment variable which Next.js respects.
-    return `PORT=${port} ${pnpmRun}`;
+function getNpmStaticServeCommand(port: number): string {
+  return `npx --yes serve -l ${port} .`;
+}
+
+/** Read the package.json dev script ("" when absent). */
+function readDevScript(appPath: string): string {
+  try {
+    const raw = fs.readFileSync(path.join(appPath, "package.json"), "utf8");
+    const pkg = JSON.parse(raw) as { scripts?: Record<string, string> };
+    return pkg.scripts?.dev ?? "";
+  } catch {
+    return "";
   }
-
-  // Vite, vite-nitro, and other frameworks use --port
-  return `${pnpmRun} --port ${port}`;
 }
 
 function buildPnpmInstallAndRunCommand(input: {
   promotedPackages: string[];
   port: number;
-  appPath: string;
+  devScript: string;
+  frameworkType: AppFrameworkType | null;
+  isDocker?: boolean;
 }): string {
+  const strategy = getFrameworkDevPortStrategy(
+    input.devScript,
+    input.frameworkType,
+  );
+  const devCommand =
+    strategy === "script"
+      ? getPnpmStaticServeCommand(input.port)
+      : strategy === "env"
+        ? `PORT=${input.port} ${getPnpmRunCommand()}`
+        : `${getPnpmRunCommand()} --port ${input.port}`;
+  const installCmd = input.isDocker
+    ? getPnpmDockerInstallCommand()
+    : getPnpmInstallCommand();
   return [
-    getPnpmInstallCommand(),
+    installCmd,
     getBestEffortPnpmRebuildCommand(input.promotedPackages),
-    buildRunCommandWithPort(input.appPath, input.port),
+    devCommand,
   ]
     .filter(Boolean)
     .join(" && ");
@@ -145,6 +205,50 @@ function buildPnpmInstallAndRunCommand(input: {
 
 function getNpmInstallCommand(): string {
   return "npm install --legacy-peer-deps";
+}
+
+// ── Bun support ─────────────────────────────────────────────────────────
+// Bun is faster than pnpm/npm for installs and script execution.
+// Detect bun.lockb / bun.lock to know if a project prefers Bun.
+function detectBunProject(appPath: string): boolean {
+  try {
+    return (
+      fs.existsSync(path.join(appPath, "bun.lockb")) ||
+      fs.existsSync(path.join(appPath, "bun.lock"))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function getBunInstallCommand(): string {
+  return "bun install";
+}
+
+function getBunRunCommand(): string {
+  return "bun run dev";
+}
+
+function getBunStaticServeCommand(port: number): string {
+  return `bunx --bun serve -l ${port} .`;
+}
+
+function buildBunInstallAndRunCommand(input: {
+  port: number;
+  devScript: string;
+  frameworkType: AppFrameworkType | null;
+}): string {
+  const strategy = getFrameworkDevPortStrategy(
+    input.devScript,
+    input.frameworkType,
+  );
+  const devCommand =
+    strategy === "script"
+      ? getBunStaticServeCommand(input.port)
+      : strategy === "env"
+        ? `PORT=${input.port} ${getBunRunCommand()}`
+        : `${getBunRunCommand()} --port ${input.port}`;
+  return [getBunInstallCommand(), devCommand].filter(Boolean).join(" && ");
 }
 
 interface AppRuntimeCommand {
@@ -165,7 +269,22 @@ async function getDefaultCommand({
   onPnpmMinimumReleaseAgeWarning?: (message: string) => void;
 }): Promise<AppRuntimeCommand> {
   const port = getAppPort(appId);
+  const devScript = readDevScript(appPath);
+  const frameworkType = detectFrameworkType(appPath);
+  const portStrategy = getFrameworkDevPortStrategy(devScript, frameworkType);
   if (runtimeMode === "docker") {
+    // Prefer Bun if the project has a bun.lockb/bun.lock — much faster installs
+    if (detectBunProject(appPath)) {
+      return {
+        command: buildBunInstallAndRunCommand({
+          port,
+          devScript,
+          frameworkType,
+        }),
+        isCustom: false,
+        packageManager: "pnpm", // keep type compat — Bun replaces pnpm here
+      };
+    }
     const allowBuildsResult = await ensurePnpmAllowBuildsConfigured({
       appPath,
     });
@@ -173,10 +292,25 @@ async function getDefaultCommand({
       command: buildPnpmInstallAndRunCommand({
         promotedPackages: allowBuildsResult.promotedPackages,
         port,
-        appPath,
+        devScript,
+        frameworkType,
+        isDocker: true,
       }),
       isCustom: false,
       packageManager: "pnpm",
+    };
+  }
+
+  // Prefer Bun if the project has a bun.lockb/bun.lock — much faster installs
+  if (detectBunProject(appPath)) {
+    return {
+      command: buildBunInstallAndRunCommand({
+        port,
+        devScript,
+        frameworkType,
+      }),
+      isCustom: false,
+      packageManager: "pnpm", // keep type compat
     };
   }
 
@@ -187,7 +321,7 @@ async function getDefaultCommand({
     pnpmAvailable: pnpmSupport.available,
   });
 
-  // Only warn about pnpm when the app actually wants pnpm - including while
+  // Only warn about pnpm when the app actually wants pnpm — including while
   // it temporarily falls back to npm because pnpm is missing/too old. Apps
   // that explicitly select npm should not see pnpm warnings.
   if (
@@ -199,10 +333,14 @@ async function getDefaultCommand({
   }
 
   if (packageManager === "npm") {
-    const framework = detectFrameworkType(appPath);
-    const portFlag = framework === "nextjs" ? `PORT=${port}` : `-- --port ${port}`;
+    const devCommand =
+      portStrategy === "script"
+        ? getNpmStaticServeCommand(port)
+        : portStrategy === "env"
+          ? `PORT=${port} npm run dev`
+          : `npm run dev -- --port ${port}`;
     return {
-      command: `(${getNpmInstallCommand()} && npm run dev ${portFlag})`,
+      command: `(${getNpmInstallCommand()} && ${devCommand})`,
       isCustom: false,
       packageManager: "npm",
     };
@@ -213,7 +351,8 @@ async function getDefaultCommand({
     command: buildPnpmInstallAndRunCommand({
       promotedPackages: allowBuildsResult.promotedPackages,
       port,
-      appPath,
+      devScript,
+      frameworkType,
     }),
     isCustom: false,
     packageManager: "pnpm",
@@ -237,8 +376,13 @@ async function getCommand({
 }): Promise<AppRuntimeCommand> {
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
   if (hasCustomCommands) {
+    const port = getAppPort(appId);
+    // Inject PORT so Express/Fastify/custom servers can pick up Dyad's allocated
+    // port. Servers that ignore PORT still work — the proxy detects the URL from
+    // their stdout and auto-connects (see ensureProxyForRunningApp).
+    const portedStart = `PORT=${port} ${startCommand!.trim()}`;
     return {
-      command: `${installCommand!.trim()} && ${startCommand!.trim()}`,
+      command: `${installCommand!.trim()} && ${portedStart}`,
       isCustom: true,
       packageManager: null,
     };
@@ -300,6 +444,15 @@ export async function executeApp({
       appId,
       output,
       isNeon,
+      installCommand,
+      startCommand,
+      invocationRef,
+    });
+  } else if (runtimeMode === "cloud") {
+    await executeAppInCloud({
+      appPath,
+      appId,
+      output,
       installCommand,
       startCommand,
       invocationRef,
@@ -406,13 +559,12 @@ export async function ensureProxyForRunningApp({
   }
 
   const proxyAuthToken =
-    mode === "host" ? appInfo.cloudPreviewAuthToken : undefined;
+    mode === "cloud" ? appInfo.cloudPreviewAuthToken : undefined;
 
   if (
     appInfo.proxyWorker &&
     appInfo.originalUrl === originalUrl &&
     appInfo.proxyAuthToken === proxyAuthToken &&
-    appInfo.authBootstrapToken &&
     appInfo.proxyUrl
   ) {
     emitProxyServerStarted({
@@ -427,26 +579,20 @@ export async function ensureProxyForRunningApp({
   }
 
   if (appInfo.proxyWorker) {
-    await appInfo.proxyWorker.terminate();
+    await disposeProxyWorker(appInfo.proxyWorker);
     appInfo.proxyWorker = undefined;
   }
 
   // Prefer the deterministic port so the iframe origin stays stable across
-  // restarts - otherwise origin-scoped browser state (auth sessions,
+  // restarts — otherwise origin-scoped browser state (auth sessions,
   // localStorage) gets orphaned and users appear logged out. If that port is
   // already taken (by a foreign service, or another Dyad app in the rare 10k
   // overlap), the proxy worker scans the fallback band upward rather than
   // killing whatever holds the port.
   const proxyPort = getAppProxyPort(appId);
-  // A framing page can reach the preview's postMessage listeners but cannot
-  // read this capability from the cross-origin document. The trusted renderer
-  // receives the same value through recording:start and must echo it before the
-  // injected bootstrap will accept credentials.
-  const authBootstrapToken = randomUUID();
 
   const proxyWorker = await startProxy(originalUrl, {
     port: proxyPort,
-    authBootstrapToken,
     onStarted: (proxyUrl) => {
       const latestAppInfo = runningApps.get(appId);
       if (
@@ -458,7 +604,6 @@ export async function ensureProxyForRunningApp({
         latestAppInfo.proxyUrl = proxyUrl;
         latestAppInfo.originalUrl = originalUrl;
         latestAppInfo.proxyAuthToken = proxyAuthToken;
-        latestAppInfo.authBootstrapToken = authBootstrapToken;
       }
       emitProxyServerStarted({
         appId,
@@ -478,7 +623,7 @@ export async function ensureProxyForRunningApp({
       });
     },
     fixedHeaders:
-      mode === "host" && proxyAuthToken
+      mode === "cloud" && proxyAuthToken
         ? {
             Authorization: `Bearer ${proxyAuthToken}`,
           }
@@ -495,10 +640,92 @@ export async function ensureProxyForRunningApp({
     latestAppInfo.proxyWorker = proxyWorker;
     latestAppInfo.originalUrl = originalUrl;
     latestAppInfo.proxyAuthToken = proxyAuthToken;
-    latestAppInfo.authBootstrapToken = authBootstrapToken;
   } else {
-    await proxyWorker.terminate();
+    await disposeProxyWorker(proxyWorker);
   }
+}
+
+function loadProjectEnvFiles(appPath: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const fileName of [".env.local", ".env"]) {
+    try {
+      const content = fs.readFileSync(path.join(appPath, fileName), "utf8");
+      for (const line of content.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) {
+          continue;
+        }
+        const eq = trimmed.indexOf("=");
+        if (eq <= 0) {
+          continue;
+        }
+        const key = trimmed.slice(0, eq).trim();
+        let value = trimmed.slice(eq + 1).trim();
+        if (
+          value.length >= 2 &&
+          ((value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'")))
+        ) {
+          value = value.slice(1, -1);
+        }
+        if (key) {
+          result[key] = value;
+        }
+      }
+    } catch {
+      // file missing or unreadable — fine, project may not use env files
+    }
+  }
+  return result;
+}
+
+/**
+ * Remove a directory tree (node_modules) with retry.
+ * On macOS, recursive rm against a large pnpm store (.pnpm with hundreds of
+ * symlinked dirs) races with still-running child processes and throws
+ * ENOTEMPTY/EBUSY — historically the #1 `rebuild_app` failure. Retry with
+ * backoff, and escalate to `mv`-aside (rename to a trash name, then delete)
+ * so a fresh install never blocks on a half-removed tree.
+ */
+async function removeNodeModulesWithRetry(
+  target: string,
+  attempts = 6,
+): Promise<void> {
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      await fs.promises.rm(target, {
+        recursive: true,
+        force: true,
+        maxRetries: 12,
+        retryDelay: 150,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      const code = (error as NodeJS.ErrnoException)?.code;
+      if (code !== "ENOTEMPTY" && code !== "EBUSY" && code !== "EPERM") {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+    }
+  }
+
+  // Last resort: rename the tree aside (atomic, never fails on busy dirs),
+  // then delete the renamed copy in the background.
+  try {
+    const trashName = `${target}.dyad-remove-${Date.now()}`;
+    await fs.promises.rename(target, trashName);
+    void fs.promises
+      .rm(trashName, { recursive: true, force: true })
+      .catch(() => undefined);
+    return;
+  } catch {
+    // rename failed too — surface the original error
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Failed to remove " + target);
 }
 
 async function executeAppLocalNode({
@@ -530,8 +757,17 @@ async function executeAppLocalNode({
       emitPnpmMinimumReleaseAgeWarning({ appId, output, message }),
   });
   let env = { ...process.env };
+  // Standard project env convention: load .env.local / .env from the app dir
+  // so custom dev entries (e.g. `tsx server.ts`) get the same env that
+  // `next dev` would load. Real environment variables take precedence.
+  const projectEnv = loadProjectEnvFiles(appPath);
+  for (const [key, value] of Object.entries(projectEnv)) {
+    if (env[key] === undefined) {
+      env[key] = value;
+    }
+  }
   if (!command.isCustom && command.packageManager === "pnpm") {
-    env = getPackageManagerCommandEnv();
+    env = getPackageManagerCommandEnv(env);
   }
 
   const spawnedProcess = spawn(command.command, [], {
@@ -635,6 +871,22 @@ Details: ${details || "n/a"}
             return true;
           }
         : undefined,
+    onCompilationError: (error) => {
+      // Surface the error to the user via output
+      output.send({
+        type: "compilation-error",
+        message: `Compilation error: ${error.summary}`,
+        appId,
+        compilationError: error,
+      });
+      addLog({
+        level: "error",
+        type: "server",
+        message: `Compilation error detected: ${error.summary}`,
+        timestamp: Date.now(),
+        appId,
+      });
+    },
   });
 }
 
@@ -647,7 +899,7 @@ export function registerCloudSandboxSyncUpdateListener(): void {
 
   setCloudSandboxSyncUpdateListener(({ appId, errorMessage }) => {
     const appInfo = runningApps.get(appId);
-    if (!appInfo || appInfo.mode !== "host") {
+    if (!appInfo || appInfo.mode !== "cloud") {
       return;
     }
 
@@ -731,6 +983,8 @@ function listenToProcess({
   output,
   invocationRef,
   onPnpmIgnoredBuildsFailure,
+  onPnpmFrozenLockfileFailure,
+  onCompilationError,
 }: {
   process: ChildProcess;
   appId: number;
@@ -739,6 +993,13 @@ function listenToProcess({
   output: AppRuntimeOutput;
   invocationRef?: AppRunInvocationRef;
   onPnpmIgnoredBuildsFailure?: (output: string) => Promise<boolean>;
+  onPnpmFrozenLockfileFailure?: () => Promise<boolean>;
+  onCompilationError?: (error: {
+    summary: string;
+    rawOutput: string;
+    framework: string;
+    fixable: boolean;
+  }) => void;
 }) {
   // Rolling tail, kept only while a self-heal callback could still use it:
   // dev servers run for hours and unbounded accumulation would leak memory.
@@ -754,6 +1015,37 @@ function listenToProcess({
     processOutput = (processOutput + message).slice(
       -MAX_PROCESS_OUTPUT_TAIL_LENGTH,
     );
+  };
+
+  // Compilation error detection buffer — accumulates recent output to
+  // detect framework-specific compilation errors from the dev server.
+  const MAX_COMPILATION_ERROR_BUFFER = 16000;
+  let compilationErrorBuffer = "";
+  let compilationErrorDetected = false;
+  let _urlEmitted = false;
+
+  const checkForCompilationError = (message: string) => {
+    if (compilationErrorDetected || !onCompilationError) return;
+    compilationErrorBuffer = (compilationErrorBuffer + message).slice(
+      -MAX_COMPILATION_ERROR_BUFFER,
+    );
+    const parsed = parseCompilationError(compilationErrorBuffer, "");
+    if (parsed) {
+      compilationErrorDetected = true;
+      // Store in RunningAppInfo for waitForAppReady to access
+      const appInfo = runningApps.get(appId);
+      if (appInfo) {
+        appInfo.compilationError = parsed;
+      }
+      try {
+        onCompilationError(parsed);
+      } catch (err) {
+        logger.warn(
+          `onCompilationError callback failed for app ${appId}:`,
+          err,
+        );
+      }
+    }
   };
   spawnedProcess.stdout?.on("data", async (data) => {
     const message = util.stripVTControlCharacters(data.toString());
@@ -792,11 +1084,30 @@ function listenToProcess({
         appId,
       });
 
-      const urlMatch = message.match(/(https?:\/\/localhost:\d+\/?)/);
-      if (urlMatch) {
-        const originalUrl = urlMatch[1];
+      // Match ANY URL (not just localhost — Python/Go/Deno use 127.0.0.1, 0.0.0.0, etc.)
+      const urlMatch = message.match(
+        /(https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]):\d+\/?)/,
+      );
+      // Generic port detection on ready/listening lines.
+      // Patterns: "ready port: 32103", "listening on :32103", "server on 0.0.0.0:32103",
+      // "Running on http://127.0.0.1:32103", "Serving on port 32103",
+      // "bound to port 32103", ":32103" near ready|listen|start|serve|run|bound
+      const portMatch = !urlMatch
+        ? message.match(/port[^\d]{0,10}(\d{4,5})|:(\d{4,5})(?:\/|\s|$)/i)
+        : null;
+      const readyLine =
+        /ready|listen(ing)?\s|started|serv(ing|e)\s|local:|on\s+port|bound\s+to|running\s+on/i.test(
+          message,
+        );
+      const originalUrl = urlMatch
+        ? urlMatch[1]
+        : portMatch && readyLine
+          ? `http://localhost:${portMatch[1] || portMatch[2]}`
+          : undefined;
+      if (originalUrl) {
+        _urlEmitted = true;
         // The dev-server URL appearing means the install phase completed
-        // successfully - the one point in the `install && dev` chain where
+        // successfully — the one point in the `install && dev` chain where
         // ignored builds can be read and recorded.
         if (appPath && !ignoredBuildsRecordedAfterInstall) {
           ignoredBuildsRecordedAfterInstall = true;
@@ -811,6 +1122,9 @@ function listenToProcess({
         });
       }
     }
+
+    // Check for compilation errors in stdout (Next.js often prints errors here)
+    checkForCompilationError(message);
   });
 
   spawnedProcess.stderr?.on("data", async (data) => {
@@ -833,6 +1147,9 @@ function listenToProcess({
       message,
       appId,
     });
+
+    // Check for compilation errors in stderr (most frameworks print errors here)
+    checkForCompilationError(message);
   });
 
   spawnedProcess.on("close", (code, signal) => {
@@ -848,22 +1165,42 @@ function listenToProcess({
           return;
         }
 
-        if (
-          code !== 0 &&
-          onPnpmIgnoredBuildsFailure &&
-          isPnpmIgnoredBuildsError(processOutput)
-        ) {
-          let retried = false;
-          try {
-            retried = await onPnpmIgnoredBuildsFailure(processOutput);
-          } catch (error) {
-            logger.warn(
-              `Failed to self-heal pnpm ignored builds for app ${appId}:`,
-              error,
-            );
+        if (code !== 0) {
+          // Try self-healing ERR_PNPM_IGNORED_BUILDS first
+          if (
+            onPnpmIgnoredBuildsFailure &&
+            isPnpmIgnoredBuildsError(processOutput)
+          ) {
+            let retried = false;
+            try {
+              retried = await onPnpmIgnoredBuildsFailure(processOutput);
+            } catch (error) {
+              logger.warn(
+                `Failed to self-heal pnpm ignored builds for app ${appId}:`,
+                error,
+              );
+            }
+            if (retried) return;
           }
-          if (retried) {
-            return;
+
+          // Try retrying without --frozen-lockfile if lockfile is out of date
+          if (
+            onPnpmFrozenLockfileFailure &&
+            isPnpmFrozenLockfileError(processOutput)
+          ) {
+            logger.warn(
+              `pnpm --frozen-lockfile failed for app ${appId}, retrying without it`,
+            );
+            let retried = false;
+            try {
+              retried = await onPnpmFrozenLockfileFailure();
+            } catch (error) {
+              logger.warn(
+                `Failed to retry without frozen-lockfile for app ${appId}:`,
+                error,
+              );
+            }
+            if (retried) return;
           }
         }
 
@@ -907,7 +1244,7 @@ async function selfHealDeniedPnpmBuilds({
   output: string;
   telemetrySource: "self-heal";
   // Docker installs use the container volume, not host node_modules, and an
-  // explicit `pkg: false` entry passes even a fast-path install - so the
+  // explicit `pkg: false` entry passes even a fast-path install — so the
   // Docker caller skips the host cleanup.
   removeNodeModules?: boolean;
 }): Promise<boolean> {
@@ -926,10 +1263,7 @@ async function selfHealDeniedPnpmBuilds({
   }
 
   if (removeNodeModules) {
-    await fs.promises.rm(path.join(appPath, "node_modules"), {
-      recursive: true,
-      force: true,
-    });
+    await removeNodeModulesWithRetry(path.join(appPath, "node_modules"));
   }
 
   return true;
@@ -1000,8 +1334,15 @@ async function executeAppInDocker({
   if (!fs.existsSync(dockerfilePath)) {
     const dockerfileContent = `FROM node:22-alpine
 
-# Install pnpm
+# Install bun for faster installs and script execution
+RUN npm install -g bun
+
+# Install pnpm (projects with pnpm-lock.yaml need it)
 RUN npm install -g pnpm
+
+# Configure pnpm to use the mounted store volume
+ENV PNPM_STORE_DIR=/app/.pnpm-store/v11
+ENV XDG_DATA_HOME=/app/.pnpm-store
 `;
 
     try {
@@ -1021,6 +1362,8 @@ RUN npm install -g pnpm
     {
       cwd: appPath,
       stdio: "pipe",
+      // Increase timeout for Docker builds — large node_modules can take time
+      timeout: 300_000,
     },
   );
 
@@ -1043,6 +1386,7 @@ RUN npm install -g pnpm
   });
 
   const port = getAppPort(appId);
+  const isBunProject = detectBunProject(appPath);
   const process = spawn(
     "docker",
     [
@@ -1054,10 +1398,22 @@ RUN npm install -g pnpm
       `${port}:${port}`,
       "-v",
       `${appPath}:/app`,
-      "-v",
-      `dyad-pnpm-${appId}:/app/.pnpm-store`,
-      "-e",
-      "PNPM_STORE_PATH=/app/.pnpm-store",
+      // Mount package manager store volume for caching between rebuilds
+      ...(isBunProject
+        ? [
+            "-v",
+            `dyad-bun-${appId}:/root/.bun/install/cache`,
+            "-e",
+            "BUN_INSTALL_CACHE_DIR=/root/.bun/install/cache",
+          ]
+        : [
+            "-v",
+            `dyad-pnpm-${appId}:/app/.pnpm-store`,
+            "-e",
+            "PNPM_STORE_DIR=/app/.pnpm-store/v11",
+            "-e",
+            "XDG_DATA_HOME=/app/.pnpm-store",
+          ]),
       "-w",
       "/app",
       `dyad-app-${appId}`,
@@ -1132,7 +1488,7 @@ ${errorOutput || "(empty)"}`,
 
   // Mirrors the host path: custom `install && start` chains run strict pnpm
   // inside the container, so an ERR_PNPM_IGNORED_BUILDS exit needs the same
-  // record-denials-and-retry treatment (executeAppInDocker is restart-safe -
+  // record-denials-and-retry treatment (executeAppInDocker is restart-safe —
   // it stops and removes the previous container first).
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
   listenToProcess({
@@ -1244,7 +1600,7 @@ async function executeAppInCloud({
     process: null,
     processId: currentProcessId,
     invocationRef,
-    mode: "host",
+    mode: "cloud",
     output,
     cloudSandboxId: sandboxId,
     cloudPreviewUrl: resolvedPreviewUrl,
@@ -1263,7 +1619,7 @@ async function executeAppInCloud({
     appId,
     output,
     originalUrl: resolvedPreviewUrl,
-    mode: "host",
+    mode: "cloud",
     invocationRef,
   });
 
@@ -1471,7 +1827,7 @@ export interface AppRuntimeServiceDependencies {
   cleanPort(port: number): Promise<void>;
   restartSandbox(sandboxId: string): Promise<{
     previewUrl: string;
-    previewAuthToken?: string;
+    previewAuthToken: string;
   }>;
   ensureProxy(input: {
     appId: number;
@@ -1585,6 +1941,29 @@ export class AppRuntimeService {
 
       const app = await this.requireApp(appId);
       const appPath = this.dependencies.resolveAppPath(app.path);
+
+      // Check for an already-running dev server before spawning one.
+      // Cursor/Bolt/Replit all detect existing servers — avoids port conflicts
+      // and duplicate processes.
+      const frameworkType = detectFrameworkType(appPath);
+      const existingServer = await detectExistingDevServer(
+        frameworkType,
+        appPath,
+      );
+      if (existingServer) {
+        logger.info(
+          `App ${appId}: found existing ${existingServer.framework} dev server on port ${existingServer.port} — reusing`,
+        );
+        await ensureProxyForRunningApp({
+          appId,
+          output,
+          originalUrl: existingServer.url,
+          mode: "host",
+          invocationRef,
+        });
+        return;
+      }
+
       logger.debug(`Starting app ${appId} in path ${app.path}`);
       let processStarted = false;
       try {
@@ -1627,7 +2006,7 @@ export class AppRuntimeService {
       const appInfo = this.dependencies.getRunningApp(appId);
 
       if (
-        appInfo?.mode === "host" &&
+        appInfo?.mode === "cloud" &&
         appInfo.cloudSandboxId &&
         !recreateSandbox
       ) {
@@ -1706,7 +2085,7 @@ export class AppRuntimeService {
         );
         if (process) {
           this.dependencies.removeCurrentProcess(appId, process);
-        } else if (appInfo.mode !== "host") {
+        } else if (appInfo.mode !== "cloud") {
           this.dependencies.deleteRunningApp(appId);
         }
         throw new DyadError(
@@ -1889,7 +2268,7 @@ export class AppRuntimeService {
       appId: input.appId,
       output: input.output,
       originalUrl: result.previewUrl,
-      mode: "host",
+      mode: "cloud",
       invocationRef: input.invocationRef,
     });
     this.dependencies.startCloudLogs({
@@ -1950,7 +2329,9 @@ async function waitForAppReady(
     const appInfo = runningApps.get(appId);
     if (!appInfo) {
       throw new DyadError(
-        "The app process exited before the preview became ready",
+        "The app process exited before the preview became ready. The dev app crashed before its " +
+          "preview was up — commonly caused by low system memory or a dev-server startup failure. " +
+          "Check the app's logs, free up memory, and retry.",
         DyadErrorKind.External,
       );
     }
@@ -1961,8 +2342,13 @@ async function waitForAppReady(
       setTimeout(resolve, APP_READY_POLL_MS);
     });
   }
+  // Check if a compilation error was detected during startup
+  const appInfo = runningApps.get(appId);
+  const compilationErr = appInfo?.compilationError;
   throw new DyadError(
-    "Timed out waiting for the app preview to become ready",
+    compilationErr
+      ? `Preview failed: ${compilationErr.summary}. The agent has been notified and can fix this automatically.`
+      : "Timed out waiting for the app preview to become ready",
     DyadErrorKind.External,
   );
 }
@@ -1997,10 +2383,7 @@ export const appRuntimeService = new AppRuntimeService({
   clearLogs,
   readRuntimeMode: () => readSettings().runtimeMode2 ?? "host",
   removeNodeModules: async (appPath) => {
-    await fs.promises.rm(path.join(appPath, "node_modules"), {
-      recursive: true,
-      force: true,
-    });
+    await removeNodeModulesWithRetry(path.join(appPath, "node_modules"));
   },
   removeDockerVolumes: removeDockerVolumesForApp,
   waitForReady: waitForAppReady,

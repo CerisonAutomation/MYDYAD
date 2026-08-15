@@ -78,6 +78,8 @@ export class QueryInvalidationBus {
     if (this.flushTimer) clearTimeout(this.flushTimer);
     this.flushTimer = undefined;
     if (this.pending.length === 0) return;
+    // Clear recovery scopes to prevent memory leak
+    this.recoveryScopes.clear();
     const payload: QueryInvalidationBatch = {
       invalidations: this.pending.splice(0),
       recoveryScopes: [...this.recoveryScopes.values()],

@@ -304,6 +304,7 @@ export const queryKeys = {
   // ─────────────────────────────────────────────────────────────────────────────
   vercel: {
     all: ["vercel"] as const,
+    accounts: ["vercel", "accounts"] as const,
     deployments: ({ appId }: { appId: number }) =>
       ["vercel", "deployments", appId] as const,
     syncPreview: ({ appId }: { appId: number | null }) =>

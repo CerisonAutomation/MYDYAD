@@ -10,10 +10,32 @@ import {
   unregisterRunningCloudSandbox,
 } from "./cloud_sandbox_provider";
 import { readSettings } from "../../main/settings";
-import { endRecordingForApp } from "../services/recording_registry";
 import type { AppRunInvocationRef } from "@/app_run/state";
 import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 import { killProcessTreeSync } from "./kill_process_tree_sync";
+
+/**
+ * Safely terminate a proxy worker and prevent it from auto-restarting.
+ * The WeakMap in start_proxy_server tracks restart state; we need to
+ * mark it as disposed before calling terminate() so the exit handler
+ * doesn't attempt to respawn.
+ */
+export async function disposeProxyWorker(
+  worker: Worker | undefined,
+): Promise<void> {
+  if (!worker) return;
+  try {
+    // Signal the worker to stop health checks / graceful shutdown
+    worker.postMessage("dispose");
+  } catch {
+    // worker may already be dead
+  }
+  try {
+    await worker.terminate();
+  } catch {
+    // ignore — already terminated
+  }
+}
 
 const logger = log.scope("process_manager");
 
@@ -37,27 +59,17 @@ export interface RunningAppInfo {
   lastViewedAt: number;
   /** Proxy URL for the running app, set when the proxy server starts */
   proxyUrl?: string;
-  /**
-   * Capability embedded in proxied HTML and returned only to the trusted
-   * renderer. Auth bootstrap messages must echo it before the preview will
-   * accept credentials from its framing parent.
-   */
-  authBootstrapToken?: string;
   /** Original localhost URL for the running app */
   originalUrl?: string;
   /** Proxy worker dedicated to this running app */
   proxyWorker?: Worker;
-  /**
-   * Set while a recording's own lifecycle is replacing this process.
-   *
-   * The child's `close` listener runs to completion before `stopAppByInfo`
-   * resumes past its kill and removes the map entry, so an intentional
-   * replacement is indistinguishable from a crash at that point. Isolation
-   * setup restarts the very app it is preparing to record; without this marker
-   * that restart reports itself as `app-stopped` and cancels the session it
-   * belongs to.
-   */
-  recordingOwnedRestart?: boolean;
+  /** Compilation error detected during startup, if any. */
+  compilationError?: {
+    summary: string;
+    rawOutput: string;
+    framework: string;
+    fixable: boolean;
+  };
 }
 
 // Store running app processes
@@ -113,7 +125,7 @@ export function killProcess(process: ChildProcess): Promise<void> {
       resolve();
     }, 5000); // 5-second timeout
 
-    process.once("close", (code, signal) => {
+    process.on("close", (code, signal) => {
       clearTimeout(timeout);
       logger.info(
         `Received 'close' event for process (PID: ${process.pid}) with code ${code}, signal ${signal}.`,
@@ -122,7 +134,7 @@ export function killProcess(process: ChildProcess): Promise<void> {
     });
 
     // Handle potential errors during kill/close sequence
-    process.once("error", (err) => {
+    process.on("error", (err) => {
       clearTimeout(timeout);
       logger.error(
         `Error during stop sequence for process (PID: ${process.pid}): ${err.message}`,
@@ -180,52 +192,33 @@ export function removeDockerVolumesForApp(appId: number): Promise<void> {
 
 /**
  * Stops an app based on its RunningAppInfo (container vs host) and removes it from the running map.
- *
- * Pass `recordingOwnedRestart` when the stop is part of a recording's own
- * lifecycle (isolation setup and teardown restart the app they are recording).
- * The process's `close` listener sees the map entry as still current, so
- * otherwise the restart would be read as the app going away and end the session
- * it is preparing.
  */
 export async function stopAppByInfo(
   appId: number,
   appInfo: RunningAppInfo,
-  options: { recordingOwnedRestart?: boolean } = {},
 ): Promise<void> {
-  if (options.recordingOwnedRestart) {
-    appInfo.recordingOwnedRestart = true;
-  }
-  try {
-    stopCloudSandboxFileSync(appId);
+  stopCloudSandboxFileSync(appId);
 
-    if (appInfo.mode === "host") {
-      if (appInfo.cloudSandboxId) {
-        await destroyCloudSandbox(appInfo.cloudSandboxId);
-      }
-    } else if (appInfo.mode === "docker") {
-      const containerName = appInfo.containerName || `dyad-app-${appId}`;
-      await stopDockerContainer(containerName);
-    } else if (appInfo.process) {
-      await killProcess(appInfo.process);
+  if (appInfo.mode === "cloud") {
+    if (appInfo.cloudSandboxId) {
+      await destroyCloudSandbox(appInfo.cloudSandboxId);
     }
-
-    if (appInfo.proxyWorker) {
-      await appInfo.proxyWorker.terminate();
-      appInfo.proxyWorker = undefined;
-    }
-
-    appInfo.cloudLogAbortController?.abort();
-    appInfo.cloudLogAbortController = undefined;
-    unregisterRunningCloudSandbox({ appId });
-    runningApps.delete(appId);
-  } finally {
-    // The marker only has to outlive the kill, whose `close` listener runs
-    // inside the await above. Left latched on a stop that threw, it would sit
-    // on an entry still in `runningApps` and suppress a later, legitimate
-    // `app-stopped` — holding the session's claim until the 30-minute cap with
-    // no preview left to record.
-    appInfo.recordingOwnedRestart = false;
+  } else if (appInfo.mode === "docker") {
+    const containerName = appInfo.containerName || `dyad-app-${appId}`;
+    await stopDockerContainer(containerName);
+  } else if (appInfo.process) {
+    await killProcess(appInfo.process);
   }
+
+  if (appInfo.proxyWorker) {
+    await disposeProxyWorker(appInfo.proxyWorker);
+    appInfo.proxyWorker = undefined;
+  }
+
+  appInfo.cloudLogAbortController?.abort();
+  appInfo.cloudLogAbortController = undefined;
+  unregisterRunningCloudSandbox({ appId });
+  runningApps.delete(appId);
 }
 
 /**
@@ -240,7 +233,7 @@ export function removeAppIfCurrentProcess(
   const currentAppInfo = runningApps.get(appId);
   if (currentAppInfo && currentAppInfo.process === process) {
     if (currentAppInfo.proxyWorker) {
-      void currentAppInfo.proxyWorker.terminate();
+      void disposeProxyWorker(currentAppInfo.proxyWorker);
       currentAppInfo.proxyWorker = undefined;
     }
     currentAppInfo.cloudLogAbortController?.abort();
@@ -251,30 +244,6 @@ export function removeAppIfCurrentProcess(
     logger.info(
       `Removed app ${appId} (processId ${currentAppInfo.processId}) from running map. Current size: ${runningApps.size}`,
     );
-    // The dev server went away on its own — a crash, or the user killing it
-    // outside Dyad. Stop/Restart/Delete end a recording explicitly, but this
-    // path had nothing watching it, so isolation and the session's whole-app
-    // claim would have been held until the 30-minute cap with no preview left
-    // to record.
-    //
-    // A recording's own restart is the one deliberate stop that does reach
-    // here: `stopAppByInfo` only deletes the map entry after the kill resolves,
-    // and this listener runs first, so isolation setup would otherwise cancel
-    // the session it is preparing. That caller marks its entry instead.
-    //
-    // `skipRestart` because there is no process to put back — teardown must
-    // restore `.env.local`, not resurrect an app the user didn't ask to start.
-    // Fire-and-forget: this is a lifecycle callback, and teardown reports its
-    // own failures to the recorder bar.
-    if (!currentAppInfo.recordingOwnedRestart) {
-      void endRecordingForApp(appId, "app-stopped", {
-        skipRestart: true,
-      }).catch((error) => {
-        logger.error(
-          `Failed to end app ${appId}'s recording after its process exited: ${error}`,
-        );
-      });
-    }
   } else {
     logger.info(
       `App ${appId} process was already removed or replaced in running map. Ignoring.`,
@@ -455,11 +424,11 @@ export function stopAllAppsSync(): void {
     if (!appInfo) continue;
 
     if (appInfo.proxyWorker) {
-      void appInfo.proxyWorker.terminate();
+      void disposeProxyWorker(appInfo.proxyWorker);
       appInfo.proxyWorker = undefined;
     }
 
-    if (appInfo.mode === "host") {
+    if (appInfo.mode === "cloud") {
       appInfo.cloudLogAbortController?.abort();
       appInfo.cloudLogAbortController = undefined;
       stopCloudSandboxFileSync(appId);

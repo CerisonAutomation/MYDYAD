@@ -155,7 +155,7 @@ const batchAction = z.object({
         action: z
           .string()
           .describe(
-            "Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page)",
+            "Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page, key, double_click, hover, scroll_to)",
           ),
         params: z
           .record(z.string(), z.unknown())
@@ -165,6 +165,57 @@ const batchAction = z.object({
     .min(1)
     .max(20)
     .describe("Ordered list of actions to execute sequentially"),
+});
+
+const scrollToAction = z.object({
+  action: z.literal("scroll_to"),
+  selector: z
+    .string()
+    .optional()
+    .describe("CSS selector for the element to scroll to"),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Stable ref number from a prior read_page call"),
+});
+
+const keyAction = z.object({
+  action: z.literal("key"),
+  key: z
+    .string()
+    .describe(
+      "Key to press (e.g., Enter, Tab, Escape, ArrowDown, Control+s, Meta+c)",
+    ),
+});
+
+const doubleClickAction = z.object({
+  action: z.literal("double_click"),
+  selector: z
+    .string()
+    .optional()
+    .describe("CSS selector for the element to double-click"),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Stable ref number from a prior read_page call"),
+});
+
+const hoverAction = z.object({
+  action: z.literal("hover"),
+  selector: z
+    .string()
+    .optional()
+    .describe("CSS selector for the element to hover over"),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Stable ref number from a prior read_page call"),
 });
 
 const locatorSchema = z.object({
@@ -237,6 +288,10 @@ const browserControlSchema = z.discriminatedUnion("action", [
   submitFormAction,
   validateFormAction,
   frameIframeAction,
+  scrollToAction,
+  keyAction,
+  doubleClickAction,
+  hoverAction,
 ]);
 
 type BrowserControlArgs = z.infer<typeof browserControlSchema>;
@@ -944,6 +999,18 @@ async function executeBatch(
         case "read_page":
           result = await executeReadPage(page, params as any);
           break;
+        case "scroll_to":
+          result = await executeScrollTo(page, params as any);
+          break;
+        case "key":
+          result = await executeKey(page, params as any);
+          break;
+        case "double_click":
+          result = await executeDoubleClick(page, params as any);
+          break;
+        case "hover":
+          result = await executeHover(page, params as any);
+          break;
         default:
           result = `Unknown action: ${actionName}`;
       }
@@ -961,6 +1028,62 @@ async function executeBatch(
   }
 
   return results.join("\n");
+}
+
+async function executeScrollTo(
+  page: PlaywrightPage,
+  args: z.infer<typeof scrollToAction>,
+): Promise<string> {
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
+  if (!element) {
+    throw new DyadError(
+      `No element found matching selector: ${selector}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await element.scrollIntoViewIfNeeded();
+  return `Scrolled to element matching: ${selector}`;
+}
+
+async function executeKey(
+  page: PlaywrightPage,
+  args: z.infer<typeof keyAction>,
+): Promise<string> {
+  await page.keyboard.press(args.key);
+  return `Pressed key: ${args.key}`;
+}
+
+async function executeDoubleClick(
+  page: PlaywrightPage,
+  args: z.infer<typeof doubleClickAction>,
+): Promise<string> {
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
+  if (!element) {
+    throw new DyadError(
+      `No element found matching selector: ${selector}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await element.dblclick();
+  return `Double-clicked element matching: ${selector}`;
+}
+
+async function executeHover(
+  page: PlaywrightPage,
+  args: z.infer<typeof hoverAction>,
+): Promise<string> {
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
+  if (!element) {
+    throw new DyadError(
+      `No element found matching selector: ${selector}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await element.hover();
+  return `Hovered over element matching: ${selector}`;
 }
 
 async function executeFrameIframe(
@@ -1083,6 +1206,20 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         return `Validate form at "${args.selector}"`;
       case "frame_iframe":
         return `Interact with frame/iframe: "${args.selector}"`;
+      case "scroll_to":
+        return args.ref
+          ? `Scroll to element ref [${args.ref}]`
+          : `Scroll to element: "${args.selector}"`;
+      case "key":
+        return `Press key: "${args.key}"`;
+      case "double_click":
+        return args.ref
+          ? `Double-click element ref [${args.ref}]`
+          : `Double-click element: "${args.selector}"`;
+      case "hover":
+        return args.ref
+          ? `Hover over element ref [${args.ref}]`
+          : `Hover over element: "${args.selector}"`;
     }
   },
 
@@ -1129,6 +1266,22 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         return `<dyad-browser action="submit_form" selector="${escapeXmlAttr(args.selector)}">`;
       case "validate_form":
         return `<dyad-browser action="validate_form" selector="${escapeXmlAttr(args.selector)}">`;
+      case "scroll_to":
+        if (args.ref)
+          return `<dyad-browser action="scroll_to" ref="${args.ref}">`;
+        if (!args.selector) return undefined;
+        return `<dyad-browser action="scroll_to" selector="${escapeXmlAttr(args.selector)}">`;
+      case "key":
+        return `<dyad-browser action="key" key="${escapeXmlAttr(args.key)}">`;
+      case "double_click":
+        if (args.ref)
+          return `<dyad-browser action="double_click" ref="${args.ref}">`;
+        if (!args.selector) return undefined;
+        return `<dyad-browser action="double_click" selector="${escapeXmlAttr(args.selector)}">`;
+      case "hover":
+        if (args.ref) return `<dyad-browser action="hover" ref="${args.ref}">`;
+        if (!args.selector) return undefined;
+        return `<dyad-browser action="hover" selector="${escapeXmlAttr(args.selector)}">`;
     }
   },
 
@@ -1164,6 +1317,18 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         break;
       case "batch":
         initialXml = `<dyad-browser action="batch" steps="${normalizeBatchSteps(args.steps).length}">`;
+        break;
+      case "scroll_to":
+        initialXml = `<dyad-browser action="scroll_to" selector="${escapeXmlAttr(args.selector ?? "")}">`;
+        break;
+      case "key":
+        initialXml = `<dyad-browser action="key" key="${escapeXmlAttr(args.key)}">`;
+        break;
+      case "double_click":
+        initialXml = `<dyad-browser action="double_click" selector="${escapeXmlAttr(args.selector ?? "")}">`;
+        break;
+      case "hover":
+        initialXml = `<dyad-browser action="hover" selector="${escapeXmlAttr(args.selector ?? "")}">`;
         break;
     }
 
@@ -1220,6 +1385,18 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
           break;
         case "validate_form":
           result = await executeValidateForm(page, args);
+          break;
+        case "scroll_to":
+          result = await executeScrollTo(page, args);
+          break;
+        case "key":
+          result = await executeKey(page, args);
+          break;
+        case "double_click":
+          result = await executeDoubleClick(page, args);
+          break;
+        case "hover":
+          result = await executeHover(page, args);
           break;
       }
 

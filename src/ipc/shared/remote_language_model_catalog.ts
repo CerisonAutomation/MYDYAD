@@ -422,54 +422,39 @@ function triggerBackgroundRefresh(): void {
   }
 }
 
+// Cooldown for background refresh attempts (30 seconds)
+let lastBackgroundRefreshAttempt = 0;
+const BACKGROUND_REFRESH_COOLDOWN_MS = 30_000;
+
 export async function getBuiltinLanguageModelCatalog(): Promise<BuiltinLanguageModelCatalog> {
   if (builtinCatalogCache && builtinCatalogCache.expiresAt > Date.now()) {
-    logger.debug("Returning cached language model catalog", {
-      source: builtinCatalogCache.source,
-      version: builtinCatalogCache.version,
-      expiresAt: new Date(builtinCatalogCache.expiresAt).toISOString(),
-    });
+    // Cache hit — no log spam
     return builtinCatalogCache;
   }
 
   // Serve stale data while revalidating in the background to avoid blocking
   // callers on a network fetch (stale-while-revalidate pattern).
   if (builtinCatalogCache) {
-    logger.info(
-      "Returning stale language model catalog and refreshing in background",
-      {
-        source: builtinCatalogCache.source,
-        version: builtinCatalogCache.version,
-      },
-    );
-    triggerBackgroundRefresh();
+    const now = Date.now();
+    if (now - lastBackgroundRefreshAttempt > BACKGROUND_REFRESH_COOLDOWN_MS) {
+      lastBackgroundRefreshAttempt = now;
+      triggerBackgroundRefresh();
+    }
     return builtinCatalogCache;
   }
 
   // On cold start, wait for the initial remote fetch so renderer queries do not
   // cache fallback data and miss the later background refresh result.
   if (!builtinCatalogFetchPromise) {
-    logger.info("Cold start catalog request; waiting for initial remote fetch");
     builtinCatalogFetchPromise = (async () => {
       try {
         const remoteCatalog = await fetchRemoteCatalog();
         builtinCatalogCache = remoteCatalog ?? getFallbackCatalog();
-        logger.info(
-          "Initialized language model catalog after cold start fetch",
-          {
-            source: builtinCatalogCache.source,
-            version: builtinCatalogCache.version,
-            providerCount: builtinCatalogCache.providers.length,
-            aliasCount: builtinCatalogCache.aliases.length,
-          },
-        );
         return builtinCatalogCache;
       } finally {
         builtinCatalogFetchPromise = null;
       }
     })();
-  } else {
-    logger.info("Cold start catalog request is waiting on in-flight fetch");
   }
 
   return builtinCatalogFetchPromise;

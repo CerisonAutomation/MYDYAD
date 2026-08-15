@@ -79,8 +79,6 @@ export function normalizeGitHubRepoName(repoName: string): string {
 // TODO: Fetch this securely, e.g., from environment variables or a config file
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "Ov23liWV2HdC0RBLecWx";
 
-
-
 function getGitHubDeviceCodeUrl() {
   return isGitHubTestBuild()
     ? `${getGitHubTestServerBase()}/github/login/device/code`
@@ -92,7 +90,6 @@ function getGitHubAccessTokenUrl() {
     ? `${getGitHubTestServerBase()}/github/login/oauth/access_token`
     : "https://github.com/login/oauth/access_token";
 }
-
 
 function getGitHubGitBase() {
   return isGitHubTestBuild()
@@ -624,7 +621,8 @@ async function handleIsRepoAvailable(
   } catch (err: unknown) {
     return {
       available: false,
-      error: (err instanceof Error ? err.message : undefined) || "Unknown error",
+      error:
+        (err instanceof Error ? err.message : undefined) || "Unknown error",
     };
   }
 }
@@ -986,7 +984,9 @@ export async function handleGetGitState(
 async function handleListCollaborators(
   event: IpcMainInvokeEvent,
   { appId }: { appId: number },
-): Promise<{ login: string; avatar_url: string; permissions: Record<string, unknown> }[]> {
+): Promise<
+  { login: string; avatar_url: string; permissions: Record<string, unknown> }[]
+> {
   try {
     const settings = readSettings();
     const accessToken = settings.githubAccessToken?.value;

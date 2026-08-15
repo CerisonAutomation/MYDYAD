@@ -155,6 +155,39 @@ export const vercelContracts = {
     output: z.void(),
   }),
 
+  addAccount: defineContract({
+    channel: "vercel:add-account",
+    input: z.object({
+      token: z.string().min(1, "Token is required"),
+      name: z.string().optional(),
+    }),
+    output: z.void(),
+  }),
+
+  listAccounts: defineContract({
+    channel: "vercel:list-accounts",
+    input: z.void(),
+    output: z.array(
+      z.object({
+        key: z.string(),
+        name: z.string(),
+        email: z.string().optional(),
+      }),
+    ),
+  }),
+
+  removeAccount: defineContract({
+    channel: "vercel:remove-account",
+    input: z.object({ key: z.string() }),
+    output: z.void(),
+  }),
+
+  switchAccount: defineContract({
+    channel: "vercel:switch-account",
+    input: z.object({ key: z.string() }),
+    output: z.void(),
+  }),
+
   listProjects: defineContract({
     channel: "vercel:list-projects",
     input: z.void(),

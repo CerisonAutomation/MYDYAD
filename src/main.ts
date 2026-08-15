@@ -5,10 +5,10 @@ import {
   dialog,
   Menu,
   protocol,
+  session,
   net,
   nativeImage,
   crashReporter,
-  session,
   type Event as ElectronEvent,
 } from "electron";
 import * as path from "node:path";
@@ -19,6 +19,18 @@ import { registerIpcHandlers } from "./ipc/ipc_host";
 import dotenv from "dotenv";
 // @ts-ignore
 import started from "electron-squirrel-startup";
+console.log(
+  "[BOOT] main.ts loaded, E2E_TEST_BUILD=",
+  process.env.E2E_TEST_BUILD,
+);
+
+// Force Chromium to use a basic file-based password store instead of the
+// macOS Keychain. This must run before app.whenReady() so that os_crypt
+// never attempts a Keychain lookup. Combined with DYAD_NO_KEYCHAIN=1
+// (which bypasses Dyad's own safeStorage calls), this eliminates all
+// Keychain prompts.
+app.commandLine.appendSwitch("password-store", "basic");
+
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 import log from "electron-log";
 import {
@@ -34,13 +46,7 @@ import {
   readRendererCrashRecord,
   clearRendererCrashRecord,
   setInitialLoadIsFirstSession,
-  rewriteRecoveredSafeStorageSecretsAfterKeychainUnlock,
-  type RendererCrashPerformanceSnapshot,
 } from "./main/settings";
-import {
-  recoveryNeedsKeychainUnlock,
-  retryRecoveryWithKeychainUnlock,
-} from "./main/safe_storage_legacy";
 import { recordUpdaterError } from "./main/updater_state";
 import {
   sendTelemetryEvent,
@@ -50,7 +56,7 @@ import { handleSupabaseOAuthReturn } from "./supabase_admin/supabase_return_hand
 import { handleDyadProReturn } from "./main/pro";
 import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
 import { BackupManager } from "./backup_manager";
-import { db, closeDatabase, getDatabasePath, initializeDatabase } from "./db";
+import { db, getDatabasePath, initializeDatabase, closeDatabase } from "./db";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
@@ -91,7 +97,6 @@ import {
   stopAppGarbageCollection,
 } from "./ipc/utils/process_manager";
 import { cleanupOldAiMessagesJson } from "./pro/main/ipc/handlers/local_agent/ai_messages_cleanup";
-import { shutdownBrowser } from "./pro/main/ipc/handlers/local_agent/tools/browser_session";
 import {
   startChatSearchIndexer,
   stopChatSearchIndexer,
@@ -165,56 +170,51 @@ log.errorHandler.startCatching();
 log.eventLogger.startLogging();
 log.scope.labelPadding = false;
 
-// Log unhandled promise rejections (from fire-and-forget `void` calls) without
-// swallowing them. Do NOT add an uncaughtException handler — it would prevent
-// the process from crashing on fatal errors, leaving the app in a half-dead
-// unresponsive state instead of exiting cleanly.
-const errorLogger = log.scope("uncaught");
-process.on("unhandledRejection", (reason: unknown) => {
-  errorLogger.error("Unhandled promise rejection:", reason);
-});
+// ── EPIPE suppression (three layers) ──────────────────────────────────
+// When stdout/stderr pipes break (terminal closed, headless session),
+// console.error → process.stderr.write throws EPIPE synchronously.
+// electron-log's own writeFn catch block sometimes misses it because
+// Node streams can emit the error before the try/catch frame returns.
+// Fix: patch at the stream level + transport level + global handler.
 
-// Fix EIO errors when writing to console after stream is closed (e.g., child process exit)
-// This wraps the console transport's writeFn with error handling for broken pipes
-try {
-  const consoleTransport = (log as any).transports?.console;
-  if (consoleTransport && typeof consoleTransport.writeFn === "function") {
-    const originalWriteFn = consoleTransport.writeFn;
-    consoleTransport.writeFn = (args: any) => {
+function patchStreamEpipe(stream: NodeJS.WriteStream | NodeJS.Socket) {
+  const originalWrite = stream.write;
+  const patchedWrite = function patchedWrite(
+    this: typeof stream,
+    ...args: Parameters<typeof originalWrite>
+  ): boolean {
+    try {
+      return originalWrite.apply(this, args);
+    } catch (err: any) {
+      if (err?.code === "EPIPE") return true; // silently swallow
+      throw err;
+    }
+  } as typeof originalWrite;
+  stream.write = patchedWrite;
+}
+
+if (process.stdout) patchStreamEpipe(process.stdout);
+if (process.stderr) patchStreamEpipe(process.stderr);
+
+const consoleTransport = log.transports.console;
+if (consoleTransport) {
+  const originalWriteFn = (consoleTransport as any).writeFn;
+  if (typeof originalWriteFn === "function") {
+    (consoleTransport as any).writeFn = (args: any) => {
       try {
         originalWriteFn(args);
-      } catch (e: any) {
-        // Swallow EIO errors (broken pipe) and ENOTTY (inappropriate ioctl)
-        // These happen when a child process exits while we're still trying to log
-        if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF" || e?.code === "EPIPE") {
-          // Silently ignore — the stream is gone
-          return;
-        }
-        // Re-throw other errors
-        throw e;
+      } catch (err: any) {
+        if (err?.code === "EPIPE") return;
+        throw err;
       }
     };
   }
-} catch {
-  // If transport override fails, continue without it — not critical
 }
 
-// Also wrap native console methods to prevent EIO errors from process_manager
-// and other code that uses console.info/error directly instead of electron-log
-for (const method of ["info", "error", "warn", "log"] as const) {
-  const original = console[method];
-  console[method] = (...args: unknown[]) => {
-    try {
-      original.apply(console, args);
-    } catch (e: any) {
-      if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF" || e?.code === "EPIPE") {
-        return; // Silently ignore broken pipe errors
-      }
-      throw e;
-    }
-  };
-}
-
+process.on("uncaughtException", (error: Error) => {
+  if ((error as NodeJS.ErrnoException).code === "EPIPE") return;
+  throw error;
+});
 const execFileAsync = promisify(execFile);
 
 // Prefer the Dyad-managed pnpm (if installed) for everything spawned from the
@@ -282,21 +282,17 @@ if (process.env.NODE_ENV === "development") {
 // uploaded; parsed on the next launch into a summary we send as telemetry.
 // Must start before the app is ready. globalExtra annotates every dump with
 // static context; dynamic GPU status is added in onReady.
-try {
-  crashReporter.start({
-    uploadToServer: false,
-    compress: true,
-    globalExtra: {
-      app_version: app.getVersion(),
-      electron_version: process.versions.electron ?? "unknown",
-      chrome_version: process.versions.chrome ?? "unknown",
-      os: process.platform,
-      arch: process.arch,
-    },
-  });
-} catch (err) {
-  console.error("[main] Failed to start crashReporter:", err);
-}
+crashReporter.start({
+  uploadToServer: false,
+  compress: true,
+  globalExtra: {
+    app_version: app.getVersion(),
+    electron_version: process.versions.electron ?? "unknown",
+    chrome_version: process.versions.chrome ?? "unknown",
+    os: process.platform,
+    arch: process.arch,
+  },
+});
 
 const logger = log.scope("main");
 
@@ -398,8 +394,10 @@ crashRecoveryWindowReadiness = new DeepLinkWindowReadiness<BrowserWindow>({
   markNotReady: () => undefined,
 });
 
-// Load environment variables from .env file
-dotenv.config();
+// Load environment variables from .env file (dev only)
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 // Register IPC handlers before app is ready
 registerIpcHandlers();
@@ -426,18 +424,6 @@ if (fs.existsSync(gitDir)) {
 }
 
 // https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app#main-process-mainjs
-//
-// IMPORTANT: In dev mode, ALL Electron apps share `com.github.Electron` as
-// their bundle identifier. macOS routes dyad:// deep links to whichever
-// Electron app registered the protocol last. If ZCode, Claude, or another
-// Electron app is running, they may intercept the redirect intended for Dyad.
-//
-// Production builds use `appBundleId: "sh.dyad.app"` in forge.config.ts to
-// give Dyad a unique identity — the redirect always goes to Dyad in production.
-//
-// In dev mode, we aggressively re-register on every startup to maximize the
-// chance that Dyad claims the protocol. The user should also close other
-// Electron apps before connecting Supabase/Neon integrations.
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
     app.setAsDefaultProtocolClient("dyad", process.execPath, [
@@ -448,14 +434,34 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient("dyad");
 }
 
+/**
+ * Dev-only startup diagnostics. Writes a timestamped trace to
+ * <userData>/debug.log so blank-window / boot failures are visible
+ * without a debugger attached. No-op in production builds.
+ */
+function debugLog(msg: string) {
+  if (process.env.NODE_ENV !== "development") return;
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  try {
+    const debugPath = path.join(app.getPath("userData"), "debug.log");
+    fs.appendFileSync(debugPath, line);
+  } catch {
+    // Ignore write errors in debug logging
+  }
+}
+
 export async function onReady() {
-  // ── Content Security Policy (fixes blank screen in dev) ──────────
-  // Vite's HMR requires 'unsafe-eval' and 'unsafe-inline'.
-  // In production, use a strict CSP without these allowances.
+  debugLog("onReady() STARTED");
+
+  // ── Content Security Policy (fixes blank screen + preview iframe) ─────────
+  // Allow the preview proxy port (42100-52099) in frame-src and frame-ancestors
+  // so the iframe can load the proxied dev server. Without port wildcards,
+  // Electron blocks framing on non-default ports.
   const isDev = !app.isPackaged;
+  // CSP3: host-sources without a port match ANY port — no wildcard-port syntax needed
   const csp = isDev
-    ? "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws://localhost:* http://localhost:*; img-src 'self' data: blob:; font-src 'self' data:;"
-    : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; font-src 'self' data:;";
+    ? "default-src 'self' unsafe-inline unsafe-eval blob: data: https: http:; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https: http:; style-src 'self' 'unsafe-inline' blob: data: https: http:; connect-src 'self' ws://localhost:* http://localhost:* http://127.0.0.1:* https: http: blob: data:; worker-src 'self' blob: data:; frame-src 'self' http://localhost:* http://127.0.0.1:* file: blob: data: https: http:; frame-ancestors 'self' file: http://localhost:* http://127.0.0.1:* https://* http://*; img-src 'self' data: blob: https://* http://* dyad-media:; font-src 'self' data: blob: https://* http://*;"
+    : "default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-src 'self' http://localhost:* http://127.0.0.1:* file: blob:; frame-ancestors 'self' file: http://localhost:* http://127.0.0.1:* https://*; img-src 'self' data: blob: dyad-media:; font-src 'self' data:;";
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
@@ -469,6 +475,7 @@ export async function onReady() {
   // setAsDefaultProtocolClient above is unreliable on Linux. Pass this instance's
   // userData so a browser-launched deep link forwards here, not a second window.
   void registerDyadProtocolLinux(app.getPath("userData"));
+  debugLog("registerDyadProtocolLinux done");
 
   // React DevTools extension loading is intentionally disabled. In Electron it
   // can spam startup logs with:
@@ -481,11 +488,13 @@ export async function onReady() {
       dbFile: getDatabasePath(),
     });
     await backupManager.initialize();
+    debugLog("backupManager initialized");
   } catch (e) {
     logger.error("Error initializing backup manager", e);
   }
   try {
     initializeDatabase();
+    debugLog("database initialized OK");
   } catch (error) {
     logger.error("Failed to initialize database", error);
     const message = error instanceof Error ? error.message : String(error);
@@ -504,17 +513,23 @@ export async function onReady() {
   void reconcileOrphanTestUsers();
 
   // Cleanup old ai_messages_json entries to prevent database bloat
-  await cleanupOldAiMessagesJson();
+  void cleanupOldAiMessagesJson().catch((error) =>
+    logger.error("Failed to cleanup old ai_messages_json:", error),
+  );
 
   // Start the chat-search FTS index maintenance (backfill runs in the
   // background; never blocks startup)
   startChatSearchIndexer();
 
   // Cleanup old media files to reclaim disk space
-  await cleanupOldMediaFiles();
+  void cleanupOldMediaFiles().catch((error) =>
+    logger.error("Failed to cleanup old media files:", error),
+  );
 
   // Remove GitHub tokens that older versions embedded in git remote URLs
-  await scrubGithubTokenFromRemotes();
+  void scrubGithubTokenFromRemotes().catch((error) =>
+    logger.error("Failed to scrub GitHub tokens from remotes:", error),
+  );
 
   // Encrypt MCP headers and env vars that are still stored as
   // plaintext. Awaited so no MCP read can see a row the pass is about
@@ -609,10 +624,13 @@ export async function onReady() {
         createPlatformThumbnailFromPath(nativeImage, sourcePath, size),
     }),
   );
+  debugLog("protocol registered OK");
 
   const shouldUseManagedNode =
     settings.nodeRuntimePreference === "managed" && !settings.customNodePath;
+  debugLog("calling getManagedNodeVersion...");
   const managedNodeVersion = await getManagedNodeVersion();
+  debugLog("getManagedNodeVersion done, version=" + String(managedNodeVersion));
   if (shouldUseManagedNode) {
     if (managedNodeVersion) {
       applyManagedNodeToProcessPath();
@@ -625,7 +643,9 @@ export async function onReady() {
   }
 
   await onFirstRunMaybe(settings);
+  debugLog("onFirstRunMaybe done");
   await createFreshStartupWindow();
+  debugLog("createFreshStartupWindow done");
   createApplicationMenu();
 
   sendTelemetryEvent("runtime_source", {
@@ -666,18 +686,8 @@ export async function onReady() {
 }
 
 function scheduleSafeStorageKeychainUnlockRetryAfterRendererLoad(): void {
-  if (safeStorageKeychainUnlockRetryScheduled) {
-    return;
-  }
-  safeStorageKeychainUnlockRetryScheduled = true;
-  setTimeout(() => {
-    if (!recoveryNeedsKeychainUnlock()) {
-      return;
-    }
-    if (retryRecoveryWithKeychainUnlock()) {
-      rewriteRecoveredSafeStorageSecretsAfterKeychainUnlock();
-    }
-  }, 0);
+  // Keychain access is fully disabled in this build (password-store=basic +
+  // DYAD_NO_KEYCHAIN=1). No retry needed.
 }
 
 export async function onFirstRunMaybe(settings: UserSettings) {
@@ -704,20 +714,35 @@ async function promptMoveToApplicationsFolder(): Promise<void> {
   if (IS_TEST_BUILD) return;
   if (process.platform !== "darwin") return;
   if (app.isInApplicationsFolder()) return;
+
+  // Never-block-startup escape hatch: set DYAD_SKIP_MOVE_PROMPT=1 to suppress.
+  if (process.env.DYAD_SKIP_MOVE_PROMPT === "1") return;
+
   logger.log("Prompting user to move to applications folder");
 
-  const { response } = await dialog.showMessageBox({
-    type: "question",
-    buttons: ["Move to Applications Folder", "Do Not Move"],
-    defaultId: 0,
-    message: "Move to Applications Folder? (required for auto-update)",
-  });
+  // CRITICAL: this dialog must NEVER block window creation. If it goes
+  // unanswered (headless launch, dialog hidden behind other windows, user
+  // away), onReady would hang forever and the app would show a blank screen.
+  // Auto-dismiss as "Do Not Move" after 15 seconds and continue startup.
+  const answer = await Promise.race([
+    dialog.showMessageBox({
+      type: "question",
+      buttons: ["Move to Applications Folder", "Do Not Move"],
+      defaultId: 0,
+      message: "Move to Applications Folder? (required for auto-update)",
+    }),
+    new Promise<{ response: number }>((resolve) =>
+      setTimeout(() => resolve({ response: 1 }), 15000),
+    ),
+  ]);
 
-  if (response === 0) {
+  if (answer.response === 0) {
     logger.log("User chose to move to applications folder");
     app.moveToApplicationsFolder();
   } else {
-    logger.log("User chose not to move to applications folder");
+    logger.log(
+      "User chose not to move to applications folder (or dialog timed out)",
+    );
   }
 }
 
@@ -733,11 +758,11 @@ const productWindowDescriptors = new Map<
 >();
 let lastClosedWindowSession: WindowSessionDescriptor | undefined;
 let hasCreatedInitialWindow = false;
-let pendingForceCloseData: RendererCrashPerformanceSnapshot | null = null;
+let pendingForceCloseData: any = null;
 let pendingActiveChatId: number | null = null;
 let pendingCrashDetected = false;
 let isAppQuitting = false;
-let safeStorageKeychainUnlockRetryScheduled = false;
+
 const lifecycleLogger = log.scope("app_lifecycle");
 const lifecycleStartedAt = Date.now();
 let lifecycleSequence = 0;
@@ -887,6 +912,7 @@ const createWindow = ({
   }
 
   // Create the browser window.
+  debugLog("createWindow: creating BrowserWindow...");
   const browserWindow = new BrowserWindow({
     width: process.env.NODE_ENV === "development" ? 1280 : 960,
     minWidth: 800,
@@ -903,12 +929,21 @@ const createWindow = ({
       contextIsolation: true,
       sandbox: true,
       preload: path.join(__dirname, "preload.js"),
+      // Startup/reload efficiency: skip the V8 code-cache heat check so the
+      // renderer reuses cached bytecode immediately after the first run.
+      v8CacheOptions: "bypassHeatCheck",
+      // Renderer memory/CPU: the chat surface never needs spellcheck, and the
+      // spellchecker keeps a loaded dictionary in every renderer process.
+      spellcheck: false,
       // transparent: true,
     },
     icon: path.join(app.getAppPath(), "assets/icon/logo.png"),
     // backgroundColor: "#00000001",
     // frame: false,
   });
+  debugLog(
+    "createWindow: BrowserWindow created, id=" + String(browserWindow.id),
+  );
   mainWindow = browserWindow;
   deepLinkWindowReadiness.setTarget(browserWindow);
   crashRecoveryWindowReadiness.setTarget(browserWindow);
@@ -1036,14 +1071,49 @@ const createWindow = ({
 
   // and load the index.html of the app.
   let initialLoad: Promise<void>;
+  debugLog("createWindow: loading renderer...");
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    initialLoad = browserWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-  } else {
-    initialLoad = browserWindow.loadFile(
-      path.join(__dirname, "../renderer/main_window/index.html"),
+    debugLog("loading URL=" + MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    // In dev mode, wait for the Vite dev server to be ready before loading.
+    // This avoids ERR_CONNECTION_REFUSED when Electron starts before Vite
+    // is fully listening.
+    const waitForDevServer = async (
+      url: string,
+      retries = 10,
+      delayMs = 1000,
+    ): Promise<void> => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: "HEAD",
+            signal: AbortSignal.timeout(3000),
+          });
+          if (response.ok || response.status < 500) return;
+        } catch {
+          // Server not ready yet
+        }
+        if (attempt < retries) {
+          debugLog(
+            `Waiting for Vite dev server (attempt ${attempt}/${retries})...`,
+          );
+          await new Promise((r) => setTimeout(r, delayMs));
+        }
+      }
+    };
+    initialLoad = waitForDevServer(MAIN_WINDOW_VITE_DEV_SERVER_URL).then(() =>
+      browserWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL),
     );
+  } else {
+    const rendererPath = path.join(
+      __dirname,
+      "../renderer/main_window/index.html",
+    );
+    debugLog("loading file=" + rendererPath);
+    debugLog("__dirname=" + __dirname);
+    initialLoad = browserWindow.loadFile(rendererPath);
   }
   void initialLoad.catch((error) => {
+    debugLog("ERROR: Product window renderer FAILED to load: " + String(error));
     logger.error("Product window renderer failed to load:", error);
   });
 
@@ -1142,7 +1212,94 @@ const createWindow = ({
       exitCode: details.exitCode,
       performance: readSettings().lastKnownPerformance,
     });
+
+    // ── Never-blank recovery: reload the renderer after a crash ──
+    const crashTarget = browserWindow.webContents.getURL();
+    if (
+      crashTarget &&
+      !crashTarget.startsWith("data:") &&
+      !browserWindow.isDestroyed()
+    ) {
+      setTimeout(() => {
+        if (!browserWindow.isDestroyed()) {
+          debugLog(
+            "recovery: reloading renderer after crash (" + details.reason + ")",
+          );
+          browserWindow.loadURL(crashTarget).catch(() => {
+            debugLog(
+              "recovery: reload after crash failed — will retry via did-fail-load",
+            );
+          });
+        }
+      }, 1500);
+    }
   });
+
+  // ── Never-blank recovery: retry failed loads with backoff, then show a
+  // branded fallback page instead of a white/blank window. This covers the
+  // case where the Vite dev server dies or restarts while Electron is up.
+  {
+    let failCount = 0;
+    const MAX_FAILS = 15;
+    let _lastRendererUrl: string | undefined;
+    const fallbackPage = () => {
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>Dyad</title>
+<style>
+  html,body{margin:0;height:100%;background:#0d0d12;color:#e8e8ea;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+  .card{text-align:center;max-width:460px;padding:40px}
+  .logo{font-size:44px;margin-bottom:12px}
+  h1{font-size:20px;font-weight:600;margin:0 0 8px}
+  p{font-size:14px;color:#9a9aa5;margin:0 0 20px;line-height:1.5}
+  .spinner{width:28px;height:28px;border:3px solid #2a2a35;border-top-color:#575ecf;border-radius:50%;margin:0 auto 20px;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  button{background:#575ecf;color:#fff;border:0;border-radius:8px;padding:10px 22px;font-size:14px;cursor:pointer}
+  button:hover{background:#656de0}
+  .status{font-size:12px;color:#6a6a75;margin-top:14px}
+</style></head><body><div class="card">
+  <div class="logo">⚡</div>
+  <h1>Dyad is reconnecting…</h1>
+  <p>The renderer service is not responding.<br/>Retrying automatically — no action needed.</p>
+  <div class="spinner"></div>
+  <button onclick="location.reload()">Retry now</button>
+  <div class="status">Auto-retry every few seconds</div>
+</div></body></html>`;
+      if (browserWindow.isDestroyed()) return;
+      debugLog("recovery: showing fallback page (never blank)");
+      browserWindow
+        .loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html))
+        .catch(() => {});
+    };
+    browserWindow.webContents.on(
+      "did-fail-load",
+      (_e, code, desc, url, isMainFrame) => {
+        if (!isMainFrame || isAppQuitting) return;
+        if (url.startsWith("data:")) return;
+        failCount++;
+        _lastRendererUrl = url;
+        debugLog(
+          `recovery: did-fail-load #${failCount} (${code} ${desc}) url=${url}`,
+        );
+        if (failCount > MAX_FAILS) {
+          fallbackPage();
+          return;
+        }
+        const delay = Math.min(
+          1000 * Math.pow(2, Math.floor(failCount / 3)),
+          10000,
+        );
+        setTimeout(() => {
+          if (browserWindow.isDestroyed()) return;
+          if (failCount >= 5) fallbackPage();
+          browserWindow.loadURL(url).catch(() => {
+            debugLog("recovery: loadURL rejected, will retry");
+          });
+        }, delay);
+      },
+    );
+    browserWindow.webContents.on("did-finish-load", () => {
+      failCount = 0;
+    });
+  }
 
   // Enable native context menu on right-click
   browserWindow.webContents.on("context-menu", (event, params) => {
@@ -1207,6 +1364,7 @@ const createWindow = ({
 };
 
 async function createFreshStartupWindow(): Promise<void> {
+  debugLog("createFreshStartupWindow: clearing legacy sessions...");
   try {
     await clearLegacyWindowSessionPersistence(app.getPath("userData"));
   } catch (error) {
@@ -1215,12 +1373,17 @@ async function createFreshStartupWindow(): Promise<void> {
       error,
     );
   }
+  debugLog("createFreshStartupWindow: isAppQuitting=" + String(isAppQuitting));
   if (isAppQuitting) {
     logger.info("Skipping initial window creation during shutdown");
     return;
   }
+  debugLog("createFreshStartupWindow: calling createWindow...");
   createWindow({ windowSessionId: PRIMARY_WINDOW_SESSION_ID });
   hasCreatedInitialWindow = true;
+  debugLog(
+    "createFreshStartupWindow: createWindow returned, setting hasCreatedInitialWindow",
+  );
 }
 
 configureWindowProductController({
@@ -1375,39 +1538,45 @@ if (initialDeepLink) {
   deepLinkQueue.handle(initialDeepLink);
 }
 
+// Defense-in-depth: enable sandbox globally before any window is created.
+// Individual windows also set sandbox:true, but this ensures all new
+// BrowserWindows default to sandboxed mode even if a creation path omits it.
+app.enableSandbox();
+
+// Clean up stale SingletonLock from previous crashes to prevent launch failures.
+try {
+  const lockPath = path.join(app.getPath("userData"), "SingletonLock");
+  const fsSync = require("node:fs") as typeof import("node:fs");
+  if (fsSync.existsSync(lockPath)) {
+    const stat = fsSync.lstatSync(lockPath);
+    if (stat.isSymbolicLink()) {
+      const target = fsSync.readlinkSync(lockPath);
+      const pid = Number(target.split("-").pop());
+      if (!Number.isSafeInteger(pid) || pid <= 0) {
+        // Malformed lock, remove it
+        fsSync.unlinkSync(lockPath);
+        debugLog("Removed malformed SingletonLock");
+      } else {
+        try {
+          process.kill(pid, 0);
+        } catch {
+          // Process not running — stale lock, remove it
+          fsSync.unlinkSync(lockPath);
+          debugLog("Removed stale SingletonLock");
+        }
+      }
+    }
+  }
+} catch {
+  // Best effort — don't block startup
+}
+
 // Skip singleton lock for E2E test builds to allow parallel test execution.
 // Deep link handling still works via the 'open-url' event registered below.
 // The 'second-instance' handler is intentionally omitted since it requires the singleton lock.
 if (IS_TEST_BUILD) {
   startAppWhenReady();
 } else {
-  // Clean up stale SingletonLock from a previous unclean shutdown.
-  // Electron's requestSingleInstanceLock reads the PID from this file;
-  // if the old process is dead, the lock is stale and must be removed
-  // or the app will immediately quit thinking another instance is running.
-  try {
-    const userDataPath = app.getPath("userData");
-    const lockPath = path.join(userDataPath, "SingletonLock");
-    const lockTarget = fs.readlinkSync(lockPath);
-    // Lock target format: "hostname-PID" — extract the PID after the last dash.
-    // Use lastIndexOf to handle hostnames that contain dashes.
-    const lastDash = lockTarget.lastIndexOf("-");
-    const pid = lastDash >= 0 ? Number(lockTarget.slice(lastDash + 1)) : NaN;
-    if (Number.isFinite(pid) && pid > 0) {
-      try {
-        // process.kill(pid, 0) sends signal 0 — no signal delivered,
-        // but throws ESRCH if the process doesn't exist.
-        process.kill(pid, 0);
-      } catch {
-        // Process doesn't exist — lock is stale
-        logger.log(`Removing stale SingletonLock for dead PID ${pid}`);
-        fs.unlinkSync(lockPath);
-      }
-    }
-  } catch {
-    // No lock file, can't read it, or can't parse it — proceed normally
-  }
-
   const gotTheLock = app.requestSingleInstanceLock();
 
   if (!gotTheLock) {
@@ -1444,12 +1613,14 @@ app.on("open-url", (event, url) => {
 });
 
 function startAppWhenReady() {
-  // Disable hardware acceleration to prevent GPU process crashes
-  app.disableHardwareAcceleration();
-  app.commandLine.appendSwitch("disable-gpu");
-  app.commandLine.appendSwitch("disable-gpu-compositing");
-
-  app.whenReady().then(onReady);
+  debugLog("startAppWhenReady called");
+  app
+    .whenReady()
+    .then(onReady)
+    .catch((error) => {
+      debugLog("ERROR: onReady FAILED: " + String(error));
+      logger.error("onReady failed:", error);
+    });
 }
 
 function getErrorMessage(error: unknown): string {
@@ -1559,7 +1730,7 @@ async function handleDeepLinkReturn(url: string) {
         apiKey,
       });
     } catch (error) {
-      showDeepLinkSettingsError("save Agent2 settings", error);
+      showDeepLinkSettingsError("save Dyad Pro settings", error);
       return;
     }
     // Send message to renderer to trigger re-render
@@ -1734,13 +1905,15 @@ app.on("will-quit", () => {
   logLifecycle("app:will-quit");
   logger.info("App is quitting");
 
+  // Close the SQLite database to ensure WAL checkpoint finalization
+  try {
+    closeDatabase();
+  } catch (error) {
+    logger.error("Error closing database during quit:", error);
+  }
+
   // Stop the garbage collection timer
   stopAppGarbageCollection();
-
-  // Tear down the shared Playwright browser (fire-and-forget — this handler
-  // must stay synchronous). Prevents an orphaned Chromium from outliving the
-  // app or keeping the process alive.
-  shutdownBrowser();
 
   // Synchronously send kill signals to all running apps (fire-and-forget).
   // We cannot use async/await here because Electron won't wait for it.
@@ -1751,14 +1924,6 @@ app.on("will-quit", () => {
 
   // Stop the chat-search index maintenance timers
   stopChatSearchIndexer();
-
-  // Flush and close the SQLite database cleanly. Without this, a pending
-  // WAL write could leave the database requiring replay on next launch.
-  try {
-    closeDatabase();
-  } catch (error) {
-    logger.error("Error closing database:", error);
-  }
 });
 
 app.on("quit", (_event, exitCode) => {

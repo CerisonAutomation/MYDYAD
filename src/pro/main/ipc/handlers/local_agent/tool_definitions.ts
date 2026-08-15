@@ -144,6 +144,7 @@ import { autoQualityTool } from "./tools/auto_quality";
 import { browserControlTool } from "./tools/browser_control";
 import { takeScreenshotTool } from "./tools/take_screenshot";
 import { domSnapshotTool } from "./tools/dom_snapshot";
+import { globPatternTool } from "./tools/glob_pattern";
 import type { LanguageModelV3ToolResultOutput } from "@ai-sdk/provider";
 import {
   escapeXmlAttr,
@@ -331,6 +332,8 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   browserControlTool,
   takeScreenshotTool,
   domSnapshotTool,
+  // File pattern matching
+  globPatternTool,
 ];
 // ============================================================================
 // Agent Tool Name Type (derived from TOOL_DEFINITIONS)
