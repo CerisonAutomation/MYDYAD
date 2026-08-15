@@ -1,6 +1,15 @@
 import { withLock } from "../ipc/utils/lock_utils";
 import { readSettings, writeSettings } from "../main/settings";
-import { Api, createApiClient } from "@neondatabase/api-client";
+import {
+  Api,
+  createApiClient,
+  type ProjectCreateRequest,
+  type BranchCreateRequest,
+  type EnableNeonAuthIntegrationRequest,
+  type NeonAuthAddDomainToRedirectURIWhitelistRequest,
+  type GetConnectionUriParams,
+  type NeonAuthEmailAndPasswordConfigUpdate,
+} from "@neondatabase/api-client";
 import log from "electron-log";
 import { IS_TEST_BUILD } from "../ipc/utils/test_utils";
 import { fetchWithRetry } from "../ipc/utils/retryWithRateLimit";
@@ -132,7 +141,7 @@ export async function getNeonClient(): Promise<Api<unknown>> {
 
     // Return a mock client for testing
     return {
-      createProject: async (params: any) => ({
+      createProject: async (params: ProjectCreateRequest) => ({
         data: {
           project: {
             id: "test-project-id",
@@ -156,7 +165,7 @@ export async function getNeonClient(): Promise<Api<unknown>> {
           ],
         },
       }),
-      createProjectBranch: async (projectId: string, params: any) => {
+      createProjectBranch: async (projectId: string, params: BranchCreateRequest) => {
         const branchId = `test-${params.branch?.name || "child"}-branch-id`;
         return {
           data: {
@@ -270,7 +279,7 @@ export async function getNeonClient(): Promise<Api<unknown>> {
       createNeonAuth: async (
         projectId: string,
         branchId: string,
-        data: any,
+        data: EnableNeonAuthIntegrationRequest,
       ) => ({
         data: {
           auth_provider: data.auth_provider || "better_auth",
@@ -294,7 +303,7 @@ export async function getNeonClient(): Promise<Api<unknown>> {
       addBranchNeonAuthTrustedDomain: async (
         _projectId: string,
         _branchId: string,
-        _data: any,
+        _data: NeonAuthAddDomainToRedirectURIWhitelistRequest,
       ) => ({
         data: undefined,
       }),
@@ -308,9 +317,9 @@ export async function getNeonClient(): Promise<Api<unknown>> {
           databases: [{ name: "neondb" }],
         },
       }),
-      getConnectionUri: async (params: any) => ({
+      getConnectionUri: async (params: GetConnectionUriParams) => ({
         data: {
-          uri: getMockConnectionUri(params.branch_id),
+          uri: getMockConnectionUri(params.branch_id ?? "main"),
         },
       }),
       getProjectBranch: async (projectId: string, branchId: string) => ({
@@ -342,7 +351,7 @@ export async function getNeonClient(): Promise<Api<unknown>> {
       updateNeonAuthEmailAndPasswordConfig: async (
         _projectId: string,
         _branchId: string,
-        data: any,
+        data: NeonAuthEmailAndPasswordConfigUpdate,
       ) => ({
         data: {
           enabled: true,
@@ -502,8 +511,9 @@ export async function getCachedEmailPasswordConfig(
     });
     evictEmailPasswordConfigCache();
     return data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { status?: number } } | undefined;
+    if (axiosError?.response?.status === 404) {
       emailPasswordConfigCache.set(key, {
         data: DEFAULT_EMAIL_PASSWORD_CONFIG,
         expiry: Date.now() + EMAIL_PASSWORD_CONFIG_TTL_MS,

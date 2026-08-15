@@ -360,7 +360,7 @@ export function registerNeonHandlers() {
         await rollbackNitroOnce();
         throw postCreateError;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Catches errors from pre-postCreate steps (e.g. getNeonOrganizationId,
       // createProject). The postCreate inner catch already rolled back Nitro
       // for its failures; this handles everything else.
@@ -508,7 +508,7 @@ export function registerNeonHandlers() {
           createdAt: p.created_at,
         })),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = getNeonErrorMessage(error);
       logger.error(`Failed to list Neon projects: ${errorMessage}`);
       throw new DyadError(
@@ -654,7 +654,7 @@ export function registerNeonHandlers() {
         success: true,
         warning: combineWarnings(...nitroSetup.warningMessages, warning),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Roll back the Nitro server layer we added so a failed link doesn't
       // leave the app with nitro.config.ts, server/, vite.config.ts edits,
       // and AI_RULES changes for a project that was never linked.
@@ -713,7 +713,7 @@ export function registerNeonHandlers() {
 
       logger.info(`Successfully unlinked Neon project from app ${appId}`);
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = getNeonErrorMessage(error);
       logger.error(
         `Failed to unset Neon project for app ${appId}: ${errorMessage}`,
@@ -873,7 +873,7 @@ export function registerNeonHandlers() {
         `Successfully set active branch ${branchId} for app ${appId}`,
       );
       return { success: true, warning };
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof DyadError) throw error;
       const errorMessage = getNeonErrorMessage(error);
       logger.error(

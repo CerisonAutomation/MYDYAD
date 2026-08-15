@@ -227,11 +227,13 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
             provider: provider as ProviderApiKeyValidationProvider,
             apiKey: normalizedValue,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : `Dyad could not verify this ${providerDisplayName} API key.`;
           setApiKeyValidationDialog({
-            message:
-              error?.message ||
-              `Dyad could not verify this ${providerDisplayName} API key.`,
+            message,
             apiKey: normalizedValue,
             allowKeepInvalidKey: true,
             errorKind: getErrorKind(error),
@@ -277,9 +279,10 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
       if (isDyad) {
         queryClient.invalidateQueries({ queryKey: queryKeys.userBudget.info });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving API key:", error);
-      setSaveError(error.message || "Failed to save API key.");
+      const message = error instanceof Error ? error.message : "Failed to save API key.";
+      setSaveError(message);
     } finally {
       setIsSaving(false);
     }
@@ -304,11 +307,13 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
         apiKey: normalizedValue,
       });
       setTestSuccessMessage(`${providerDisplayName} API key looks good.`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : `Dyad could not verify this ${providerDisplayName} API key.`;
       setApiKeyValidationDialog({
-        message:
-          error?.message ||
-          `Dyad could not verify this ${providerDisplayName} API key.`,
+        message,
         apiKey: normalizedValue,
         allowKeepInvalidKey: false,
         errorKind: getErrorKind(error),
@@ -333,9 +338,10 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
         },
       });
       // Optionally show a success message
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting API key:", error);
-      setSaveError(error.message || "Failed to delete API key.");
+      const message = error instanceof Error ? error.message : "Failed to delete API key.";
+      setSaveError(message);
     } finally {
       setIsSaving(false);
     }
@@ -348,8 +354,8 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
       await updateSettings({
         enableDyadPro: enabled,
       });
-    } catch (error: any) {
-      showError(`Error toggling Agent2 mode: ${error}`);
+    } catch (error: unknown) {
+      showError(`Error toggling Agent2 mode: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsSaving(false);
     }

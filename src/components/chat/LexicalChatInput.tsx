@@ -49,7 +49,7 @@ const beautifulMentionsTheme: BeautifulMentionsTheme = {
 const CustomMenuItem = forwardRef<
   HTMLLIElement,
   BeautifulMentionsMenuItemProps
->(({ selected, item, ...props }, ref) => {
+>(({ selected, item, itemValue: _itemValue, label: _label, ...props }, ref) => {
   const isPrompt = item.data?.type === "prompt";
   const isSkill = item.data?.type === "skill";
   const isApp = item.data?.type === "app";
@@ -66,7 +66,7 @@ const CustomMenuItem = forwardRef<
           : isMedia
             ? "Media"
             : "File";
-  const value = (item as any)?.value;
+  const value = (item as any)?.value ?? _itemValue;
 
   // For history items, show full text without label
   if (isHistory) {

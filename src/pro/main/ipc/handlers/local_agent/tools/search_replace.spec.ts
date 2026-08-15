@@ -12,6 +12,11 @@ vi.mock("node:fs", async () => {
     default: {
       existsSync: vi.fn(),
       promises: {
+        access: vi.fn(async (filePath: string) => {
+          if (String(filePath).includes("nonexistent")) {
+            throw new Error("ENOENT: no such file or directory");
+          }
+        }),
         readFile: vi.fn(),
         writeFile: vi.fn(),
       },

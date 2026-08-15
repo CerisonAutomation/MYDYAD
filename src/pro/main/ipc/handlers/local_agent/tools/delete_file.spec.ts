@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import path from "node:path";
 import { deleteFileTool } from "./delete_file";
 import type { AgentContext } from "./types";
@@ -19,10 +20,24 @@ vi.mock("node:fs", async () => {
       unlinkSync: vi.fn(),
       promises: {
         realpath: vi.fn(async (filePath: string) => filePath),
-        lstat: vi.fn(),
+        lstat: vi.fn(async () => ({ isDirectory: () => false })),
+        rm: vi.fn(async () => undefined),
+        unlink: vi.fn(async () => undefined),
       },
     },
   };
+});
+
+vi.mock("node:fs/promises", async () => {
+  const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
+  const mocks2 = {
+    realpath: vi.fn(async (filePath: string) => filePath),
+    lstat: vi.fn(async () => ({ isDirectory: () => false })),
+    rm: vi.fn(async () => undefined),
+    unlink: vi.fn(async () => undefined),
+    readdir: vi.fn(async () => []),
+  };
+  return { ...actual, ...mocks2, default: { ...(actual as any).default, ...mocks2 } };
 });
 
 vi.mock("electron-log", () => ({
@@ -106,8 +121,8 @@ describe("deleteFileTool", () => {
         ).rejects.toThrow(/Refusing to delete project root/);
 
         expect(fs.existsSync).not.toHaveBeenCalled();
-        expect(fs.unlinkSync).not.toHaveBeenCalled();
-        expect(fs.rmdirSync).not.toHaveBeenCalled();
+        expect(fsPromises.unlink).not.toHaveBeenCalled();
+        expect(fsPromises.rm).not.toHaveBeenCalled();
         expect(gitRemove).not.toHaveBeenCalled();
       },
     );
@@ -126,10 +141,10 @@ describe("deleteFileTool", () => {
         mockContext,
       );
 
-      expect(fs.unlinkSync).toHaveBeenCalledWith(
+      expect(fsPromises.unlink).toHaveBeenCalledWith(
         path.join(mockContext.appPath, "src/file.ts"),
       );
-      expect(fs.rmdirSync).not.toHaveBeenCalled();
+      expect(fsPromises.rm).not.toHaveBeenCalled();
       expect(gitRemove).toHaveBeenCalledWith({
         path: "/test/app",
         filepath: "src/file.ts",
@@ -149,13 +164,13 @@ describe("deleteFileTool", () => {
         mockContext,
       );
 
-      expect(fs.rmdirSync).toHaveBeenCalledWith(
+      expect(fsPromises.rm).toHaveBeenCalledWith(
         path.join(mockContext.appPath, "src/dir"),
         {
           recursive: true,
         },
       );
-      expect(fs.unlinkSync).not.toHaveBeenCalled();
+      expect(fsPromises.unlink).not.toHaveBeenCalled();
       expect(result).toBe("Successfully deleted src/dir");
     });
 
@@ -202,7 +217,7 @@ describe("deleteFileTool", () => {
         context,
       );
 
-      expect(fs.unlinkSync).toHaveBeenCalledWith(
+      expect(fsPromises.unlink).toHaveBeenCalledWith(
         path.join(
           mockContext.appPath,
           "supabase/functions/hello-world/index.ts",

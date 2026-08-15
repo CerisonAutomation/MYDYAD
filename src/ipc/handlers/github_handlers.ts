@@ -155,11 +155,11 @@ export async function prepareLocalBranch({
             remote: "origin",
             accessToken,
           });
-        } catch (fetchError: any) {
+        } catch (fetchError: unknown) {
           // For new repos, fetch might fail because the repo is empty
           // This is okay - we'll just create the branch locally
           logger.debug(
-            `[GitHub Handler] Fetch failed (expected for new repos): ${fetchError?.message || "Unknown error"}`,
+            `[GitHub Handler] Fetch failed (expected for new repos): ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`,
           );
         }
       }
@@ -238,11 +238,11 @@ export async function prepareLocalBranch({
       // Branch exists locally, just checkout
       await gitCheckout({ path: appPath, ref: targetBranch });
     }
-  } catch (gitError: any) {
+  } catch (gitError: unknown) {
     logger.error("[GitHub Handler] Failed to prepare local branch:", gitError);
     if (gitError instanceof DyadError) throw gitError;
     const errorMessage =
-      gitError?.message ||
+      (gitError instanceof Error ? gitError.message : undefined) ||
       "Failed to prepare local branch for the connected repository.";
     throw new Error(errorMessage);
   }
@@ -434,7 +434,7 @@ async function startGithubDeviceFlow({
       }),
     });
     if (!res.ok) {
-      const errData = (await res.json()) as any;
+      const errData = (await res.json()) as { error_description?: string };
       throw new Error(
         `GitHub API Error: ${errData.error_description || res.statusText}`,
       );
@@ -475,13 +475,13 @@ async function startGithubDeviceFlow({
       () => pollForAccessToken(invocationRef),
       record.interval * 1000,
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error initiating GitHub device flow:", error);
     connectionFlowRegistry.fail(
       "github",
       invocationRef,
       "network",
-      `Failed to start GitHub connection: ${error.message}`,
+      `Failed to start GitHub connection: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -510,22 +510,29 @@ async function handleListGithubRepos(): Promise<
     );
 
     if (!response.ok) {
-      const errorData = (await response.json()) as any;
+      const errorData = (await response.json()) as { message?: string };
       throw new Error(
         `GitHub API error: ${errorData.message || response.statusText}`,
       );
     }
 
-    const repos = (await response.json()) as any[];
-    return repos.map((repo: any) => ({
+    const repos = (await response.json()) as {
+      name: string;
+      full_name: string;
+      private: boolean;
+    }[];
+    return repos.map((repo) => ({
       name: repo.name,
       full_name: repo.full_name,
       private: repo.private,
     }));
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[GitHub Handler] Failed to list repos:", err);
-    throw new Error(err.message || "Failed to list GitHub repositories.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to list GitHub repositories.",
+    );
   }
 }
 
@@ -554,21 +561,27 @@ async function handleGetRepoBranches(
     );
 
     if (!response.ok) {
-      const errorData = (await response.json()) as any;
+      const errorData = (await response.json()) as { message?: string };
       throw new Error(
         `GitHub API error: ${errorData.message || response.statusText}`,
       );
     }
 
-    const branches = (await response.json()) as any[];
-    return branches.map((branch: any) => ({
+    const branches = (await response.json()) as {
+      name: string;
+      commit: { sha: string };
+    }[];
+    return branches.map((branch) => ({
       name: branch.name,
       commit: { sha: branch.commit.sha },
     }));
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[GitHub Handler] Failed to get repo branches:", err);
-    throw new Error(err.message || "Failed to get repository branches.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to get repository branches.",
+    );
   }
 }
 
@@ -605,11 +618,14 @@ async function handleIsRepoAvailable(
     } else if (res.ok) {
       return { available: false, error: "Repository already exists." };
     } else {
-      const data = (await res.json()) as any;
+      const data = (await res.json()) as { message?: string };
       return { available: false, error: data.message || "Unknown error" };
     }
-  } catch (err: any) {
-    return { available: false, error: err.message || "Unknown error" };
+  } catch (err: unknown) {
+    return {
+      available: false,
+      error: (err instanceof Error ? err.message : undefined) || "Unknown error",
+    };
   }
 }
 
@@ -669,7 +685,12 @@ export async function handleCreateRepo(
   if (!res.ok) {
     let errorMessage = `Failed to create repository (${res.status} ${res.statusText})`;
     try {
-      const data = (await res.json()) as any;
+      const data = (await res.json()) as {
+        message?: string;
+        errors?: Array<
+          string | { message?: string; code?: string; field?: string }
+        >;
+      };
       logger.error("GitHub API error when creating repo:", {
         status: res.status,
         statusText: res.statusText,
@@ -684,7 +705,7 @@ export async function handleCreateRepo(
       // Handle validation errors with more details
       if (data.errors && Array.isArray(data.errors)) {
         const errorDetails = data.errors
-          .map((err: any) => {
+          .map((err) => {
             if (typeof err === "string") return err;
             if (err.message) return err.message;
             if (err.code) return `${err.field || "field"}: ${err.code}`;
@@ -779,10 +800,13 @@ export async function handleConnectToExistingRepo(
 
     // Store org, repo, and branch in the app's DB row
     await updateAppGithubRepo({ appId, org: owner, repo, branch });
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[GitHub Handler] Failed to connect to existing repo:", err);
-    throw new Error(err.message || "Failed to connect to existing repository.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to connect to existing repository.",
+    );
   }
 }
 
@@ -836,8 +860,9 @@ export async function handlePushToGithub(
         branch,
         accessToken,
       });
-    } catch (pullError: any) {
-      const errorMessage = pullError?.message || "";
+    } catch (pullError: unknown) {
+      const errorMessage =
+        (pullError instanceof Error ? pullError.message : undefined) || "";
       const isMissingRemoteBranch = isMissingRemoteBranchError(pullError);
 
       // If it's just that remote doesn't have the branch yet, we can ignore and push
@@ -961,7 +986,7 @@ export async function handleGetGitState(
 async function handleListCollaborators(
   event: IpcMainInvokeEvent,
   { appId }: { appId: number },
-): Promise<{ login: string; avatar_url: string; permissions: any }[]> {
+): Promise<{ login: string; avatar_url: string; permissions: Record<string, unknown> }[]> {
   try {
     const settings = readSettings();
     const accessToken = settings.githubAccessToken?.value;
@@ -993,16 +1018,23 @@ async function handleListCollaborators(
       );
     }
 
-    const collaborators = (await response.json()) as any[];
-    return collaborators.map((c: any) => ({
+    const collaborators = (await response.json()) as {
+      login: string;
+      avatar_url: string;
+      permissions: Record<string, unknown>;
+    }[];
+    return collaborators.map((c) => ({
       login: c.login,
       avatar_url: c.avatar_url,
       permissions: c.permissions,
     }));
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[GitHub Handler] Failed to list collaborators:", err);
-    throw new Error(err.message || "Failed to list collaborators.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to list collaborators.",
+    );
   }
 }
 
@@ -1074,10 +1106,13 @@ async function handleInviteCollaborator(
           `Failed to invite collaborator: ${response.status} ${response.statusText}`,
       );
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[GitHub Handler] Failed to invite collaborator:", err);
-    throw new Error(err.message || "Failed to invite collaborator.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to invite collaborator.",
+    );
   }
 }
 
@@ -1118,10 +1153,13 @@ async function handleRemoveCollaborator(
           `Failed to remove collaborator: ${response.status} ${response.statusText}`,
       );
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[GitHub Handler] Failed to remove collaborator:", err);
-    throw new Error(err.message || "Failed to remove collaborator.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to remove collaborator.",
+    );
   }
 }
 

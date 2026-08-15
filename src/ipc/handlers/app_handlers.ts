@@ -414,10 +414,10 @@ async function removeAppFiles(appId: number, appPath: string): Promise<void> {
       maxRetries: 5,
       retryDelay: 200,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error(`Error deleting app files for app ${appId}:`, error);
     throw new Error(
-      `App deleted from database, but failed to delete app files. Please delete app files from ${appPath} manually.\n\nError: ${error.message}`,
+      `App deleted from database, but failed to delete app files. Please delete app files from ${appPath} manually.\n\nError: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -655,7 +655,7 @@ async function deleteAppByIdExclusive(
           try {
             logger.log(`Stopping app ${appId} before deletion.`);
             await stopAppByInfo(appId, appInfo);
-          } catch (error: any) {
+          } catch (error: unknown) {
             logger.error(`Error stopping app ${appId} before deletion:`, error);
             // Continue with deletion even if stopping fails
           }
@@ -693,10 +693,10 @@ async function deleteAppByIdExclusive(
             }
             entityDisposalBus.publish({ kind: "app", id: appId });
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error(`Error deleting app ${appId} from database:`, error);
           throw new DyadError(
-            `Failed to delete app from database: ${error.message}`,
+            `Failed to delete app from database: ${error instanceof Error ? error.message : String(error)}`,
             DyadErrorKind.External,
           );
         }
@@ -1342,10 +1342,10 @@ export function registerAppHandlers() {
           filepath: filePath,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error(`Error writing file ${filePath} for app ${appId}:`, error);
       throw new DyadError(
-        `Failed to write file: ${error.message}`,
+        `Failed to write file: ${error instanceof Error ? error.message : String(error)}`,
         DyadErrorKind.External,
       );
     }
@@ -1421,12 +1421,14 @@ export function registerAppHandlers() {
         try {
           await deleteAppById(appId);
           results.push({ appId, success: true });
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error(`Error deleting app ${appId} in bulk delete:`, error);
           results.push({
             appId,
             success: false,
-            error: error?.message ?? String(error),
+            error:
+              (error instanceof Error ? error.message : undefined) ??
+              String(error),
           });
         }
       }),
@@ -1476,13 +1478,13 @@ export function registerAppHandlers() {
 
           // Return the updated isFavorite value
           return { isFavorite: updated[0].isFavorite };
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error(
             `Error in add-to-favorite handler for app ID ${appId}:`,
             error,
           );
           throw new DyadError(
-            `Failed to toggle favorite status: ${error.message}`,
+            `Failed to toggle favorite status: ${error instanceof Error ? error.message : String(error)}`,
             DyadErrorKind.External,
           );
         }
@@ -1627,10 +1629,10 @@ export function registerAppHandlers() {
           const appInfo = runningApps.get(appId)!;
           try {
             await stopAppByInfo(appId, appInfo);
-          } catch (error: any) {
+          } catch (error: unknown) {
             logger.error(`Error stopping app ${appId} before renaming:`, error);
             throw new Error(
-              `Failed to stop app before renaming: ${error.message}`,
+              `Failed to stop app before renaming: ${error instanceof Error ? error.message : String(error)}`,
             );
           }
         }
@@ -1647,13 +1649,13 @@ export function registerAppHandlers() {
         if (isCaseOnlyRename) {
           try {
             await renameDirectoryWithCaseHop(oldAppPath, newAppPath);
-          } catch (error: any) {
+          } catch (error: unknown) {
             logger.error(
               `Error renaming app directory from ${oldAppPath} to ${newAppPath}:`,
               error,
             );
             throw new DyadError(
-              `Failed to move app files: ${error.message}`,
+              `Failed to move app files: ${error instanceof Error ? error.message : String(error)}`,
               DyadErrorKind.External,
             );
           }
@@ -1677,7 +1679,7 @@ export function registerAppHandlers() {
             await copyDir(oldAppPath, newAppPath, undefined, {
               excludeNodeModules: true,
             });
-          } catch (error: any) {
+          } catch (error: unknown) {
             logger.error(
               `Error moving app files from ${oldAppPath} to ${newAppPath}:`,
               error,
@@ -1700,7 +1702,7 @@ export function registerAppHandlers() {
               }
             }
             throw new DyadError(
-              `Failed to move app files: ${error.message}`,
+              `Failed to move app files: ${error instanceof Error ? error.message : String(error)}`,
               DyadErrorKind.External,
             );
           }
@@ -1708,7 +1710,7 @@ export function registerAppHandlers() {
           try {
             // Delete the old directory
             await fsPromises.rm(oldAppPath, { recursive: true, force: true });
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Why is this just a warning? This happens quite often on Windows
             // because it has an aggressive file lock.
             //
@@ -1735,7 +1737,7 @@ export function registerAppHandlers() {
             .returning();
 
           return { name: appName, path: pathToStore };
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Attempt to rollback the file move
           if (isCaseOnlyRename) {
             try {
@@ -1764,7 +1766,7 @@ export function registerAppHandlers() {
 
           logger.error(`Error updating app ${appId} in database:`, error);
           throw new DyadError(
-            `Failed to update app in database: ${error.message}`,
+            `Failed to update app in database: ${error instanceof Error ? error.message : String(error)}`,
             DyadErrorKind.External,
           );
         }
@@ -1947,12 +1949,12 @@ export function registerAppHandlers() {
           logger.info(
             `Branch renamed from '${oldBranchName}' to '${newBranchName}' for app ${appId}`,
           );
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error(
-            `Failed to rename branch for app ${appId}: ${error.message}`,
+            `Failed to rename branch for app ${appId}: ${error instanceof Error ? error.message : String(error)}`,
           );
           throw new Error(
-            `Failed to rename branch '${oldBranchName}' to '${newBranchName}': ${error.message}`,
+            `Failed to rename branch '${oldBranchName}' to '${newBranchName}': ${error instanceof Error ? error.message : String(error)}`,
           );
         }
       },
@@ -1994,10 +1996,10 @@ export function registerAppHandlers() {
       // Write the response to stdin with a newline
       process.stdin.write(`${response}\n`);
       logger.debug(`Sent response '${response}' to app ${appId} stdin`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error(`Error sending response to app ${appId}:`, error);
       throw new DyadError(
-        `Failed to send response to app: ${error.message}`,
+        `Failed to send response to app: ${error instanceof Error ? error.message : String(error)}`,
         DyadErrorKind.External,
       );
     }
@@ -2273,10 +2275,10 @@ export function registerAppHandlers() {
           const appInfo = runningApps.get(appId)!;
           try {
             await stopAppByInfo(appId, appInfo);
-          } catch (error: any) {
+          } catch (error: unknown) {
             logger.error(`Error stopping app ${appId} before moving:`, error);
             throw new DyadError(
-              `Failed to stop app before moving: ${error.message}`,
+              `Failed to stop app before moving: ${error instanceof Error ? error.message : String(error)}`,
               DyadErrorKind.External,
             );
           }
@@ -2301,7 +2303,7 @@ export function registerAppHandlers() {
               recursive: true,
               force: true,
             });
-          } catch (error: any) {
+          } catch (error: unknown) {
             logger.warn(
               `Error deleting old app directory ${currentResolvedPath}:`,
               error,
@@ -2311,7 +2313,7 @@ export function registerAppHandlers() {
           return {
             resolvedPath: nextResolvedPath,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Attempt cleanup if destination exists (partial copy may have occurred)
           if (fs.existsSync(nextResolvedPath)) {
             try {
@@ -2331,7 +2333,7 @@ export function registerAppHandlers() {
             error,
           );
           throw new DyadError(
-            `Failed to move app files: ${error.message}`,
+            `Failed to move app files: ${error instanceof Error ? error.message : String(error)}`,
             DyadErrorKind.External,
           );
         }

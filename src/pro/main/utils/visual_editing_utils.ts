@@ -1,6 +1,14 @@
 import { parse } from "@babel/parser";
 import * as recast from "recast";
 import traverse from "@babel/traverse";
+import type {
+  JSXOpeningElement,
+  JSXAttribute,
+  JSXElement,
+  JSXIdentifier,
+  JSXText,
+  Node,
+} from "@babel/types";
 
 interface ContentChange {
   classes: string[];
@@ -21,10 +29,11 @@ interface ComponentAnalysis {
  * Extracts the static src value from a JSX opening element's attributes.
  * Handles both StringLiteral and JSXExpressionContainer wrapping a StringLiteral.
  */
-function extractStaticSrc(openingElement: any): string | undefined {
+function extractStaticSrc(openingElement: JSXOpeningElement): string | undefined {
   const srcAttr = openingElement.attributes.find(
-    (attr: any) => attr.type === "JSXAttribute" && attr.name?.name === "src",
-  );
+    (attr: JSXAttribute | Node) =>
+      attr.type === "JSXAttribute" && (attr as JSXAttribute).name?.name === "src",
+  ) as JSXAttribute | undefined;
   if (!srcAttr?.value) return undefined;
   if (srcAttr.value.type === "StringLiteral") {
     return srcAttr.value.value;
@@ -68,7 +77,7 @@ export function transformContent(
 
         // Check if this element has any nested JSX elements as direct children
         const hasNestedJSX = path.node.children.some(
-          (child: any) => child.type === "JSXElement",
+          (child: Node) => child.type === "JSXElement",
         );
 
         // Skip text content modification if there are nested elements
@@ -81,9 +90,10 @@ export function transformContent(
         if (change.classes.length > 0) {
           const attributes = path.node.openingElement.attributes;
           let classNameAttr = attributes.find(
-            (attr: any) =>
-              attr.type === "JSXAttribute" && attr.name.name === "className",
-          ) as any;
+            (attr: JSXAttribute | Node) =>
+              attr.type === "JSXAttribute" &&
+              (attr as JSXAttribute).name?.name === "className",
+          ) as JSXAttribute | undefined;
 
           if (classNameAttr) {
             // Get existing classes
@@ -227,7 +237,7 @@ export function transformContent(
 
         if (shouldModifyText) {
           // Check if all children are text nodes (no nested JSX elements)
-          const hasOnlyTextChildren = path.node.children.every((child: any) => {
+          const hasOnlyTextChildren = path.node.children.every((child: Node) => {
             // JSXElement means there's a nested component/element
             if (child.type === "JSXElement") return false;
             return (
@@ -243,7 +253,7 @@ export function transformContent(
               {
                 type: "JSXText",
                 value: change.textContent,
-              } as any,
+              } as JSXText,
             ];
           }
         }
@@ -253,7 +263,7 @@ export function transformContent(
           const tagName = path.node.openingElement.name;
 
           // Determine which element to update (self or descendant <img>)
-          let targetElement: any = null;
+          let targetElement: JSXOpeningElement | null = null;
           if (tagName.type === "JSXIdentifier" && tagName.name === "img") {
             targetElement = path.node.openingElement;
           } else {
@@ -273,9 +283,10 @@ export function transformContent(
 
           if (targetElement) {
             const srcAttr = targetElement.attributes.find(
-              (attr: any) =>
-                attr.type === "JSXAttribute" && attr.name?.name === "src",
-            );
+              (attr: JSXAttribute | Node) =>
+                attr.type === "JSXAttribute" &&
+                (attr as JSXAttribute).name?.name === "src",
+            ) as JSXAttribute | undefined;
 
             if (srcAttr) {
               // Replace the value with a string literal
@@ -319,17 +330,24 @@ export function analyzeComponent(
     plugins: ["jsx", "typescript"],
   });
 
-  let foundElement: any = null;
+  // Use a mutable wrapper so TypeScript can track the mutation through the
+  // closure (a plain `let` variable is invisible to control-flow analysis).
+  const result: { element: JSXElement | null } = { element: null };
 
-  // Simple recursive walker to find JSXElement
-  const walk = (node: any): void => {
-    if (!node) return;
+  // Simple recursive walker to find JSXElement.
+  // Uses `unknown` for the AST parameter because @babel/parser's bundled
+  // @babel/types is structurally incompatible with the project-level one.
+  const walk = (node: unknown): void => {
+    if (!node || typeof node !== "object") return;
+
+    const record = node as Record<string, unknown>;
 
     if (
-      node.type === "JSXElement" &&
-      node.openingElement?.loc?.start.line === line
+      record.type === "JSXElement" &&
+      (record.openingElement as JSXOpeningElement | undefined)?.loc?.start
+        .line === line
     ) {
-      foundElement = node;
+      result.element = node as JSXElement;
       return;
     }
 
@@ -337,27 +355,29 @@ export function analyzeComponent(
     if (Array.isArray(node)) {
       for (const child of node) {
         walk(child);
-        if (foundElement) return;
+        if (result.element) return;
       }
       return;
     }
 
     // Handle objects
-    for (const key in node) {
+    for (const key in record) {
       if (
         key !== "loc" &&
         key !== "start" &&
         key !== "end" &&
-        node[key] &&
-        typeof node[key] === "object"
+        record[key] &&
+        typeof record[key] === "object"
       ) {
-        walk(node[key]);
-        if (foundElement) return;
+        walk(record[key]);
+        if (result.element) return;
       }
     }
   };
 
   walk(ast);
+
+  const foundElement = result.element;
 
   if (!foundElement) {
     return { isDynamic: false, hasStaticText: false, hasImage: false };
@@ -368,12 +388,17 @@ export function analyzeComponent(
 
   // Check attributes for dynamic styling
   if (foundElement.openingElement.attributes) {
-    foundElement.openingElement.attributes.forEach((attr: any) => {
-      if (attr.type === "JSXAttribute" && attr.name && attr.name.name) {
-        const attrName = attr.name.name;
+    foundElement.openingElement.attributes.forEach((attr: JSXAttribute | Node) => {
+      if (
+        attr.type === "JSXAttribute" &&
+        (attr as JSXAttribute).name &&
+        (attr as JSXAttribute).name.name
+      ) {
+        const typedAttr = attr as JSXAttribute;
+        const attrName = typedAttr.name.name;
         if (attrName === "style" || attrName === "className") {
-          if (attr.value && attr.value.type === "JSXExpressionContainer") {
-            const expr = attr.value.expression;
+          if (typedAttr.value && typedAttr.value.type === "JSXExpressionContainer") {
+            const expr = typedAttr.value.expression;
             // Check for conditional/logical/template
             if (
               expr.type === "ConditionalExpression" ||
@@ -408,7 +433,7 @@ export function analyzeComponent(
   let hasText = false;
 
   if (foundElement.children && foundElement.children.length > 0) {
-    foundElement.children.forEach((child: any) => {
+    foundElement.children.forEach((child: Node) => {
       if (child.type === "JSXText") {
         // It's text (could be whitespace)
         if (child.value.trim().length > 0) hasText = true;
@@ -444,7 +469,9 @@ export function analyzeComponent(
     imageSrc = extractStaticSrc(foundElement.openingElement);
     // If there's a src attribute but extractStaticSrc returned undefined, it's dynamic
     const hasSrcAttr = foundElement.openingElement.attributes.some(
-      (attr: any) => attr.type === "JSXAttribute" && attr.name?.name === "src",
+      (attr: JSXAttribute | Node) =>
+        attr.type === "JSXAttribute" &&
+        (attr as JSXAttribute).name?.name === "src",
     );
     if (hasSrcAttr && !imageSrc) {
       isDynamicImage = true;
@@ -453,19 +480,28 @@ export function analyzeComponent(
 
   // Recursively check descendants for <img> elements
   if (!hasImage && foundElement) {
-    const findImg = (node: any): void => {
-      if (!node || hasImage) return;
+    const findImg = (node: unknown): void => {
+      if (!node || typeof node !== "object" || hasImage) return;
+
+      const record = node as Record<string, unknown>;
 
       if (
-        node.type === "JSXElement" &&
-        node.openingElement.name.type === "JSXIdentifier" &&
-        node.openingElement.name.name === "img"
+        record.type === "JSXElement" &&
+        (record.openingElement as JSXOpeningElement).name.type ===
+          "JSXIdentifier" &&
+        ((record.openingElement as JSXOpeningElement).name as JSXIdentifier)
+          .name === "img"
       ) {
         hasImage = true;
-        imageSrc = extractStaticSrc(node.openingElement);
-        const hasSrcAttr = node.openingElement.attributes.some(
-          (attr: any) =>
-            attr.type === "JSXAttribute" && attr.name?.name === "src",
+        imageSrc = extractStaticSrc(
+          record.openingElement as JSXOpeningElement,
+        );
+        const hasSrcAttr = (
+          record.openingElement as JSXOpeningElement
+        ).attributes.some(
+          (attr: JSXAttribute | Node) =>
+            attr.type === "JSXAttribute" &&
+            (attr as JSXAttribute).name?.name === "src",
         );
         if (hasSrcAttr && !imageSrc) {
           isDynamicImage = true;
@@ -473,8 +509,8 @@ export function analyzeComponent(
         return;
       }
 
-      if (Array.isArray(node.children)) {
-        for (const child of node.children) {
+      if (Array.isArray(record.children)) {
+        for (const child of record.children) {
           findImg(child);
           if (hasImage) return;
         }

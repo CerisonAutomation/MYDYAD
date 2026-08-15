@@ -213,10 +213,10 @@ async function handleSaveVercelToken(
     });
 
     logger.log("Successfully saved Vercel access token.");
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error saving Vercel token:", error);
     throw new DyadError(
-      `Failed to save access token: ${error.message}`,
+      `Failed to save access token: ${error instanceof Error ? error.message : String(error)}`,
       DyadErrorKind.Auth,
     );
   }
@@ -245,10 +245,13 @@ async function handleListVercelProjects(): Promise<VercelProject[]> {
       name: project.name,
       framework: project.framework || null,
     }));
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[Vercel Handler] Failed to list projects:", err);
-    throw new Error(err.message || "Failed to list Vercel projects.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to list Vercel projects.",
+    );
   }
 }
 
@@ -285,8 +288,11 @@ async function handleIsProjectAvailable(
       available: !projectExists,
       error: projectExists ? "Project name is not available." : undefined,
     };
-  } catch (err: any) {
-    return { available: false, error: err.message || "Unknown error" };
+  } catch (err: unknown) {
+    return {
+      available: false,
+      error: (err instanceof Error ? err.message : undefined) || "Unknown error",
+    };
   }
 }
 
@@ -378,12 +384,13 @@ async function handleCreateProject(
           includeDomainHosts: [projectUrl],
         });
         syncWarning = syncResult.warning;
-      } catch (syncError: any) {
+      } catch (syncError: unknown) {
         logger.warn(
-          `Neon→Vercel sync failed during project creation: ${syncError.message}`,
+          `Neon→Vercel sync failed during project creation: ${syncError instanceof Error ? syncError.message : String(syncError)}`,
         );
         syncWarning =
-          syncError.message || "Failed to sync Neon config to Vercel.";
+          (syncError instanceof Error ? syncError.message : undefined) ||
+          "Failed to sync Neon config to Vercel.";
       }
     }
 
@@ -410,16 +417,19 @@ async function handleCreateProject(
       } else {
         logger.warn("First deployment failed: No deployment URL returned");
       }
-    } catch (deployError: any) {
-      logger.warn(`First deployment failed with error: ${deployError.message}`);
+    } catch (deployError: unknown) {
+      logger.warn(`First deployment failed with error: ${deployError instanceof Error ? deployError.message : String(deployError)}`);
       // Don't throw here - project creation was successful, deployment failure is non-critical
     }
 
     return syncWarning ? { syncWarning } : undefined;
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[Vercel Handler] Failed to create project:", err);
-    throw new Error(err.message || "Failed to create Vercel project.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to create Vercel project.",
+    );
   }
 }
 
@@ -467,13 +477,16 @@ async function handleConnectToExistingProject(
     });
 
     logger.info(`Successfully connected to Vercel project: ${projectData.id}`);
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error(
       "[Vercel Handler] Failed to connect to existing project:",
       err,
     );
-    throw new Error(err.message || "Failed to connect to existing project.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to connect to existing project.",
+    );
   }
 }
 
@@ -544,10 +557,13 @@ async function handleGetVercelDeployments(
       target: deployment.target || "production",
       readyState: deployment.readyState || "unknown",
     }));
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof DyadError) throw err;
     logger.error("[Vercel Handler] Failed to get deployments:", err);
-    throw new Error(err.message || "Failed to get Vercel deployments.");
+    throw new Error(
+      (err instanceof Error ? err.message : undefined) ||
+        "Failed to get Vercel deployments.",
+    );
   }
 }
 

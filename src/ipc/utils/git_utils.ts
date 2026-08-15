@@ -418,9 +418,10 @@ export async function gitAddSafeDirectory(directory: string): Promise<void> {
     } else {
       logger.info(`Added safe directory: ${directory}`);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     logger.warn(
-      `Failed to add safe directory '${directory}': ${error.message}`,
+      `Failed to add safe directory '${directory}': ${message}`,
     );
   }
 }
@@ -1196,9 +1197,10 @@ export async function getFileAtCommit({
       return null;
     }
     return result.stdout;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     logger.error(
-      `Error getting file at commit ${commitHash}: ${error.message}`,
+      `Error getting file at commit ${commitHash}: ${message}`,
     );
     // File doesn't exist at this commit
     return null;
@@ -1434,7 +1436,7 @@ export async function gitSetRemoteUrl({
         DyadErrorKind.Conflict,
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error setting up remote:", error);
     throw error; // or handle as needed
   }
@@ -1467,11 +1469,13 @@ export async function gitPush({
       );
     }
     return;
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error during git push:", error);
-    if (typeof error?.code === "string") throw error;
+    const codedError = error as { code?: unknown; message?: unknown };
+    if (typeof codedError?.code === "string") throw error;
+    const message = error instanceof Error ? error.message : String(error);
     throw new DyadError(
-      `Git push failed: ${error.message}`,
+      `Git push failed: ${message}`,
       DyadErrorKind.Conflict,
     );
   }
@@ -2640,7 +2644,7 @@ export async function gitPull({
     await execOrThrow(pullArgs, path, "Failed to pull from remote", undefined, {
       env: getGitNetworkEnv(accessToken),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Check git state files to detect conflicts instead of parsing error messages
     if (hasGitConflictState({ path })) {
       throw GitConflictError(
@@ -2663,7 +2667,7 @@ export async function gitMerge({
   const args = await withGitAuthor(["merge", branch]);
   try {
     await execOrThrow(args, path, `Failed to merge branch ${branch}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Check git state files to detect conflicts instead of parsing error messages
     if (hasGitConflictState({ path })) {
       throw GitConflictError(
