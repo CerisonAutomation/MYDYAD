@@ -1,9 +1,3 @@
-// CRITICAL: Disable GPU BEFORE any Electron imports to prevent GPU process crashes
-// This must be the first code executed in the main process
-const electron = require("electron");
-electron.app.commandLine.appendSwitch("disable-gpu");
-electron.app.commandLine.appendSwitch("disable-gpu-compositing");
-
 import {
   app,
   autoUpdater,
@@ -1627,6 +1621,10 @@ app.on("open-url", (event, url) => {
 
 function startAppWhenReady() {
   debugLog("startAppWhenReady called");
+  // Disable GPU to prevent GPU process crashes (exit code 15)
+  // This must be called before app.whenReady()
+  app.commandLine.appendSwitch("disable-gpu");
+  app.commandLine.appendSwitch("disable-gpu-compositing");
   app
     .whenReady()
     .then(onReady)
