@@ -5,7 +5,10 @@ import {
   looksLikePackageSpec,
   type McpCatalogEntry,
 } from "@/ipc/types/mcp_catalog";
-import { catalogEntryCanConnect } from "./catalogCardStatus";
+import {
+  catalogEntryCanConnect,
+  type CatalogCardStatus,
+} from "./catalogCardStatus";
 
 // The schema already validates url, but parse defensively so one bad
 // entry can't throw during render and take down the whole section.
@@ -26,14 +29,7 @@ function sourceOf(entry: McpCatalogEntry): string {
   return hostnameOf(entry.url);
 }
 
-// What an already-added entry is doing. "Added" on its own says only
-// that a row exists, which reads as finished while an OAuth connect is
-// still running or has failed.
-export type CatalogCardStatus =
-  | "not-added"
-  | "added"
-  | "connecting"
-  | "needs-connect";
+export type { CatalogCardStatus };
 
 export function CatalogCard({
   entry,

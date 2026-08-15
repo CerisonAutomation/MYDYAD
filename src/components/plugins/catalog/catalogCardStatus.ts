@@ -1,6 +1,14 @@
 import type { McpServer } from "@/ipc/types";
 import type { McpCatalogEntry } from "@/ipc/types/mcp_catalog";
-import type { CatalogCardStatus } from "./CatalogCard";
+
+// What an already-added entry is doing. "Added" on its own says only
+// that a row exists, which reads as finished while an OAuth connect is
+// still running or has failed.
+export type CatalogCardStatus =
+  | "not-added"
+  | "added"
+  | "connecting"
+  | "needs-connect";
 
 /**
  * Whether an entry's card can still change status. Only a required-OAuth

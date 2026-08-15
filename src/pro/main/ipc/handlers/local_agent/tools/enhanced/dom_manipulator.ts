@@ -315,7 +315,6 @@ async function executeCreateElement(
       // Apply text
       if (text !== undefined) {
         element.textContent = text;
-        n;
       }
 
       // Insert element

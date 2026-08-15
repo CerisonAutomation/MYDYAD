@@ -409,7 +409,9 @@ async function executeAnalyzeBundle(page: any): Promise<string> {
       document.querySelectorAll('link[rel="stylesheet"]'),
     );
 
-    const resources = performance.getEntriesByType("resource");
+    const resources = performance.getEntriesByType(
+      "resource",
+    ) as PerformanceResourceTiming[];
 
     const jsResources = resources
       .filter((r) => r.initiatorType === "script")

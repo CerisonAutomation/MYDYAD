@@ -144,6 +144,8 @@ import { autoQualityTool } from "./tools/auto_quality";
 import { browserControlTool } from "./tools/browser_control";
 import { takeScreenshotTool } from "./tools/take_screenshot";
 import { domSnapshotTool } from "./tools/dom_snapshot";
+import { domManipulatorTool } from "./tools/enhanced/dom_manipulator";
+import { networkInterceptorTool } from "./tools/enhanced/network_interceptor";
 import { globPatternTool } from "./tools/glob_pattern";
 import type { LanguageModelV3ToolResultOutput } from "@ai-sdk/provider";
 import {
@@ -332,6 +334,8 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   browserControlTool,
   takeScreenshotTool,
   domSnapshotTool,
+  domManipulatorTool,
+  networkInterceptorTool,
   // File pattern matching
   globPatternTool,
 ];

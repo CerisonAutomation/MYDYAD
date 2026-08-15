@@ -206,7 +206,12 @@ async function executeMockResponse(
         // Override fetch
         const originalFetch = window.fetch;
         window.fetch = async (...args) => {
-          const url = typeof args[0] === "string" ? args[0] : args[0]?.url;
+          const url =
+            typeof args[0] === "string"
+              ? args[0]
+              : args[0] instanceof Request
+                ? args[0].url
+                : args[0]?.toString();
 
           // Check for matching mock
           for (const [pattern, mock] of (window as any).__dyad_mocks) {
@@ -292,7 +297,12 @@ async function executeLogRequests(
 
       const originalFetch = window.fetch;
       window.fetch = async (...args) => {
-        const url = typeof args[0] === "string" ? args[0] : args[0]?.url;
+        const url =
+          typeof args[0] === "string"
+            ? args[0]
+            : args[0] instanceof Request
+              ? args[0].url
+              : args[0]?.toString();
         const method = args[1]?.method || "GET";
 
         const response = await originalFetch(...args);

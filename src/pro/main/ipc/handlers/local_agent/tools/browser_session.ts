@@ -17,7 +17,12 @@
  *   invariants hold; closed/crashed pages are filtered out on reuse.
  */
 
-import type { Browser, Page, BrowserContext } from "playwright";
+import type {
+  Browser,
+  Page,
+  BrowserContext,
+  Response as PlaywrightResponse,
+} from "playwright";
 import log from "electron-log";
 import {
   PROXY_PORT_BASE,
@@ -40,6 +45,150 @@ const IDLE_SWEEP_INTERVAL_MS = 60 * 1000; // check once per minute
 const MAX_PAGES = 10;
 
 let idleSweepTimer: NodeJS.Timeout | null = null;
+
+// ============================================================================
+// Tabs (named pages within the shared context)
+// ============================================================================
+
+export interface TabInfo {
+  tabId: string;
+  url: string;
+  title: string;
+  isActive: boolean;
+}
+
+interface TabEntry {
+  id: string;
+  page: Page;
+}
+
+let tabs: TabEntry[] = [];
+let activeTabId: string | null = null;
+let nextTabNum = 1;
+
+// ============================================================================
+// Per-page console log / network request capture
+// ============================================================================
+
+export interface ConsoleLogEntry {
+  type: string;
+  text: string;
+  timestamp: number;
+}
+
+export interface NetworkRequestEntry {
+  id: string;
+  url: string;
+  method: string;
+  resourceType: string;
+  status: number | "failed" | null;
+  timestamp: number;
+}
+
+interface PageActivityState {
+  consoleLogs: ConsoleLogEntry[];
+  networkEntries: NetworkRequestEntry[];
+  responsesById: Map<string, PlaywrightResponse>;
+}
+
+const MAX_CONSOLE_LOGS = 500;
+const MAX_NETWORK_ENTRIES = 500;
+
+const pageState = new WeakMap<Page, PageActivityState>();
+
+/** Attach console/network capture listeners to a freshly created page. */
+function attachPageListeners(page: Page): void {
+  const state: PageActivityState = {
+    consoleLogs: [],
+    networkEntries: [],
+    responsesById: new Map(),
+  };
+  pageState.set(page, state);
+
+  page.on("console", (msg) => {
+    state.consoleLogs.push({
+      type: msg.type(),
+      text: msg.text(),
+      timestamp: Date.now(),
+    });
+    if (state.consoleLogs.length > MAX_CONSOLE_LOGS) state.consoleLogs.shift();
+  });
+
+  page.on("pageerror", (err) => {
+    state.consoleLogs.push({
+      type: "error",
+      text: `Uncaught exception: ${err.message}`,
+      timestamp: Date.now(),
+    });
+    if (state.consoleLogs.length > MAX_CONSOLE_LOGS) state.consoleLogs.shift();
+  });
+
+  const entryIdByRequestUrl = new WeakMap<object, string>();
+
+  page.on("request", (req) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    entryIdByRequestUrl.set(req, id);
+    state.networkEntries.push({
+      id,
+      url: req.url(),
+      method: req.method(),
+      resourceType: req.resourceType(),
+      status: null,
+      timestamp: Date.now(),
+    });
+    if (state.networkEntries.length > MAX_NETWORK_ENTRIES) {
+      const removed = state.networkEntries.shift();
+      if (removed) state.responsesById.delete(removed.id);
+    }
+  });
+
+  page.on("requestfailed", (req) => {
+    const id = entryIdByRequestUrl.get(req);
+    const entry = state.networkEntries.find((e) => e.id === id);
+    if (entry) entry.status = "failed";
+  });
+
+  page.on("response", (res) => {
+    const id = entryIdByRequestUrl.get(res.request());
+    const entry = state.networkEntries.find((e) => e.id === id);
+    if (entry) {
+      entry.status = res.status();
+      if (id) state.responsesById.set(id, res);
+    }
+  });
+}
+
+/** Console logs captured for a page (empty if the page has no listeners attached). */
+export function getConsoleLogs(page: Page): ConsoleLogEntry[] {
+  return pageState.get(page)?.consoleLogs ?? [];
+}
+
+/** Clear captured console logs for a page. */
+export function clearConsoleLogs(page: Page): void {
+  const state = pageState.get(page);
+  if (state) state.consoleLogs = [];
+}
+
+/** Network requests captured for a page. */
+export function getNetworkEntries(page: Page): NetworkRequestEntry[] {
+  return pageState.get(page)?.networkEntries ?? [];
+}
+
+/** Fetch the response body for a previously captured network request, by entry id. */
+export async function getNetworkResponseBody(
+  page: Page,
+  entryId: string,
+): Promise<{ body: string; contentType: string | null } | null> {
+  const response = pageState.get(page)?.responsesById.get(entryId);
+  if (!response) return null;
+  try {
+    const body = await response.text();
+    const contentType = response.headers()["content-type"] ?? null;
+    return { body, contentType };
+  } catch {
+    return null;
+  }
+}
 
 function touchActivity(): void {
   lastActivityTime = Date.now();
@@ -457,13 +606,12 @@ function buildNotReadyMessage(url: string, ready: PreviewReadyResult): string {
 }
 
 // ============================================================================
-// Event Blocking & Visual Overlay (from comet-extract patterns)
+// Event Blocking & Visual Overlay
 // ============================================================================
 
 /**
  * Block all user input events on a page during agent browser operations.
  * Prevents race conditions and interference when the agent is driving the browser.
- * Based on comet-extract's event blocking system.
  */
 export async function blockUserInput(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -537,7 +685,6 @@ export async function unblockUserInput(page: Page): Promise<void> {
 
 /**
  * Show a visual overlay on the page indicating agent activity.
- * Based on comet-extract's animated gradient border overlay.
  */
 export async function showAgentOverlay(
   page: Page,

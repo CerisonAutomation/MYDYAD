@@ -11,7 +11,16 @@ import {
 } from "./types";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { DYAD_SCREENSHOT_DIR_NAME } from "@/ipc/utils/media_path_utils";
-import { getPage, resolveTargetUrl, waitForPageReady } from "./browser_session";
+import {
+  getPage,
+  resolveTargetUrl,
+  waitForPageReady,
+  getBrowser,
+  getConsoleLogs,
+  clearConsoleLogs,
+  getNetworkEntries,
+  getNetworkResponseBody,
+} from "./browser_session";
 import { resolveTargetAppPath } from "./resolve_app_context";
 import type { Page, Browser } from "playwright";
 
@@ -273,6 +282,83 @@ const frameIframeAction = z.object({
   text: z.string().optional().describe("Text to type (if action_type is type)"),
 });
 
+const consoleLogsAction = z.object({
+  action: z.literal("console_logs"),
+  clear: z
+    .boolean()
+    .optional()
+    .describe(
+      "If true, clear the captured console log buffer after reading it",
+    ),
+});
+
+const networkRequestsAction = z.object({
+  action: z.literal("network_requests"),
+  url_filter: z
+    .string()
+    .optional()
+    .describe(
+      "Only include requests whose URL contains this substring. Ignored when request_id is provided.",
+    ),
+  request_id: z
+    .string()
+    .optional()
+    .describe(
+      "If provided, fetch the response body for this specific request (the id shown in a prior network_requests listing) instead of listing requests.",
+    ),
+});
+
+const tabsContextAction = z.object({
+  action: z.literal("tabs_context"),
+});
+
+const tabsCreateAction = z.object({
+  action: z.literal("tabs_create"),
+});
+
+const tabsSelectAction = z.object({
+  action: z.literal("tabs_select"),
+  tab_id: z
+    .string()
+    .describe(
+      "Tab id to switch to (from a prior tabs_context or tabs_create call)",
+    ),
+});
+
+const tabsCloseAction = z.object({
+  action: z.literal("tabs_close"),
+  tab_id: z
+    .string()
+    .describe(
+      "Tab id to close (from a prior tabs_context or tabs_create call)",
+    ),
+});
+
+const javascriptExecAction = z.object({
+  action: z.literal("javascript_exec"),
+  code: z
+    .string()
+    .describe(
+      "JavaScript to run in the page context, for debugging/inspection only. Written as a function body — use `return` to produce a result. May use `await`.",
+    ),
+});
+
+const resizeWindowAction = z.object({
+  action: z.literal("resize_window"),
+  width: z.number().optional().describe("Viewport width in pixels"),
+  height: z.number().optional().describe("Viewport height in pixels"),
+  preset: z
+    .enum(["mobile", "tablet", "desktop"])
+    .optional()
+    .describe(
+      "Named viewport preset: mobile (375x812), tablet (768x1024), desktop (1280x800). Explicit width/height override the preset if both are given.",
+    ),
+  color_scheme: z
+    .enum(["light", "dark"])
+    .optional()
+    .describe("Emulate a preferred color scheme"),
+});
+
 const browserControlSchema = z.discriminatedUnion("action", [
   navigateAction,
   clickAction,
@@ -292,6 +378,14 @@ const browserControlSchema = z.discriminatedUnion("action", [
   keyAction,
   doubleClickAction,
   hoverAction,
+  consoleLogsAction,
+  networkRequestsAction,
+  tabsContextAction,
+  tabsCreateAction,
+  tabsSelectAction,
+  tabsCloseAction,
+  javascriptExecAction,
+  resizeWindowAction,
 ]);
 
 type BrowserControlArgs = z.infer<typeof browserControlSchema>;
@@ -313,6 +407,14 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - **wait_for** — Wait for an element to appear in the DOM. Provide \`selector\` **or** \`ref\`. Optional \`timeout_ms\` (default 10000).
 - **read_page** — Get a structured representation of the page with interactive elements (forms, links, buttons) labeled with stable refs. Provide \`mode\` (interactive/all/viewport). Optional \`depth\` (default 5).
 - **batch** — Execute multiple actions sequentially. Provide \`steps\` array with {action, params} objects. Max 20 steps.
+- **console_logs** — Read captured browser console output (log/info/warn/error messages and uncaught exceptions) for the active tab. Optional \`clear\` to clear the buffer after reading it.
+- **network_requests** — List captured network requests (method, status, resource type, URL) for the active tab, most recent last. Optional \`url_filter\` for a substring match on the URL. Provide \`request_id\` (the id shown in a prior listing) instead to fetch that request's response body.
+- **tabs_context** — List open browser tabs with their id, URL, title, and which one is active.
+- **tabs_create** — Open a new blank tab and switch to it. Returns the new tab's id.
+- **tabs_select** — Switch the active tab. Provide \`tab_id\` (from \`tabs_context\`/\`tabs_create\`). All subsequent actions (navigate, click, read_page, etc.) operate on the newly active tab.
+- **tabs_close** — Close a tab. Provide \`tab_id\`. Fails if it's the only open tab.
+- **javascript_exec** — Execute arbitrary JavaScript in the page context for debugging/inspection (e.g. \`return document.title\`, or \`await\`ing a fetch). Provide \`code\` as a function body. Runtime errors in the script are returned as text in the result, not thrown, since they're often exactly what's useful to see while debugging.
+- **resize_window** — Resize the browser viewport. Provide \`width\`/\`height\`, or a \`preset\` (mobile 375x812, tablet 768x1024, desktop 1280x800). Optional \`color_scheme\` (light/dark) to emulate a preferred color scheme.
 
 ### Canonical Read → Act Loop
 1. Call \`read_page\` to get the page structure with refs like \`[3] <button> "Sign in"\`.
@@ -330,6 +432,7 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - Screenshots are saved to .dyad/media/ and the file path is returned.
 - Actions accept either a CSS \`selector\` or a \`ref\` from a recent \`read_page\` call. Refs are positional — re-read the page after any navigation.
 - \`batch\` steps may omit \`url\` for \`navigate\` — it defaults to the running app's preview URL.
+- Multiple tabs share the same browser session. Actions always target the currently active tab (the one most recently created via \`tabs_create\` or switched to via \`tabs_select\`); use \`tabs_context\` to see what's open.
 `;
 
 // ============================================================================
@@ -1152,6 +1255,258 @@ async function executeFrameIframe(
 }
 
 // ============================================================================
+// Console / Network Inspection
+// ============================================================================
+
+const MAX_CONSOLE_LOGS_CHARS = 20_000;
+
+async function executeConsoleLogs(
+  page: PlaywrightPage,
+  args: z.infer<typeof consoleLogsAction>,
+): Promise<string> {
+  const logs = getConsoleLogs(page as unknown as Page);
+  if (logs.length === 0) {
+    if (args.clear) clearConsoleLogs(page as unknown as Page);
+    return "No console output captured for this tab.";
+  }
+
+  let lines = logs.map((entry) => `[${entry.type}] ${entry.text}`).join("\n");
+  const truncated = lines.length > MAX_CONSOLE_LOGS_CHARS;
+  if (truncated) {
+    lines = lines.slice(0, MAX_CONSOLE_LOGS_CHARS) + "\n…[truncated]";
+  }
+
+  if (args.clear) {
+    clearConsoleLogs(page as unknown as Page);
+  }
+
+  return `Console output (${logs.length} entries${truncated ? ", output truncated" : ""}${args.clear ? ", buffer cleared" : ""}):\n${lines}`;
+}
+
+const MAX_NETWORK_OUTPUT_CHARS = 20_000;
+
+async function executeNetworkRequests(
+  page: PlaywrightPage,
+  args: z.infer<typeof networkRequestsAction>,
+): Promise<string> {
+  if (args.request_id) {
+    const body = await getNetworkResponseBody(
+      page as unknown as Page,
+      args.request_id,
+    );
+    if (!body) {
+      throw new DyadError(
+        `No captured response body found for request id "${args.request_id}". It may not have been captured yet, may have no body, or the page may have navigated since it was recorded.`,
+        DyadErrorKind.NotFound,
+      );
+    }
+    let bodyText = body.body;
+    const truncated = bodyText.length > MAX_NETWORK_OUTPUT_CHARS;
+    if (truncated) {
+      bodyText = bodyText.slice(0, MAX_NETWORK_OUTPUT_CHARS) + "\n…[truncated]";
+    }
+    return `Response body for ${args.request_id} (content-type: ${body.contentType ?? "unknown"}${truncated ? ", output truncated" : ""}):\n${bodyText}`;
+  }
+
+  let entries = getNetworkEntries(page as unknown as Page);
+  const filter = args.url_filter;
+  if (filter) {
+    entries = entries.filter((e) => e.url.includes(filter));
+  }
+
+  if (entries.length === 0) {
+    return "No network requests captured for this tab.";
+  }
+
+  let lines = entries
+    .map((e) => `[${e.id}] ${e.method} ${e.status ?? "pending"} ${e.resourceType} ${e.url}`)
+    .join("\n");
+  const truncated = lines.length > MAX_NETWORK_OUTPUT_CHARS;
+  if (truncated) {
+    lines = lines.slice(0, MAX_NETWORK_OUTPUT_CHARS) + "\n…[truncated]";
+  }
+
+  return `Network requests (${entries.length}${truncated ? ", output truncated" : ""}, oldest first). Use request_id with a follow-up network_requests call to fetch a response body:\n${lines}`;
+}
+
+// ============================================================================
+// Tab Management
+// ============================================================================
+//
+// browser_session.ts owns the shared Browser/BrowserContext but does not
+// (yet) expose named-tab tracking, so tab identity is tracked here on top
+// of its existing getBrowser()/getPage() surface: a WeakMap assigns each
+// live Page a stable id, and `activeTabPage` records which page ordinary
+// actions (navigate, click, read_page, ...) should run against. This keeps
+// default (no-tabs) behavior identical to before — resolveActivePage()
+// falls back to the same getPage() reuse/creation logic browser_session
+// already provides.
+
+const tabIdByPage = new WeakMap<PlaywrightPage, string>();
+let nextTabNum = 1;
+let activeTabPage: PlaywrightPage | null = null;
+
+function getOrAssignTabId(page: PlaywrightPage): string {
+  let id = tabIdByPage.get(page);
+  if (!id) {
+    id = `tab-${nextTabNum++}`;
+    tabIdByPage.set(page, id);
+  }
+  return id;
+}
+
+/** All live pages in the shared browser's context, in creation order. */
+async function getContextPages(): Promise<PlaywrightPage[]> {
+  const browser = await getBrowser();
+  const contexts = browser.contexts();
+  const context = contexts[contexts.length - 1];
+  if (!context) return [];
+  return context.pages().filter((p) => !p.isClosed());
+}
+
+/**
+ * Resolve the page that a non-tab action should operate on: the explicitly
+ * selected/created tab if one is active and still open, otherwise the
+ * default shared page from browser_session's own reuse/creation logic.
+ */
+async function resolveActivePage(): Promise<PlaywrightPage> {
+  if (activeTabPage && !activeTabPage.isClosed()) {
+    return activeTabPage;
+  }
+  const page = await getPage();
+  activeTabPage = page;
+  return page;
+}
+
+async function executeTabsContext(): Promise<string> {
+  const active = await resolveActivePage();
+  const pages = await getContextPages();
+  const lines = await Promise.all(
+    pages.map(async (p) => {
+      const id = getOrAssignTabId(p);
+      const title = await p.title().catch(() => "");
+      const isActive = p === active;
+      return `${isActive ? "→" : " "} [${id}] "${title}" — ${p.url()}${isActive ? " (active)" : ""}`;
+    }),
+  );
+  return `Open tabs (${pages.length}):\n${lines.join("\n")}`;
+}
+
+async function executeTabsCreate(): Promise<string> {
+  // Ensure the shared browser/context exists before reading contexts().
+  await getPage();
+  const browser = await getBrowser();
+  const contexts = browser.contexts();
+  const context = contexts[contexts.length - 1];
+  if (!context) {
+    throw new DyadError(
+      "No browser context available to create a tab in",
+      DyadErrorKind.External,
+    );
+  }
+  const newPage = (await context.newPage()) as PlaywrightPage;
+  const id = getOrAssignTabId(newPage);
+  activeTabPage = newPage;
+  return `Created and switched to new tab: ${id}`;
+}
+
+async function executeTabsSelect(
+  args: z.infer<typeof tabsSelectAction>,
+): Promise<string> {
+  const pages = await getContextPages();
+  const match = pages.find((p) => tabIdByPage.get(p) === args.tab_id);
+  if (!match) {
+    throw new DyadError(
+      `No tab with id "${args.tab_id}" found. Call tabs_context to list open tabs.`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  activeTabPage = match;
+  return `Switched to tab: ${args.tab_id}`;
+}
+
+async function executeTabsClose(
+  args: z.infer<typeof tabsCloseAction>,
+): Promise<string> {
+  const pages = await getContextPages();
+  if (pages.length <= 1) {
+    throw new DyadError(
+      "Cannot close the only remaining tab",
+      DyadErrorKind.Validation,
+    );
+  }
+  const match = pages.find((p) => tabIdByPage.get(p) === args.tab_id);
+  if (!match) {
+    throw new DyadError(
+      `No tab with id "${args.tab_id}" found. Call tabs_context to list open tabs.`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await match.close();
+  if (activeTabPage === match) {
+    activeTabPage = null;
+  }
+  return `Closed tab: ${args.tab_id}`;
+}
+
+// ============================================================================
+// JavaScript Execution & Viewport Resize
+// ============================================================================
+
+async function executeJavascriptExec(
+  page: PlaywrightPage,
+  args: z.infer<typeof javascriptExecAction>,
+): Promise<string> {
+  try {
+    const result = await page.evaluate((codeArg: string) => {
+      // eslint-disable-next-line no-new-func
+      const fn = new Function(`return (async () => { ${codeArg} })()`);
+      return fn();
+    }, args.code);
+
+    if (result === undefined) return "undefined";
+    try {
+      return JSON.stringify(result, null, 2) ?? String(result);
+    } catch {
+      return String(result);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return `Error executing script: ${message}`;
+  }
+}
+
+const VIEWPORT_PRESETS: Record<string, { width: number; height: number }> = {
+  mobile: { width: 375, height: 812 },
+  tablet: { width: 768, height: 1024 },
+  desktop: { width: 1280, height: 800 },
+};
+
+async function executeResizeWindow(
+  page: PlaywrightPage,
+  args: z.infer<typeof resizeWindowAction>,
+): Promise<string> {
+  const presetSize = args.preset ? VIEWPORT_PRESETS[args.preset] : undefined;
+  const width = args.width ?? presetSize?.width;
+  const height = args.height ?? presetSize?.height;
+
+  if (width === undefined || height === undefined) {
+    throw new DyadError(
+      "resize_window requires either a 'preset' or both 'width' and 'height'",
+      DyadErrorKind.Validation,
+    );
+  }
+
+  await page.setViewportSize({ width, height });
+
+  if (args.color_scheme) {
+    await page.emulateMedia({ colorScheme: args.color_scheme });
+  }
+
+  return `Resized viewport to ${width}x${height}${args.color_scheme ? ` (color-scheme: ${args.color_scheme})` : ""}`;
+}
+
+// ============================================================================
 // Tool Definition
 // ============================================================================
 
@@ -1220,6 +1575,26 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         return args.ref
           ? `Hover over element ref [${args.ref}]`
           : `Hover over element: "${args.selector}"`;
+      case "console_logs":
+        return `Get console logs${args.clear ? " and clear buffer" : ""}`;
+      case "network_requests":
+        return args.request_id
+          ? `Get response body for request "${args.request_id}"`
+          : `List network requests${args.url_filter ? ` matching "${args.url_filter}"` : ""}`;
+      case "tabs_context":
+        return "List open browser tabs";
+      case "tabs_create":
+        return "Open a new browser tab";
+      case "tabs_select":
+        return `Switch to tab: ${args.tab_id}`;
+      case "tabs_close":
+        return `Close tab: ${args.tab_id}`;
+      case "javascript_exec":
+        return `Execute JavaScript: ${args.code.length > 80 ? `${args.code.slice(0, 80)}…` : args.code}`;
+      case "resize_window":
+        return args.preset
+          ? `Resize viewport to ${args.preset} preset`
+          : `Resize viewport to ${args.width}x${args.height}`;
     }
   },
 
@@ -1282,6 +1657,24 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         if (args.ref) return `<dyad-browser action="hover" ref="${args.ref}">`;
         if (!args.selector) return undefined;
         return `<dyad-browser action="hover" selector="${escapeXmlAttr(args.selector)}">`;
+      case "console_logs":
+        return `<dyad-browser action="console_logs"${args.clear ? ` clear="true"` : ""}>`;
+      case "network_requests":
+        return `<dyad-browser action="network_requests"${args.request_id ? ` request_id="${escapeXmlAttr(args.request_id)}"` : ""}${args.url_filter ? ` url_filter="${escapeXmlAttr(args.url_filter)}"` : ""}>`;
+      case "tabs_context":
+        return `<dyad-browser action="tabs_context">`;
+      case "tabs_create":
+        return `<dyad-browser action="tabs_create">`;
+      case "tabs_select":
+        if (!args.tab_id) return undefined;
+        return `<dyad-browser action="tabs_select" tab_id="${escapeXmlAttr(args.tab_id)}">`;
+      case "tabs_close":
+        if (!args.tab_id) return undefined;
+        return `<dyad-browser action="tabs_close" tab_id="${escapeXmlAttr(args.tab_id)}">`;
+      case "javascript_exec":
+        return `<dyad-browser action="javascript_exec">`;
+      case "resize_window":
+        return `<dyad-browser action="resize_window"${args.preset ? ` preset="${escapeXmlAttr(args.preset)}"` : ""}>`;
     }
   },
 
@@ -1330,12 +1723,36 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
       case "hover":
         initialXml = `<dyad-browser action="hover" selector="${escapeXmlAttr(args.selector ?? "")}">`;
         break;
+      case "console_logs":
+        initialXml = `<dyad-browser action="console_logs"${args.clear ? ` clear="true"` : ""}>`;
+        break;
+      case "network_requests":
+        initialXml = `<dyad-browser action="network_requests">`;
+        break;
+      case "tabs_context":
+        initialXml = `<dyad-browser action="tabs_context">`;
+        break;
+      case "tabs_create":
+        initialXml = `<dyad-browser action="tabs_create">`;
+        break;
+      case "tabs_select":
+        initialXml = `<dyad-browser action="tabs_select" tab_id="${escapeXmlAttr(args.tab_id)}">`;
+        break;
+      case "tabs_close":
+        initialXml = `<dyad-browser action="tabs_close" tab_id="${escapeXmlAttr(args.tab_id)}">`;
+        break;
+      case "javascript_exec":
+        initialXml = `<dyad-browser action="javascript_exec">`;
+        break;
+      case "resize_window":
+        initialXml = `<dyad-browser action="resize_window">`;
+        break;
     }
 
     ctx.onXmlStream(initialXml);
 
     try {
-      const page = await getPage();
+      const page = await resolveActivePage();
       const targetUrl = resolveTargetUrl(
         "url" in args ? args.url : undefined,
         ctx.appId,
@@ -1397,6 +1814,30 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
           break;
         case "hover":
           result = await executeHover(page, args);
+          break;
+        case "console_logs":
+          result = await executeConsoleLogs(page, args);
+          break;
+        case "network_requests":
+          result = await executeNetworkRequests(page, args);
+          break;
+        case "tabs_context":
+          result = await executeTabsContext();
+          break;
+        case "tabs_create":
+          result = await executeTabsCreate();
+          break;
+        case "tabs_select":
+          result = await executeTabsSelect(args);
+          break;
+        case "tabs_close":
+          result = await executeTabsClose(args);
+          break;
+        case "javascript_exec":
+          result = await executeJavascriptExec(page, args);
+          break;
+        case "resize_window":
+          result = await executeResizeWindow(page, args);
           break;
       }
 

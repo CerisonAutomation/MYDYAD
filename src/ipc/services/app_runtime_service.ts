@@ -2328,10 +2328,21 @@ async function waitForAppReady(
   while (Date.now() - startedAt < timeoutMs) {
     const appInfo = runningApps.get(appId);
     if (!appInfo) {
+      // Provide actionable guidance instead of a generic message
+      const freeMemoryMB = Math.round(
+        (globalThis as any).require?.("os")?.freemem?.() / (1024 * 1024) ?? 0,
+      );
+      const memoryHint =
+        freeMemoryMB < 200
+          ? `\n\n⚠️  Low memory: only ${freeMemoryMB}MB free. Close other applications and retry.`
+          : "";
       throw new DyadError(
-        "The app process exited before the preview became ready. The dev app crashed before its " +
-          "preview was up — commonly caused by low system memory or a dev-server startup failure. " +
-          "Check the app's logs, free up memory, and retry.",
+        `The app process exited before the preview became ready.\n\n` +
+          `Possible causes:\n` +
+          `• The dev server crashed — check the console for error messages\n` +
+          `• Missing dependencies — ensure package.json is valid and run npm install\n` +
+          `• Port conflict — another process may be using the dev server port${memoryHint}\n\n` +
+          `Try: stop the app, free up resources, and click "Run" again.`,
         DyadErrorKind.External,
       );
     }
