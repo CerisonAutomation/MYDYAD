@@ -3,6 +3,11 @@ import * as path from "path";
 import {
   NEXTJS_CONFIG_FILES,
   VITE_CONFIG_FILES,
+  ASTRO_CONFIG_FILES,
+  REMIX_CONFIG_FILES,
+  NUXT_CONFIG_FILES,
+  SVELTEKIT_CONFIG_FILES,
+  EXPO_CONFIG_FILES,
   type AppFrameworkType,
 } from "@/lib/framework_constants";
 
@@ -52,6 +57,7 @@ export function detectFrameworkType(appPath: string): AppFrameworkType | null {
 
   let result: AppFrameworkType | null;
   try {
+    // Check for Next.js config files
     for (const config of NEXTJS_CONFIG_FILES) {
       if (fs.existsSync(path.join(appPath, config))) {
         result = "nextjs";
@@ -59,6 +65,47 @@ export function detectFrameworkType(appPath: string): AppFrameworkType | null {
       }
     }
 
+    // Check for Astro config files
+    for (const config of ASTRO_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        result = "astro";
+        return cacheFrameworkResult(appPath, result);
+      }
+    }
+
+    // Check for Remix config files
+    for (const config of REMIX_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        result = "remix";
+        return cacheFrameworkResult(appPath, result);
+      }
+    }
+
+    // Check for Nuxt config files
+    for (const config of NUXT_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        result = "nuxt";
+        return cacheFrameworkResult(appPath, result);
+      }
+    }
+
+    // Check for SvelteKit config files
+    for (const config of SVELTEKIT_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        result = "sveltekit";
+        return cacheFrameworkResult(appPath, result);
+      }
+    }
+
+    // Check for Expo config files
+    for (const config of EXPO_CONFIG_FILES) {
+      if (fs.existsSync(path.join(appPath, config))) {
+        result = "expo";
+        return cacheFrameworkResult(appPath, result);
+      }
+    }
+
+    // Check for Vite config files
     let isVite = false;
     for (const config of VITE_CONFIG_FILES) {
       if (fs.existsSync(path.join(appPath, config))) {
@@ -67,6 +114,7 @@ export function detectFrameworkType(appPath: string): AppFrameworkType | null {
       }
     }
 
+    // Check package.json dependencies
     let packageJsonDeps: Record<string, string> | null = null;
     const packageJsonPath = path.join(appPath, "package.json");
     if (fs.existsSync(packageJsonPath)) {
@@ -80,12 +128,43 @@ export function detectFrameworkType(appPath: string): AppFrameworkType | null {
         result = "nextjs";
         return cacheFrameworkResult(appPath, result);
       }
+      if (!isVite && deps.astro) {
+        result = "astro";
+        return cacheFrameworkResult(appPath, result);
+      }
+      if (!isVite && deps["@remix-run/node"]) {
+        result = "remix";
+        return cacheFrameworkResult(appPath, result);
+      }
+      if (!isVite && deps.nuxt) {
+        result = "nuxt";
+        return cacheFrameworkResult(appPath, result);
+      }
+      if (!isVite && deps["@sveltejs/kit"]) {
+        result = "sveltekit";
+        return cacheFrameworkResult(appPath, result);
+      }
+      if (!isVite && deps.expo) {
+        result = "expo";
+        return cacheFrameworkResult(appPath, result);
+      }
       if (!isVite && deps.vite) isVite = true;
     }
 
     if (isVite) {
       result = hasNitro(appPath, packageJsonDeps) ? "vite-nitro" : "vite";
       return cacheFrameworkResult(appPath, result);
+    }
+
+    // Check for static sites (no package.json or no dev script)
+    const hasPackageJson = fs.existsSync(packageJsonPath);
+    if (!hasPackageJson) {
+      // Check for HTML files (static site)
+      const hasIndex = fs.existsSync(path.join(appPath, "index.html"));
+      if (hasIndex) {
+        result = "static";
+        return cacheFrameworkResult(appPath, result);
+      }
     }
 
     result = "other";

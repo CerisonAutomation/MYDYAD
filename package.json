@@ -219,6 +219,7 @@
     "vitest": "^4.1.10"
   },
   "overrides": {
+    "node-abi": "^3.94.0",
     "@vercel/sdk": {
       "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk"
     }

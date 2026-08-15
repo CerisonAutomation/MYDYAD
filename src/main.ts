@@ -13,6 +13,13 @@ import {
 } from "electron";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
+
+// Suppress harmless EPIPE errors from console.error writing to dead pipes
+// (e.g. logging after Docker container or dev server process exits)
+process.on("uncaughtException", (err) => {
+  if (err instanceof Error && (err as any).code === "EPIPE") return;
+  console.error("[main] uncaughtException:", err);
+});
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { registerIpcHandlers } from "./ipc/ipc_host";

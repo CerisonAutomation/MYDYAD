@@ -30,7 +30,20 @@ const logger = log.scope("local_sandbox");
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-const LOCAL_SANDBOX_EXCLUDED_DIRS = new Set(["node_modules", ".git", ".next"]);
+const LOCAL_SANDBOX_EXCLUDED_DIRS = new Set([
+  "node_modules",
+  ".git",
+  ".next",
+  ".nuxt",
+  ".svelte-kit",
+  ".react-router",
+  ".output",
+  ".astro",
+  ".expo",
+  "dist",
+  "build",
+  ".cache",
+]);
 const LOCAL_SANDBOX_ROOT_ALLOWLIST = new Set([".env", ".env.local"]);
 
 type LocalSandboxFileBytes = Uint8Array;
