@@ -129,3 +129,4 @@ storybook-static/
 eval-results/
 benchmark-results/
 benchmarks/code-explorer/repos/
+.playwright-mcp
