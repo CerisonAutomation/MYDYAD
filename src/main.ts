@@ -1,3 +1,9 @@
+// CRITICAL: Disable GPU BEFORE any Electron imports to prevent GPU process crashes
+// This must be the first code executed in the main process
+const electron = require("electron");
+electron.app.commandLine.appendSwitch("disable-gpu");
+electron.app.commandLine.appendSwitch("disable-gpu-compositing");
+
 import {
   app,
   autoUpdater,
@@ -13,11 +19,6 @@ import {
 } from "electron";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
-
-// Disable GPU to prevent GPU process crashes (exit code 15)
-// This is a known issue on macOS with heavy system load
-app.commandLine.appendSwitch("disable-gpu");
-app.commandLine.appendSwitch("disable-gpu-compositing");
 
 // Suppress harmless EPIPE errors from console.error writing to dead pipes
 // (e.g. logging after Docker container or dev server process exits)

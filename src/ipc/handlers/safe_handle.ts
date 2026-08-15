@@ -12,9 +12,10 @@ import { registerTrustedIpcHandler } from "./trusted_handle";
 export function createLoggedHandler(logger: log.LogFunctions) {
   return (
     channel: string,
-    fn: (event: IpcMainInvokeEvent, ...args: any[]) => Promise<any>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- IPC args are untyped at the serialization boundary
+    fn: (event: IpcMainInvokeEvent, ...args: any[]) => Promise<unknown>,
   ) => {
-    const handleError = (error: unknown, args: any[]) => {
+    const handleError = (error: unknown, args: unknown[]) => {
       logger.error(`Error in ${fn.name}: args: ${JSON.stringify(args)}`, error);
       sendTelemetryException(error, { ipc_channel: channel });
       // Preserve DyadError so telemetry classification stay consistent.
@@ -26,6 +27,7 @@ export function createLoggedHandler(logger: log.LogFunctions) {
 
     registerTrustedIpcHandler(
       channel,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches IpcHandler type from trusted_handle
       async (event: IpcMainInvokeEvent, ...args: any[]) => {
         logger.debug(
           `IPC: ${channel} called with args: ${JSON.stringify(args)}`,

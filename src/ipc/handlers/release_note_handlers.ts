@@ -7,6 +7,76 @@ import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("release_note_handlers");
 
+/**
+ * Result of checking whether a release note exists at a given URL.
+ */
+interface ReleaseNoteCheckResult {
+  exists: boolean;
+  url?: string;
+}
+
+/**
+ * Interprets an HTTP response status into a release note check result.
+ *
+ * @param responseStatus - The HTTP status code from the HEAD request.
+ * @param releaseNoteUrl - The URL that was checked.
+ * @param version - The version string for log messages.
+ * @returns The check result indicating existence and optional URL.
+ */
+function interpretReleaseNoteStatus(
+  responseStatus: number,
+  releaseNoteUrl: string,
+  version: string,
+): ReleaseNoteCheckResult {
+  if (responseStatus === 200) {
+    logger.debug(
+      `Release note found for version ${version} at ${releaseNoteUrl}`,
+    );
+    return { exists: true, url: releaseNoteUrl };
+  }
+  if (responseStatus === 404) {
+    logger.debug(
+      `Release note not found for version ${version} at ${releaseNoteUrl}`,
+    );
+    return { exists: false };
+  }
+  // Log other non-404 errors but still treat as "not found" for the client,
+  // as the primary goal is to check existence.
+  logger.warn(
+    `Unexpected status code ${responseStatus} when checking for release note: ${releaseNoteUrl}`,
+  );
+  return { exists: false };
+}
+
+/**
+ * Checks whether a release note exists for the given version by issuing
+ * a HEAD request to the Dyad docs site.
+ *
+ * @param version - The version string to check.
+ * @returns The check result indicating whether the note exists.
+ */
+async function checkReleaseNoteExists(
+  version: string,
+): Promise<ReleaseNoteCheckResult> {
+  const releaseNoteUrl = `https://www.dyad.sh/docs/releases/${version}`;
+  logger.debug(`Checking for release note at: ${releaseNoteUrl}`);
+
+  try {
+    const response = await fetch(releaseNoteUrl, { method: "HEAD" });
+    return interpretReleaseNoteStatus(response.status, releaseNoteUrl, version);
+  } catch (error) {
+    logger.error(
+      `Error fetching release note for version ${version} at ${releaseNoteUrl}:`,
+      error,
+    );
+    // In case of network errors, assume it doesn't exist or is inaccessible.
+    return { exists: false };
+  }
+}
+
+/**
+ * Registers IPC handlers for release note queries.
+ */
 export function registerReleaseNoteHandlers() {
   createTypedHandler(
     systemContracts.doesReleaseNoteExist,
@@ -25,41 +95,8 @@ export function registerReleaseNoteHandlers() {
       if (IS_TEST_BUILD) {
         return { exists: false };
       }
-      const releaseNoteUrl = `https://www.dyad.sh/docs/releases/${version}`;
 
-      logger.debug(`Checking for release note at: ${releaseNoteUrl}`);
-
-      try {
-        const response = await fetch(releaseNoteUrl, { method: "HEAD" }); // Use HEAD to check existence without downloading content
-        if (response.ok) {
-          logger.debug(
-            `Release note found for version ${version} at ${releaseNoteUrl}`,
-          );
-          return { exists: true, url: releaseNoteUrl };
-        } else if (response.status === 404) {
-          logger.debug(
-            `Release note not found for version ${version} at ${releaseNoteUrl}`,
-          );
-          return { exists: false };
-        } else {
-          // Log other non-404 errors but still treat as "not found" for the client,
-          // as the primary goal is to check existence.
-          logger.warn(
-            `Unexpected status code ${response.status} when checking for release note: ${releaseNoteUrl}`,
-          );
-          return { exists: false };
-        }
-      } catch (error) {
-        logger.error(
-          `Error fetching release note for version ${version} at ${releaseNoteUrl}:`,
-          error,
-        );
-        // In case of network errors, etc., assume it doesn't exist or is inaccessible.
-        // Throwing an error here would propagate to the client and might be too disruptive
-        // if the check is just for UI purposes (e.g., showing a link).
-        // Consider if specific errors should be thrown based on requirements.
-        return { exists: false };
-      }
+      return checkReleaseNoteExists(version);
     },
   );
 

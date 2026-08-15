@@ -1,35 +1,12 @@
-import React, { type ComponentProps } from "react";
+import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { CodeHighlight } from "./CodeHighlight";
-import { ipc } from "@/ipc/types";
-
-export const customLink = ({
-  node: _node,
-  ...props
-}: ComponentProps<"a"> & { node?: unknown }) => (
-  <a
-    {...props}
-    target="_blank"
-    rel="noopener noreferrer"
-    onClick={(e) => {
-      const url = props.href;
-      if (url) {
-        e.preventDefault();
-        ipc.instructions.openExternalUrl(url);
-      }
-    }}
-  />
-);
+import { MARKDOWN_COMPONENTS, REMARK_PLUGINS } from "./markdown_shared";
 
 export const VanillaMarkdownParser = ({ content }: { content: string }) => {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        code: CodeHighlight,
-        a: customLink,
-      }}
+      remarkPlugins={REMARK_PLUGINS}
+      components={MARKDOWN_COMPONENTS}
     >
       {content}
     </ReactMarkdown>

@@ -43,6 +43,84 @@ const HEAP_NEAR_LIMIT_PCT = 95;
 // Same idea for whole-system memory at the last heartbeat.
 const SYSTEM_MEMORY_NEAR_LIMIT_RATIO = 0.95;
 
+/**
+ * Collects OOM-related signals from a native crash dump.
+ *
+ * Checks the exception code, allocation size, and V8 crash annotations
+ * to determine whether the dump declares an out-of-memory condition.
+ *
+ * @param nativeCrash - The minidump summary from a native crash.
+ * @returns An array of OOM signals found in the dump.
+ */
+function collectNativeCrashSignals(nativeCrash: MinidumpSummary): OomSignal[] {
+  const signals: OomSignal[] = [];
+
+  if (nativeCrash.exceptionCode === CHROMIUM_OOM_EXCEPTION_CODE) {
+    signals.push("oom_exception_code");
+  }
+  if (nativeCrash.oomAllocationSizeBytes !== undefined) {
+    signals.push("oom_allocation_size");
+  }
+  // Chromium's allocation size crash key, for dumps that declare the
+  // OOM through annotations instead of exception parameters.
+  if (nativeCrash.annotations?.["oom-size"]) {
+    signals.push("oom_size_annotation");
+  }
+  // The specific heap OOM key subsumes the general v8-oom family, so
+  // the two signals never appear together.
+  if (nativeCrash.annotations?.["electron.v8-oom.is_heap_oom"] === "1") {
+    signals.push("v8_heap_oom_annotation");
+  } else if (hasV8OomAnnotation(nativeCrash.annotations)) {
+    signals.push("v8_oom_annotation");
+  }
+
+  return signals;
+}
+
+/**
+ * Collects memory-pressure signals from the last performance heartbeat.
+ *
+ * Checks whether the V8 heap or system memory was near its limit at the
+ * time of the crash. System memory checks are Windows-only because
+ * Linux and macOS report free pages differently (including file cache).
+ *
+ * @param performance - The performance snapshot from the last heartbeat.
+ * @param platform - The operating system platform.
+ * @returns An array of performance-related OOM signals.
+ */
+function collectPerformanceSignals(
+  performance: PerformanceSnapshot,
+  platform: NodeJS.Platform,
+): OomSignal[] {
+  const signals: OomSignal[] = [];
+
+  // The heap ratio at the last heartbeat, not the session peak: a
+  // peak can be a long-recovered spike from earlier in the session,
+  // while the last heartbeat is at most one interval before death.
+  const heapUsedMB = performance.heapUsedMB ?? 0;
+  const heapLimitMB = performance.heapLimitMB ?? 0;
+  if (
+    heapLimitMB > 0 &&
+    (heapUsedMB / heapLimitMB) * 100 >= HEAP_NEAR_LIMIT_PCT
+  ) {
+    signals.push("heap_near_limit");
+  }
+  // Windows only: os.freemem() there reports available memory, cache
+  // included. On Linux and macOS it reports truly free pages, so a
+  // healthy system with a warm file cache can look nearly full.
+  const totalMB = performance.systemMemoryTotalMB ?? 0;
+  const usedMB = performance.systemMemoryUsageMB ?? 0;
+  if (
+    platform === "win32" &&
+    totalMB > 0 &&
+    usedMB / totalMB >= SYSTEM_MEMORY_NEAR_LIMIT_RATIO
+  ) {
+    signals.push("system_memory_near_limit");
+  }
+
+  return signals;
+}
+
 export function classifyOom(input: {
   nativeCrash: MinidumpSummary | null;
   performance: PerformanceSnapshot | null;
@@ -52,51 +130,12 @@ export function classifyOom(input: {
   const signals: OomSignal[] = [];
 
   if (nativeCrash) {
-    if (nativeCrash.exceptionCode === CHROMIUM_OOM_EXCEPTION_CODE) {
-      signals.push("oom_exception_code");
-    }
-    if (nativeCrash.oomAllocationSizeBytes !== undefined) {
-      signals.push("oom_allocation_size");
-    }
-    // Chromium's allocation size crash key, for dumps that declare the
-    // OOM through annotations instead of exception parameters.
-    if (nativeCrash.annotations?.["oom-size"]) {
-      signals.push("oom_size_annotation");
-    }
-    // The specific heap OOM key subsumes the general v8-oom family, so
-    // the two signals never appear together.
-    if (nativeCrash.annotations?.["electron.v8-oom.is_heap_oom"] === "1") {
-      signals.push("v8_heap_oom_annotation");
-    } else if (hasV8OomAnnotation(nativeCrash.annotations)) {
-      signals.push("v8_oom_annotation");
-    }
+    signals.push(...collectNativeCrashSignals(nativeCrash));
   }
   const dumpSignals = signals.length;
 
   if (performance) {
-    // The heap ratio at the last heartbeat, not the session peak: a
-    // peak can be a long-recovered spike from earlier in the session,
-    // while the last heartbeat is at most one interval before death.
-    const heapUsedMB = performance.heapUsedMB ?? 0;
-    const heapLimitMB = performance.heapLimitMB ?? 0;
-    if (
-      heapLimitMB > 0 &&
-      (heapUsedMB / heapLimitMB) * 100 >= HEAP_NEAR_LIMIT_PCT
-    ) {
-      signals.push("heap_near_limit");
-    }
-    // Windows only: os.freemem() there reports available memory, cache
-    // included. On Linux and macOS it reports truly free pages, so a
-    // healthy system with a warm file cache can look nearly full.
-    const totalMB = performance.systemMemoryTotalMB ?? 0;
-    const usedMB = performance.systemMemoryUsageMB ?? 0;
-    if (
-      platform === "win32" &&
-      totalMB > 0 &&
-      usedMB / totalMB >= SYSTEM_MEMORY_NEAR_LIMIT_RATIO
-    ) {
-      signals.push("system_memory_near_limit");
-    }
+    signals.push(...collectPerformanceSignals(performance, platform));
   }
 
   if (dumpSignals > 0) {

@@ -1,16 +1,26 @@
 import { ipcMain, type IpcMainInvokeEvent } from "electron";
 import { assertTrustedRenderer } from "../utils/renderer_security";
 
+/**
+ * IPC handler type. Args remain `any[]` because Electron's `ipcMain.handle`
+ * delivers untyped serialized data at the boundary. Callers annotate their
+ * own parameters for type safety; the `any[]` here reflects the inherent
+ * untypedness of IPC transport, not a type-safety shortcut.
+ *
+ * Return type is `unknown` (not `any`) so callers must narrow before use.
+ */
 type IpcHandler = (
   event: IpcMainInvokeEvent,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- IPC args are untyped at the serialization boundary
   ...args: any[]
-) => Promise<any> | any;
+) => Promise<unknown> | unknown;
 
 type TrustFailureHandler = (
   error: unknown,
   event: IpcMainInvokeEvent,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- IPC args are untyped at the serialization boundary
   ...args: any[]
-) => Promise<any> | any;
+) => Promise<unknown> | unknown;
 
 type TrustedIpcHandlerOptions = {
   onTrustFailure?: TrustFailureHandler;

@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const CUTE_NAME_ADJECTIVES = [
+/** Adjectives used for generating cute app names. */
+const ADJECTIVES = [
   "happy",
   "gentle",
   "brave",
@@ -69,7 +70,8 @@ const CUTE_NAME_ADJECTIVES = [
   "hopping",
 ] as const;
 
-const CUTE_NAME_ANIMALS = [
+/** Animals used for generating cute app names. */
+const ANIMALS = [
   "fox",
   "panda",
   "rabbit",
@@ -140,7 +142,8 @@ const CUTE_NAME_ANIMALS = [
   "kraken",
 ] as const;
 
-const CUTE_NAME_VERBS = [
+/** Verbs used for generating cute app names. */
+const VERBS = [
   "run",
   "hop",
   "dash",
@@ -195,16 +198,21 @@ const CUTE_NAME_VERBS = [
   "cheer",
 ] as const;
 
-function pickRandom<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)];
+/**
+ * Picks a random element from a readonly array.
+ *
+ * @param arr - The array to pick from.
+ * @returns A randomly selected element.
+ */
+function pickRandom<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 /**
- * Generates a cute app name.
+ * Generates a cute app name in the format "adjective-animal-verb".
+ *
+ * @returns A randomly generated three-part name string.
  */
 export function generateCuteAppName(): string {
-  const adjective = pickRandom(CUTE_NAME_ADJECTIVES);
-  const animal = pickRandom(CUTE_NAME_ANIMALS);
-  const verb = pickRandom(CUTE_NAME_VERBS);
-  return `${adjective}-${animal}-${verb}`;
+  return `${pickRandom(ADJECTIVES)}-${pickRandom(ANIMALS)}-${pickRandom(VERBS)}`;
 }

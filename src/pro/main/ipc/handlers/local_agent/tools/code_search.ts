@@ -56,8 +56,9 @@ export const codeSearchTool: ToolDefinition<CodeSearchArgs> = {
   inputSchema: codeSearchSchema,
   defaultConsent: "always",
 
-  // Local implementation - no engine required
+  // Available when code explorer is not active; requires Pro for full functionality
   isEnabled: (ctx) =>
+    ctx.isDyadPro &&
     !(readSettings().enableCodeExplorer && isCodeExplorerReady(ctx.appPath)),
 
   getConsentPreview: (args) =>

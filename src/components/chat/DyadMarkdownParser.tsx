@@ -5,7 +5,6 @@ import React, {
   type ComponentProps,
 } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 import { DyadWrite } from "./DyadWrite";
 import { DyadRename } from "./DyadRename";
@@ -25,8 +24,7 @@ import { DyadEdit } from "./DyadEdit";
 import { DyadSearchReplace } from "./DyadSearchReplace";
 import { DyadCodebaseContext } from "./DyadCodebaseContext";
 import { DyadThink } from "./DyadThink";
-import { CodeHighlight } from "./CodeHighlight";
-import { customLink } from "./VanillaMarkdownParser";
+import { MARKDOWN_COMPONENTS, REMARK_PLUGINS } from "./markdown_shared";
 import { useAtomValue } from "jotai";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
@@ -91,8 +89,6 @@ interface DyadMarkdownParserProps {
   messageId?: number;
   showStreamingPreview?: boolean;
 }
-
-export { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 
 /**
  * Custom component to parse markdown content with Dyad-specific tags.
@@ -410,11 +406,6 @@ const MemoClosedBlocks = React.memo(function MemoClosedBlocks({
     </>
   );
 });
-
-// Module-level constants so MemoMarkdown never gets fresh refs for these
-// props, which would defeat ReactMarkdown's internal prop-equality checks.
-const REMARK_PLUGINS = [remarkGfm];
-const MARKDOWN_COMPONENTS = { code: CodeHighlight, a: customLink };
 
 // Memoized markdown piece. Without this, ReactMarkdown re-parses every
 // completed segment's text into an AST on every streaming chunk.

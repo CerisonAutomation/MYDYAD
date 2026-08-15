@@ -1,8 +1,6 @@
 import { type Message } from "@/ipc/types";
-import {
-  DyadMarkdownParser,
-  VanillaMarkdownParser,
-} from "./DyadMarkdownParser";
+import { DyadMarkdownParser } from "./DyadMarkdownParser";
+import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 import { DyadAttachment, type AttachmentSize } from "./DyadAttachment";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { StreamingLoadingAnimation } from "./StreamingLoadingAnimation";
