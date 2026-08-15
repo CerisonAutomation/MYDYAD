@@ -14,8 +14,9 @@ import {
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 
-// Disable GPU compositing to prevent GPU process crashes (exit code 15)
+// Disable GPU to prevent GPU process crashes (exit code 15)
 // This is a known issue on macOS with heavy system load
+app.commandLine.appendSwitch("disable-gpu");
 app.commandLine.appendSwitch("disable-gpu-compositing");
 
 // Suppress harmless EPIPE errors from console.error writing to dead pipes
