@@ -16,6 +16,7 @@ import {
   shouldShowPnpmMinimumReleaseAgeWarning,
   type RuntimeMode2,
 } from "@/lib/schemas";
+import { detectFrameworkType } from "@/ipc/utils/framework_utils";
 import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 import type { AppRunInvocationRef } from "@/app_run/state";
 import {
@@ -106,14 +107,37 @@ function getPnpmRunCommand(): string {
   return `pnpm ${PNPM_PM_ON_FAIL_IGNORE_ARG} run dev`;
 }
 
+/**
+ * Build the dev server run command with the correct port flag for the detected framework.
+ *
+ * - Vite apps use `--port` (e.g. `vite --port 3000`)
+ * - Next.js apps use `-p` (e.g. `next dev -p 3000`)
+ * - Unknown frameworks default to `--port`
+ */
+function buildRunCommandWithPort(appPath: string, port: number): string {
+  const framework = detectFrameworkType(appPath);
+  const pnpmRun = getPnpmRunCommand();
+
+  if (framework === "nextjs") {
+    // Next.js uses -p, not --port. The `next dev` command accepts -p.
+    // `pnpm run dev` passes through to `next dev`, so we need to use
+    // the PORT environment variable which Next.js respects.
+    return `PORT=${port} ${pnpmRun}`;
+  }
+
+  // Vite, vite-nitro, and other frameworks use --port
+  return `${pnpmRun} --port ${port}`;
+}
+
 function buildPnpmInstallAndRunCommand(input: {
   promotedPackages: string[];
   port: number;
+  appPath: string;
 }): string {
   return [
     getPnpmInstallCommand(),
     getBestEffortPnpmRebuildCommand(input.promotedPackages),
-    `${getPnpmRunCommand()} --port ${input.port}`,
+    buildRunCommandWithPort(input.appPath, input.port),
   ]
     .filter(Boolean)
     .join(" && ");
@@ -149,6 +173,7 @@ async function getDefaultCommand({
       command: buildPnpmInstallAndRunCommand({
         promotedPackages: allowBuildsResult.promotedPackages,
         port,
+        appPath,
       }),
       isCustom: false,
       packageManager: "pnpm",
@@ -174,8 +199,10 @@ async function getDefaultCommand({
   }
 
   if (packageManager === "npm") {
+    const framework = detectFrameworkType(appPath);
+    const portFlag = framework === "nextjs" ? `PORT=${port}` : `-- --port ${port}`;
     return {
-      command: `(${getNpmInstallCommand()} && npm run dev -- --port ${port})`,
+      command: `(${getNpmInstallCommand()} && npm run dev ${portFlag})`,
       isCustom: false,
       packageManager: "npm",
     };
@@ -186,6 +213,7 @@ async function getDefaultCommand({
     command: buildPnpmInstallAndRunCommand({
       promotedPackages: allowBuildsResult.promotedPackages,
       port,
+      appPath,
     }),
     isCustom: false,
     packageManager: "pnpm",

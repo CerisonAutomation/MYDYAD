@@ -63,7 +63,7 @@ export async function fetchOllamaModels(): Promise<{ models: LocalModel[] }> {
     // SSRF protection: validate URL doesn't target private/internal IPs
     const { assertNotPrivateIp } =
       await import("@/pro/main/ipc/handlers/local_agent/tools/network_utils");
-    assertNotPrivateIp(ollamaUrl);
+    assertNotPrivateIp(ollamaUrl, { allowLocalhost: true });
     const response = await fetch(`${ollamaUrl}/api/tags`, {
       signal: AbortSignal.timeout(10_000),
     });

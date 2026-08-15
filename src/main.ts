@@ -8,6 +8,7 @@ import {
   net,
   nativeImage,
   crashReporter,
+  session,
   type Event as ElectronEvent,
 } from "electron";
 import * as path from "node:path";
@@ -185,7 +186,7 @@ try {
       } catch (e: any) {
         // Swallow EIO errors (broken pipe) and ENOTTY (inappropriate ioctl)
         // These happen when a child process exits while we're still trying to log
-        if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF") {
+        if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF" || e?.code === "EPIPE") {
           // Silently ignore — the stream is gone
           return;
         }
@@ -197,6 +198,23 @@ try {
 } catch {
   // If transport override fails, continue without it — not critical
 }
+
+// Also wrap native console methods to prevent EIO errors from process_manager
+// and other code that uses console.info/error directly instead of electron-log
+for (const method of ["info", "error", "warn", "log"] as const) {
+  const original = console[method];
+  console[method] = (...args: unknown[]) => {
+    try {
+      original.apply(console, args);
+    } catch (e: any) {
+      if (e?.code === "EIO" || e?.code === "ENOTTY" || e?.code === "EBADF" || e?.code === "EPIPE") {
+        return; // Silently ignore broken pipe errors
+      }
+      throw e;
+    }
+  };
+}
+
 const execFileAsync = promisify(execFile);
 
 // Prefer the Dyad-managed pnpm (if installed) for everything spawned from the
@@ -431,6 +449,22 @@ if (process.defaultApp) {
 }
 
 export async function onReady() {
+  // ── Content Security Policy (fixes blank screen in dev) ──────────
+  // Vite's HMR requires 'unsafe-eval' and 'unsafe-inline'.
+  // In production, use a strict CSP without these allowances.
+  const isDev = !app.isPackaged;
+  const csp = isDev
+    ? "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws://localhost:* http://localhost:*; img-src 'self' data: blob:; font-src 'self' data:;"
+    : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; font-src 'self' data:;";
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [csp],
+      },
+    });
+  });
+
   // Linux: claim the dyad:// scheme for this build (best-effort, see module).
   // setAsDefaultProtocolClient above is unreliable on Linux. Pass this instance's
   // userData so a browser-launched deep link forwards here, not a second window.

@@ -32,7 +32,7 @@ export async function fetchLMStudioModels(): Promise<{ models: LocalModel[] }> {
   // SSRF protection: validate URL doesn't target private/internal IPs
   const { assertNotPrivateIp } =
     await import("@/pro/main/ipc/handlers/local_agent/tools/network_utils");
-  assertNotPrivateIp(lmStudioUrl);
+  assertNotPrivateIp(lmStudioUrl, { allowLocalhost: true });
   const modelsResponse: Response = await fetch(`${lmStudioUrl}/api/v0/models`, {
     signal: AbortSignal.timeout(10_000),
   });

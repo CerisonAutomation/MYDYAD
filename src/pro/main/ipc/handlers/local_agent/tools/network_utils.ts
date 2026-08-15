@@ -139,12 +139,17 @@ export function isPrivateIp(hostname: string): boolean {
  *
  * Call this **before** performing the actual fetch.
  */
-export function assertNotPrivateIp(url: string): void {
+export function assertNotPrivateIp(url: string, options?: { allowLocalhost?: boolean }): void {
   let hostname: string;
   try {
     hostname = new URL(url).hostname;
   } catch {
     throw new DyadError(`Invalid URL: ${url}`, DyadErrorKind.Validation);
+  }
+
+  // Allow localhost for local model services (Ollama, LMStudio) when explicitly permitted
+  if (options?.allowLocalhost && (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1")) {
+    return;
   }
 
   if (isPrivateIp(hostname)) {

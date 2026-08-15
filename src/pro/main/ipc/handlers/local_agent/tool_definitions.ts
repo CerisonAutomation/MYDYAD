@@ -111,6 +111,9 @@ import { formatCodeTool } from "./tools/format_code";
 import { gitingestTool } from "./tools/gitingest";
 import { autoZenithTool } from "./tools/auto_zenith";
 import { codeResearchTool } from "./tools/code_research";
+import { treeSitterAnalyzeTool } from "./tools/tree_sitter_analyze";
+import { astGrepSearchTool } from "./tools/ast_grep_search";
+import { fdFindTool } from "./tools/fd_find";
 import { tokenCompressorTool } from "./tools/token_compressor";
 import { aiSecurityAuditTool } from "./tools/ai_security_audit";
 import { codeReviewBotTool } from "./tools/code_review_bot";
@@ -292,6 +295,10 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   // Auto Zenith (autofable) and Code Research — guarded
   withAnalysisGuard(autoZenithTool),
   withAnalysisGuard(codeResearchTool),
+  // Tree-sitter, ast-grep, fd — fast code analysis tools
+  treeSitterAnalyzeTool,
+  astGrepSearchTool,
+  fdFindTool,
   // Latest high-value tools (2025-2026) — guarded
   tokenCompressorTool,
   withAnalysisGuard(aiSecurityAuditTool),
