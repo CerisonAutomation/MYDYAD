@@ -160,7 +160,9 @@ function PatInput() {
           onChange={(e) => setToken(e.target.value)}
           placeholder="sbp_..."
           className="text-xs font-mono"
-          type="password"
+          type="text"
+          autoComplete="off"
+          spellCheck={false}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               void handleConnect();

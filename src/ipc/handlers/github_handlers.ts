@@ -264,7 +264,7 @@ async function pollForAccessToken(invocationRef: ConnectionFlowInvocationRef) {
   try {
     const response = await fetch(getGitHubAccessTokenUrl(), {
       method: "POST",
-      signal: record.signal,
+      signal: AbortSignal.timeout(30_000),
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -420,7 +420,7 @@ async function startGithubDeviceFlow({
   try {
     const res = await fetch(getGitHubDeviceCodeUrl(), {
       method: "POST",
-      signal,
+      signal: AbortSignal.timeout(30_000),
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -601,6 +601,7 @@ async function handleIsRepoAvailable(
     const owner =
       org ||
       (await fetch(`${getGitHubApiBase()}/user`, {
+        signal: AbortSignal.timeout(30_000),
         headers: { Authorization: `Bearer ${accessToken}` },
       })
         .then((r) => r.json() as Promise<{ login?: string }>)
@@ -608,6 +609,7 @@ async function handleIsRepoAvailable(
     // Check if repo exists (using normalized name)
     const url = `${getGitHubApiBase()}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(normalizedRepo)}`;
     const res = await fetch(url, {
+      signal: AbortSignal.timeout(30_000),
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (res.status === 404) {
@@ -659,6 +661,7 @@ export async function handleCreateRepo(
   let owner = org;
   if (!owner) {
     const userRes = await fetch(`${getGitHubApiBase()}/user`, {
+      signal: AbortSignal.timeout(30_000),
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     const user = (await userRes.json()) as { login?: string };
@@ -669,6 +672,7 @@ export async function handleCreateRepo(
     ? `${getGitHubApiBase()}/orgs/${owner}/repos`
     : `${getGitHubApiBase()}/user/repos`;
   const res = await fetch(createUrl, {
+    signal: AbortSignal.timeout(30_000),
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,

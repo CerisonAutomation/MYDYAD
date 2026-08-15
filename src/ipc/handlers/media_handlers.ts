@@ -176,7 +176,7 @@ async function invalidateThumbnail(filePath: string): Promise<void> {
       getMediaThumbnailCacheRoot(electronApp.getPath("sessionData")),
       filePath,
     );
-  } catch (error) {
+  } catch (error: unknown) {
     // Cache cleanup must not turn a successful user file operation into an
     // error. The stale derivative is path-keyed and can no longer be served.
     logger.warn(`Could not invalidate media thumbnail cache`, error);
@@ -254,8 +254,11 @@ export function registerMediaHandlers() {
 
       try {
         await fs.promises.rename(sourcePath, destinationPath);
-      } catch (e: any) {
-        if (e?.code === "ENOENT") {
+      } catch (e: unknown) {
+        if (
+          e instanceof Error &&
+          (e as NodeJS.ErrnoException).code === "ENOENT"
+        ) {
           throw new Error(
             "File was modified or deleted before the rename could complete",
           );
@@ -275,8 +278,11 @@ export function registerMediaHandlers() {
 
       try {
         await fs.promises.unlink(filePath);
-      } catch (e: any) {
-        if (e?.code === "ENOENT") {
+      } catch (e: unknown) {
+        if (
+          e instanceof Error &&
+          (e as NodeJS.ErrnoException).code === "ENOENT"
+        ) {
           // File already gone — treat delete as idempotent
           logger.log(`Media file already deleted: ${filePath}`);
           return;
@@ -344,13 +350,16 @@ export function registerMediaHandlers() {
 
         try {
           await fs.promises.rename(sourcePath, destinationPath);
-        } catch (e: any) {
-          if (e?.code === "EXDEV") {
+        } catch (e: unknown) {
+          if (
+            e instanceof Error &&
+            (e as NodeJS.ErrnoException).code === "EXDEV"
+          ) {
             // Cross-device move (e.g. different drives on Windows): copy then delete.
             await fs.promises.copyFile(sourcePath, destinationPath);
             try {
               await fs.promises.unlink(sourcePath);
-            } catch (unlinkError: any) {
+            } catch (unlinkError: unknown) {
               // Source delete failed after copy succeeded — remove the copy
               // so we don't end up with duplicates.
               try {
@@ -360,7 +369,10 @@ export function registerMediaHandlers() {
               }
               throw unlinkError;
             }
-          } else if (e?.code === "ENOENT") {
+          } else if (
+            e instanceof Error &&
+            (e as NodeJS.ErrnoException).code === "ENOENT"
+          ) {
             throw new Error(
               "File was modified or deleted before the move could complete",
             );

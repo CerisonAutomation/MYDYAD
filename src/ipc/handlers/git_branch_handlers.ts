@@ -151,7 +151,7 @@ export async function handleDeleteBranch(
     let remoteBranches: string[];
     try {
       remoteBranches = await gitListRemoteBranches({ path: appPath });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn(
         `Failed to list remote branches while checking for branch '${branch}' to delete.`,
         error,
@@ -268,8 +268,10 @@ export async function handleMergeBranch(
     remoteBranches = await gitListRemoteBranches({
       path: appPath,
     });
-  } catch (error: any) {
-    logger.warn(`Failed to list remote branches: ${error.message}`);
+  } catch (error: unknown) {
+    logger.warn(
+      `Failed to list remote branches: ${error instanceof Error ? error.message : String(error)}`,
+    );
     // Continue with empty remote branches list
   }
 

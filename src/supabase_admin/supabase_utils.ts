@@ -161,7 +161,7 @@ export async function getSupabaseFunctionsAffectedBySharedModules({
       appPath,
       changedSharedModulePaths,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn(
       "Supabase dependency analysis failed; deploying all functions",
       error,
@@ -366,7 +366,7 @@ export async function deploySupabaseFunctions({
           succeededFunctions++;
           logger.info(`Successfully bundled function: ${functionName}`);
           return result;
-        } catch (error) {
+        } catch (error: unknown) {
           failedFunctions++;
           throw error;
         } finally {
@@ -408,8 +408,8 @@ export async function deploySupabaseFunctions({
         logger.info(
           `Successfully activated ${successfulDeploys.length} functions`,
         );
-      } catch (error: any) {
-        const errorMessage = `Failed to bulk update functions: ${error.message}`;
+      } catch (error: unknown) {
+        const errorMessage = `Failed to bulk update functions: ${error instanceof Error ? error.message : String(error)}`;
         logger.error(errorMessage, error);
         errors.push(errorMessage);
       }
@@ -463,8 +463,8 @@ export async function deploySupabaseFunctions({
         errors.length === 0 && activationSucceeded ? "finished" : "failed",
       );
     }
-  } catch (error: any) {
-    const errorMessage = `Error reading functions directory: ${error.message}`;
+  } catch (error: unknown) {
+    const errorMessage = `Error reading functions directory: ${error instanceof Error ? error.message : String(error)}`;
     logger.error(errorMessage, error);
     errors.push(errorMessage);
   }

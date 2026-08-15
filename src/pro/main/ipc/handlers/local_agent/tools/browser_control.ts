@@ -1319,7 +1319,10 @@ async function executeNetworkRequests(
   }
 
   let lines = entries
-    .map((e) => `[${e.id}] ${e.method} ${e.status ?? "pending"} ${e.resourceType} ${e.url}`)
+    .map(
+      (e) =>
+        `[${e.id}] ${e.method} ${e.status ?? "pending"} ${e.resourceType} ${e.url}`,
+    )
     .join("\n");
   const truncated = lines.length > MAX_NETWORK_OUTPUT_CHARS;
   if (truncated) {

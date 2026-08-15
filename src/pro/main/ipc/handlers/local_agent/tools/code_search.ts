@@ -56,9 +56,8 @@ export const codeSearchTool: ToolDefinition<CodeSearchArgs> = {
   inputSchema: codeSearchSchema,
   defaultConsent: "always",
 
-  // Available when code explorer is not active; requires Pro for full functionality
+  // Available when code explorer is not active (fallback tool for all users)
   isEnabled: (ctx) =>
-    ctx.isDyadPro &&
     !(readSettings().enableCodeExplorer && isCodeExplorerReady(ctx.appPath)),
 
   getConsentPreview: (args) =>

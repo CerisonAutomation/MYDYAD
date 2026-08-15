@@ -129,7 +129,7 @@ export async function readSpecTestCases(
       "utf8",
     );
     return parseTestCases(content);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn(`Failed to parse test cases in ${testFile}: ${error}`);
     return [];
   }
@@ -303,7 +303,7 @@ export async function runAppTestsCore({
       onOutput: (chunk) => emit(chunk, "setup"),
     });
     installed = result.installed;
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`Playwright bootstrap failed: ${message}`);
     return { appId, results: [], infraError: { message } };
@@ -384,7 +384,7 @@ export async function runAppTestsCore({
       timeoutMs,
       onOutput: (chunk) => emit(chunk, "running"),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     // A spawn failure (e.g. npx missing from PATH) rejects rather than exiting
     // non-zero. Surface it as a structured infra error in the Tests panel
     // instead of letting it bubble up as a generic IPC failure.
@@ -419,7 +419,7 @@ export async function runAppTestsCore({
       const raw = fs.readFileSync(resultsJsonPath, "utf8");
       results = parsePlaywrightReport(JSON.parse(raw), appPath);
       parseOk = true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(`Failed to parse Playwright report: ${error}`);
     }
   }
@@ -765,7 +765,7 @@ export async function runAppTestsWithIsolation({
               // read the same as "no".
               envRestoreFailed = true;
               envRestoreFailed = !(await prepared.teardown()).envRestored;
-            } catch (error) {
+            } catch (error: unknown) {
               logger.error(
                 `Failed to tear down isolated test environment for app ${appId}: ${error}`,
               );
@@ -776,7 +776,7 @@ export async function runAppTestsWithIsolation({
     );
     finalResult = withEnvRestoreWarning(finalResult);
     return finalResult;
-  } catch (error) {
+  } catch (error: unknown) {
     // Surface an unexpected failure as an infra error on the run-state event so
     // the panel leaves its spinner state, then rethrow for the caller.
     finalResult = withEnvRestoreWarning({
@@ -827,8 +827,13 @@ export async function runAppTestsWithIsolation({
 async function moveFileWithFallback(src: string, dst: string): Promise<void> {
   try {
     await fs.promises.rename(src, dst);
-  } catch (error: any) {
-    if (error?.code !== "EXDEV") {
+  } catch (error: unknown) {
+    if (
+      !(
+        error instanceof Error &&
+        (error as NodeJS.ErrnoException).code === "EXDEV"
+      )
+    ) {
       throw error;
     }
     await fs.promises.copyFile(src, dst);
@@ -925,8 +930,11 @@ export function registerTestsHandlers() {
         // deletion for a path that was already removed elsewhere.
         try {
           await fs.promises.lstat(fullPath);
-        } catch (error: any) {
-          if (error?.code === "ENOENT") {
+        } catch (error: unknown) {
+          if (
+            error instanceof Error &&
+            (error as NodeJS.ErrnoException).code === "ENOENT"
+          ) {
             throw new DyadError(
               `Test file not found: ${testFile}`,
               DyadErrorKind.NotFound,
@@ -954,8 +962,13 @@ export function registerTestsHandlers() {
           // file is still on disk and it's on us to delete it.
           try {
             await fs.promises.unlink(fullPath);
-          } catch (error: any) {
-            if (error?.code !== "ENOENT") {
+          } catch (error: unknown) {
+            if (
+              !(
+                error instanceof Error &&
+                (error as NodeJS.ErrnoException).code === "ENOENT"
+              )
+            ) {
               throw error;
             }
           }
@@ -1082,14 +1095,14 @@ export function registerTestsHandlers() {
               // must not report the move itself as failed.
               try {
                 await gitAdd({ path: appPath, filepath: destRel });
-              } catch (error) {
+              } catch (error: unknown) {
                 logger.warn(
                   `Moved ${sourceRel} but couldn't git-add ${destRel}: ${error}`,
                 );
               }
               try {
                 await gitRemove({ path: appPath, filepath: sourceRel });
-              } catch (error) {
+              } catch (error: unknown) {
                 // The source may be untracked (never committed); the file is
                 // already gone from disk, so staging the new one is enough.
                 logger.warn(
@@ -1097,7 +1110,7 @@ export function registerTestsHandlers() {
                 );
               }
               return { ok: true, movedTo: destRel };
-            } catch (error) {
+            } catch (error: unknown) {
               logger.warn(`Failed to migrate ${sourceRel}: ${error}`);
               return {
                 ok: false,

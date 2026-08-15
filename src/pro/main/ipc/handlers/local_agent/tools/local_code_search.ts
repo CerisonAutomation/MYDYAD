@@ -64,7 +64,6 @@ const INDEXABLE_EXTENSIONS = new Set([
   ".yml",
   ".sql",
   ".sh",
-  ".env",
 ]);
 
 /** Directories to skip during file walking */
@@ -172,7 +171,8 @@ async function buildSearchIndex(
 
     for (const entry of dirEntries) {
       if (fileCount >= maxFiles) break;
-      if (entry.name.startsWith(".") && entry.name !== ".env") continue;
+      // Skip all dotfiles including .env (contains secrets)
+      if (entry.name.startsWith(".")) continue;
       if (SKIP_DIRS.has(entry.name)) continue;
 
       const fullPath = path.join(dir, entry.name);
@@ -269,7 +269,7 @@ async function searchWithFuse(
         matchType: r.item.line === 0 ? ("path" as const) : ("fuzzy" as const),
         score: 1 - (r.score ?? 0), // invert: Fuse returns 0=best, we want 1=best
       }));
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn("Fuse.js search failed:", error);
     return [];
   }
@@ -314,10 +314,11 @@ async function searchWithRipgrep(
       timeout: 10_000,
     });
     result = { stdout, exitCode: 0 };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { stdout?: string; code?: number };
     result = {
-      stdout: error.stdout ?? "",
-      exitCode: error.code ?? 1,
+      stdout: err.stdout ?? "",
+      exitCode: err.code ?? 1,
     };
   }
 

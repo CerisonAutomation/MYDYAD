@@ -295,7 +295,7 @@ async function resolveRestoreRef({
 async function syncCloudSandboxSnapshotBestEffort(appId: number) {
   try {
     await syncCloudSandboxSnapshot({ appId });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn(
       `Cloud sandbox sync failed after version operation for app ${appId}:`,
       error,
@@ -630,7 +630,7 @@ async function revertCodebaseToVersion({
         // `warningMessage` was set.
         successMessage =
           "Successfully restored to version (including database)";
-      } catch (error) {
+      } catch (error: unknown) {
         logger.error(
           "Error restoring Neon development branch during revert:",
           getNeonErrorMessage(error),
@@ -648,7 +648,7 @@ async function revertCodebaseToVersion({
         neonDevelopmentBranchId: app.neonDevelopmentBranchId,
         appPath: app.path,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       // The git revert has already been committed at this point, so throwing
       // here would leave the code restored while the caller (revertVersion /
       // restore-to-message) skips its chat-state updates and reports failure.
@@ -694,7 +694,7 @@ async function revertCodebaseToVersion({
           `Successfully re-deployed all Supabase edge functions for app ${appId}`,
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       warningMessage = appendWarning(
         warningMessage,
         `Error re-deploying Supabase edge functions after revert: ${error}`,
@@ -809,10 +809,10 @@ export function registerVersionHandlers() {
       return {
         branch: currentBranch || "<no-branch>",
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error(`Error getting current branch for app ${appId}:`, error);
       throw new DyadError(
-        `Failed to get current branch: ${error.message}`,
+        `Failed to get current branch: ${error instanceof Error ? error.message : String(error)}`,
         DyadErrorKind.External,
       );
     }
@@ -875,7 +875,7 @@ export function registerVersionHandlers() {
         results.push(...(await Promise.all(batch.map(loadFileChange))));
       }
       return results;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Preserve the original error kind for DyadErrors thrown by inner
       // functions; only wrap unexpected (non-Dyad) failures as External.
       if (error instanceof DyadError) {
@@ -886,7 +886,7 @@ export function registerVersionHandlers() {
         error,
       );
       throw new DyadError(
-        `Failed to get version changes: ${error.message}`,
+        `Failed to get version changes: ${error instanceof Error ? error.message : String(error)}`,
         DyadErrorKind.External,
       );
     }
@@ -1159,7 +1159,7 @@ export function registerVersionHandlers() {
               appPath,
               versionId: targetCommitHash,
             });
-          } catch (error) {
+          } catch (error: unknown) {
             if (
               error instanceof DyadError &&
               error.kind === DyadErrorKind.NotFound
@@ -1353,7 +1353,7 @@ export function registerVersionHandlers() {
                 appPath: latestAppPath,
                 versionId: latestTargetCommitHash,
               });
-            } catch (error) {
+            } catch (error: unknown) {
               if (
                 error instanceof DyadError &&
                 error.kind === DyadErrorKind.NotFound
@@ -1686,7 +1686,7 @@ export function registerVersionHandlers() {
                 logger.info(
                   `Switched Postgres to preview branch for app ${appId} commit ${version.commitHash} dbTimestamp=${version.neonDbTimestamp}`,
                 );
-              } catch (error) {
+              } catch (error: unknown) {
                 logger.error(
                   "Error restoring Neon preview branch during checkout:",
                   getNeonErrorMessage(error),
