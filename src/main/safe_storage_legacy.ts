@@ -347,6 +347,7 @@ const stats: RecoveryStats = { attempted: 0, recovered: 0, failed: 0 };
 // Cache keyed by the ciphertext base64 string. Caches both successes and
 // failures: the Keychain will not change mid-session, so re-attempting the same
 // ciphertext (which may prompt the user via `security`) is pure overhead.
+const MAX_RECOVERY_CACHE_SIZE = 128;
 const recoveryCache = new Map<string, string | null>();
 
 let defaultReader: KeychainPasswordReader | undefined;
@@ -355,6 +356,20 @@ function clearRecoveryFailureCache(): void {
   for (const [ciphertextBase64, recovery] of recoveryCache) {
     if (recovery === null) {
       recoveryCache.delete(ciphertextBase64);
+    }
+  }
+}
+
+function evictRecoveryCache(): void {
+  if (recoveryCache.size > MAX_RECOVERY_CACHE_SIZE) {
+    // Remove oldest entries (Map preserves insertion order)
+    const excess = recoveryCache.size - MAX_RECOVERY_CACHE_SIZE;
+    const keys = recoveryCache.keys();
+    for (let i = 0; i < excess; i++) {
+      const key = keys.next().value;
+      if (key !== undefined) {
+        recoveryCache.delete(key);
+      }
     }
   }
 }
@@ -524,6 +539,7 @@ export function recoverLegacySafeStorageSecret(
     const [{ identity, plaintext }] = plausibleRecoveries;
     stats.recovered++;
     recoveryCache.set(ciphertextBase64, plaintext);
+    evictRecoveryCache();
     logger.info(
       `Recovered legacy safeStorage secret using identity "${identity.service}"`,
     );
@@ -532,6 +548,7 @@ export function recoverLegacySafeStorageSecret(
 
   stats.failed++;
   recoveryCache.set(ciphertextBase64, null);
+  evictRecoveryCache();
   if (plausibleRecoveries.length > 1) {
     logger.warn(
       "Ambiguous legacy safeStorage recovery: multiple Keychain identities " +

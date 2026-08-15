@@ -62,7 +62,9 @@ import { formatExploreProgressLog } from "./explore_code_subagent_progress";
 
 const logger = log.scope("explore_code_subagent");
 
-const SUBAGENT_MODEL = { provider: "openai", name: "gpt-5.6-luna" } as const;
+// Use the current model dynamically instead of hardcoded OpenAI model
+// This allows explore_code to work with any configured provider
+const SUBAGENT_MODEL = { provider: "auto", name: "auto" } as const;
 // Max model turns in the agent loop. Each step may issue several parallel tool
 // calls, so this is distinct from the read-only tool-call budget below.
 const SUBAGENT_MAX_STEPS = 12;
@@ -321,7 +323,12 @@ function renderFinalReport({
 }
 
 function assertDyadValueAvailable(settings: UserSettings): void {
-  if (!settings.enableDyadPro || !settings.providerSettings?.auto?.apiKey) {
+  // Check if any provider has an API key configured
+  const hasAnyApiKey = Object.values(settings.providerSettings || {}).some(
+    (provider) => provider?.apiKey?.value,
+  );
+
+  if (!hasAnyApiKey) {
     throw new DyadError(
       "explore_code sub-agent requires an API key. Configure your provider in Settings.",
       DyadErrorKind.Precondition,

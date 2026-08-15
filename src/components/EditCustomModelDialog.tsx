@@ -21,7 +21,7 @@ interface Model {
   description?: string;
   maxOutputTokens?: number;
   contextWindow?: number;
-  type: "cloud" | "custom";
+  type: "custom";
   tag?: string;
 }
 

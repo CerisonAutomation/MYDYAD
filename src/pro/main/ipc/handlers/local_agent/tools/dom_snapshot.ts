@@ -203,7 +203,8 @@ export const domSnapshotTool: ToolDefinition<DomSnapshotArgs> = {
 
   buildXml: (args, isComplete) => {
     if (isComplete) return undefined;
-    if (!args.url && !args.app_name) return undefined;
+    // Emit a tag even for preview-panel snapshots (no url/app_name) so the
+    // streaming UI shows progress instead of nothing.
     return `<dyad-dom-snapshot ${buildAttributes(args)}>Capturing DOM...</dyad-dom-snapshot>`;
   },
 

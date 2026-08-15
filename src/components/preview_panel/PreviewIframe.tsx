@@ -127,7 +127,9 @@ const ErrorBanner = ({ error, onDismiss, onAIFix }: ErrorBannerProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const { isStreaming } = useStreamChat();
   if (!error) return null;
-  const isDockerError = error.message.includes("Cannot connect to the Docker");
+  const isDockerError =
+    error.message.includes("Cannot connect to the Docker") ||
+    error.message.includes("Cannot connect to the container");
   const isInternalDyadError = error.source === "dyad-app";
   const isSyncError = error.source === "dyad-sync";
 
@@ -188,7 +190,7 @@ const ErrorBanner = ({ error, onDismiss, onAIFix }: ErrorBannerProps) => {
           <span className="text-sm text-red-700 dark:text-red-200">
             <span className="font-medium">Tip: </span>
             {isDockerError
-              ? "Make sure Docker Desktop is running and try restarting the app."
+              ? "Container runtime not available. Install Colima: brew install colima docker && colima start"
               : isSyncError
                 ? "Dyad could not upload your latest local changes to the cloud sandbox. Check your network connection or wait for sync to recover."
                 : isInternalDyadError
@@ -435,8 +437,9 @@ export const PreviewIframe = ({
 
   //detect if the user is using Mac
   const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-  const isCloudMode = mode === "cloud";
-  const isCloudSandboxMode = settings?.runtimeMode2 === "cloud";
+  // Cloud sandbox removed — all execution is local
+  const isCloudMode = false;
+  const isCloudSandboxMode = false;
   const { mutate: clearSessionData } = useMutation({
     mutationFn: () => {
       return ipc.instructions.clearSessionData();
@@ -785,8 +788,6 @@ export const PreviewIframe = ({
       }
 
       if (event.data?.type === "dyad-component-selected") {
-        console.log("Component picked:", event.data);
-
         const component = parseComponentSelection(event.data);
 
         if (!component) return;
@@ -1027,7 +1028,7 @@ export const PreviewIframe = ({
     "c",
     { shift: true, ctrl: !isMac, meta: isMac },
     handleActivateComponentSelector,
-    isComponentSelectorInitialized,
+    true,
     iframeRef,
   );
 
@@ -1199,11 +1200,7 @@ export const PreviewIframe = ({
                         ? "bg-purple-500 text-white hover:bg-purple-600 hover:text-white dark:bg-purple-600 dark:hover:bg-purple-700"
                         : "text-purple-700 hover:bg-purple-100 hover:text-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/50 dark:hover:text-purple-200",
                     )}
-                    disabled={
-                      loading ||
-                      !selectedAppId ||
-                      !isComponentSelectorInitialized
-                    }
+                    disabled={loading || !selectedAppId}
                     data-testid="preview-pick-element-button"
                   />
                 }
@@ -1238,7 +1235,6 @@ export const PreviewIframe = ({
                       loading ||
                       !selectedAppId ||
                       isPicking ||
-                      !isComponentSelectorInitialized ||
                       // The mirror of the record button's `annotatorMode` gate.
                       // Without it the annotator takes away the recording bar —
                       // the session's only Stop — on the one tab the bar was

@@ -38,14 +38,18 @@ const SEARXNG_INSTANCES = [
 export async function localWebSearch(
   query: string,
   maxResults: number = 8,
+  abortSignal?: AbortSignal,
 ): Promise<SearchResult[]> {
   const startTime = Date.now();
 
+  // Check abort before starting
+  abortSignal?.throwIfAborted();
+
   // Launch parallel searches across providers
   const searchPromises = [
-    searchDuckDuckGoHtml(query, maxResults),
+    searchDuckDuckGoHtml(query, maxResults, abortSignal),
     ...SEARXNG_INSTANCES.map((instance) =>
-      searchSearXNG(instance, query, maxResults),
+      searchSearXNG(instance, query, maxResults, abortSignal),
     ),
   ];
 
@@ -87,6 +91,7 @@ export async function localWebSearch(
 async function searchDuckDuckGoHtml(
   query: string,
   maxResults: number,
+  abortSignal?: AbortSignal,
 ): Promise<SearchResult[]> {
   try {
     const encodedQuery = encodeURIComponent(query);
@@ -97,7 +102,7 @@ async function searchDuckDuckGoHtml(
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
-        signal: AbortSignal.timeout(10000), // 10 second timeout
+        signal: AbortSignal.timeout(10000),
       },
     );
 
@@ -162,6 +167,7 @@ async function searchSearXNG(
   instance: string,
   query: string,
   maxResults: number,
+  abortSignal?: AbortSignal,
 ): Promise<SearchResult[]> {
   try {
     const encodedQuery = encodeURIComponent(query);
@@ -172,7 +178,7 @@ async function searchSearXNG(
           "User-Agent": "Dyad/1.0 (Local AI App Builder)",
           Accept: "application/json",
         },
-        signal: AbortSignal.timeout(8000), // 8 second timeout
+        signal: AbortSignal.timeout(8000),
       },
     );
 

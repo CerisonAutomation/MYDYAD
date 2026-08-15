@@ -13,7 +13,7 @@ const WORKER_PATH = path.resolve(
   "proxy_server.js",
 );
 const PROXY_FRAME_ANCESTORS_CSP =
-  "frame-ancestors 'self' file: http://localhost:* http://127.0.0.1:* http://[::1]:*";
+  "frame-ancestors 'self' file: http://127.0.0.1 http://localhost http://[::1] https://*";
 
 function findFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -173,7 +173,7 @@ describe("proxy worker Content-Security-Policy", () => {
     ).toEqual([PROXY_FRAME_ANCESTORS_CSP]);
   });
 
-  it("preserves an app CSP as an independently enforced header", async () => {
+  it("merges the proxy frame-ancestors into an app CSP while preserving its directives", async () => {
     const appCsp = "default-src 'self'; script-src 'self'";
     const response = await proxyResponse({
       headers: {
@@ -181,12 +181,17 @@ describe("proxy worker Content-Security-Policy", () => {
       },
     });
 
+    // The proxy replaces the app's frame-ancestors with its own (localhost /
+    // 127.0.0.1 / [::1] / https) and adds unsafe-eval for React dev + Monaco.
+    const expected =
+      "default-src 'self'; script-src 'self' 'unsafe-eval'; " +
+      PROXY_FRAME_ANCESTORS_CSP;
     expect(
       rawHeaderValues(response.rawHeaders, "content-security-policy"),
-    ).toEqual([appCsp, PROXY_FRAME_ANCESTORS_CSP]);
+    ).toEqual([expected]);
   });
 
-  it("keeps app CSP independent on the HTML injection path", async () => {
+  it("keeps app CSP directives on the HTML injection path", async () => {
     const appCsp = "default-src 'self'";
     const response = await proxyResponse({
       body: "<html><head></head><body>hello</body></html>",
@@ -197,8 +202,9 @@ describe("proxy worker Content-Security-Policy", () => {
     });
 
     expect(response.body).toContain("<body>hello</body>");
+    const expected = `default-src 'self'; ${PROXY_FRAME_ANCESTORS_CSP}`;
     expect(
       rawHeaderValues(response.rawHeaders, "content-security-policy"),
-    ).toEqual([appCsp, PROXY_FRAME_ANCESTORS_CSP]);
+    ).toEqual([expected]);
   });
 });

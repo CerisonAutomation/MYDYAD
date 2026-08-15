@@ -64,16 +64,32 @@ async function fetchAndExtract(
   assertNotPrivateIp(url);
 
   // Use local web fetch implementation with timeout
+  // Use redirect: "manual" to validate each redirect target for SSRF protection
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
-  let response: Response;
+  let response!: Response;
+  let currentUrl = url;
+  const MAX_REDIRECTS = 5;
   try {
-    response = await fetch(url, {
-      headers: {
-        "User-Agent": "Dyad-Crawler/1.0",
-      },
-      signal: controller.signal,
-    });
+    for (let i = 0; i <= MAX_REDIRECTS; i++) {
+      response = await fetch(currentUrl, {
+        headers: {
+          "User-Agent": "Dyad-Crawler/1.0",
+        },
+        signal: controller.signal,
+        redirect: "manual",
+      });
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get("location");
+        if (!location) break;
+        // Validate redirect target for SSRF
+        const redirectUrl = new URL(location, currentUrl).toString();
+        assertNotPrivateIp(redirectUrl);
+        currentUrl = redirectUrl;
+        continue;
+      }
+      break;
+    }
   } finally {
     clearTimeout(timeout);
   }

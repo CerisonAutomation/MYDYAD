@@ -16,7 +16,9 @@ import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
+import { escapeXmlAttr } from "./types";
 import { VULNERABILITY_PATTERNS } from "./security_scan";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const aiSecurityAuditSchema = z.object({
   operation: z
@@ -192,6 +194,8 @@ async function scanFile(
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     for (const vulnPattern of SECURITY_PATTERNS) {
+      // Reset lastIndex for global regexes to avoid state bugs
+      vulnPattern.pattern.lastIndex = 0;
       if (vulnPattern.pattern.test(line)) {
         findings.push({
           id: generateId(),
@@ -249,7 +253,7 @@ Output: CVSS scores, CWE IDs, OWASP categories, remediation`,
   buildXml: (args, isComplete) => {
     if (isComplete) return undefined;
     const attrs = [`op="${args.operation}"`];
-    if (args.file_path) attrs.push(`file="${args.file_path}"`);
+    if (args.file_path) attrs.push(`file="${escapeXmlAttr(args.file_path)}"`);
     return `<dyad-security-audit ${attrs.join(" ")}>Scanning...</dyad-security-audit>`;
   },
 
@@ -358,7 +362,11 @@ Output: CVSS scores, CWE IDs, OWASP categories, remediation`,
       }
 
       case "scan_file": {
-        if (!args.file_path) throw new Error("file_path is required");
+        if (!args.file_path)
+          throw new DyadError(
+            "file_path is required",
+            DyadErrorKind.Validation,
+          );
 
         const fullPath = path.join(appPath, args.file_path);
         const content = await fs.readFile(fullPath, "utf-8");
@@ -447,7 +455,10 @@ Output: CVSS scores, CWE IDs, OWASP categories, remediation`,
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

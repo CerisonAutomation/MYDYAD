@@ -83,12 +83,10 @@ export const codeSearchTool: ToolDefinition<CodeSearchArgs> = {
     );
 
     try {
-      // Use local code search (ripgrep-based)
-      const results = await localCodeSearch({
-        query: args.query,
-        appPath: targetAppPath,
-        maxResults: 20,
-      });
+      // Tokenized search: multi-word queries ("authentication middleware")
+      // rarely match a literal phrase, so search each term separately and
+      // also match file paths. Falls back to the full-phrase literal search.
+      const results = await tokenizedCodeSearch(args.query, targetAppPath);
 
       // Format results
       const resultText =
@@ -122,3 +120,78 @@ export const codeSearchTool: ToolDefinition<CodeSearchArgs> = {
     }
   },
 };
+
+/**
+ * Tokenized search: splits a natural-language query into terms and searches
+ * both file contents and file paths for each term, then ranks/dedupes.
+ * Falls back to a full-phrase literal search when the query yields nothing.
+ */
+async function tokenizedCodeSearch(
+  query: string,
+  appPath: string,
+): Promise<Awaited<ReturnType<typeof localCodeSearch>>> {
+  const tokens = query
+    .split(/\s+/)
+    .map((t) => t.replace(/[^a-zA-Z0-9_./-]+/g, ""))
+    .filter((t) => t.length >= 2);
+
+  const byKey = new Map<
+    string,
+    Awaited<ReturnType<typeof localCodeSearch>>[number]
+  >();
+
+  const addResult = (
+    r: Awaited<ReturnType<typeof localCodeSearch>>[number],
+  ) => {
+    const key = `${r.file}:${r.line}`;
+    const existing = byKey.get(key);
+    if (!existing || r.score > existing.score) byKey.set(key, r);
+  };
+
+  for (const token of tokens.slice(0, 6)) {
+    const termResults = await localCodeSearch({
+      query: token,
+      appPath,
+      maxResults: 12,
+    });
+    termResults.forEach(addResult);
+  }
+
+  // Path-based matching: a query term appearing in the file path is highly
+  // relevant (e.g. "middleware" → middleware.ts, "auth" → src/app/api/auth/).
+  if (tokens.length > 0) {
+    const { execFile } = await import("node:child_process");
+    const { promisify } = await import("node:util");
+    const execFileAsync = promisify(execFile);
+    try {
+      const { stdout } = await execFileAsync("rg", ["--files", appPath], {
+        cwd: appPath,
+        timeout: 8000,
+      });
+      const lowerTokens = tokens.map((t) => t.toLowerCase());
+      for (const file of stdout.split("\n").filter(Boolean)) {
+        const lower = file.toLowerCase();
+        if (
+          lowerTokens.some((t) => lower.includes(t)) &&
+          !lower.includes("node_modules")
+        ) {
+          addResult({
+            file,
+            line: 1,
+            content: "(path match)",
+            matchType: "fuzzy",
+            score: 0.95,
+          });
+        }
+      }
+    } catch {
+      // rg unavailable — skip path matching
+    }
+  }
+
+  const results = [...byKey.values()].sort((a, b) => b.score - a.score);
+  if (results.length > 0) return results.slice(0, 20);
+
+  // Nothing matched — try the raw phrase once before giving up.
+  return localCodeSearch({ query, appPath, maxResults: 20 });
+}

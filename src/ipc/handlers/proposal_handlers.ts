@@ -55,10 +55,13 @@ interface CodebaseTokenCache {
 // Cache expiration time (5 minutes)
 const CACHE_EXPIRATION_MS = 5 * 60 * 1000;
 
+// Maximum number of cache entries to prevent unbounded growth
+const MAX_TOKEN_CACHE_SIZE = 256;
+
 // In-memory cache for codebase token counts
 const codebaseTokenCache = new Map<number, CodebaseTokenCache>();
 
-// Function to clean up expired cache entries
+// Function to clean up expired cache entries and enforce max size
 function cleanupExpiredCacheEntries() {
   const now = Date.now();
   let expiredCount = 0;
@@ -69,6 +72,19 @@ function cleanupExpiredCacheEntries() {
       expiredCount++;
     }
   });
+
+  // LRU eviction: remove oldest entries if cache still exceeds max size
+  if (codebaseTokenCache.size > MAX_TOKEN_CACHE_SIZE) {
+    const excess = codebaseTokenCache.size - MAX_TOKEN_CACHE_SIZE;
+    const keys = codebaseTokenCache.keys();
+    for (let i = 0; i < excess; i++) {
+      const key = keys.next().value;
+      if (key !== undefined) {
+        codebaseTokenCache.delete(key);
+        expiredCount++;
+      }
+    }
+  }
 
   if (expiredCount > 0) {
     logger.debug(
@@ -308,18 +324,23 @@ const getProposalHandler = async (
         );
 
         const totalTokens = messagesTokenCount + codebaseTokenCount;
-        const contextWindow = Math.min(
-          await getContextWindow(selectedModel),
-          100_000,
-        );
+        const contextWindow = await getContextWindow(selectedModel);
         logger.debug(
           `Token usage: ${totalTokens}/${contextWindow} (${(totalTokens / contextWindow) * 100}%)`,
         );
 
         // If we're using more than 80% of the context window, suggest summarizing
-        if (totalTokens > contextWindow * 0.8 || chat.messages.length > 10) {
+        // Message count threshold scales with context window size
+        const messageThreshold = Math.max(
+          20,
+          Math.floor(contextWindow / 10_000),
+        );
+        if (
+          totalTokens > contextWindow * 0.8 ||
+          chat.messages.length > messageThreshold
+        ) {
           logger.debug(
-            `Token usage is high (${totalTokens}/${contextWindow}) OR long chat history (${chat.messages.length} messages), suggesting summarize action`,
+            `Token usage is high (${totalTokens}/${contextWindow}) OR long chat history (${chat.messages.length} messages, threshold: ${messageThreshold}), suggesting summarize action`,
           );
           actions.push({
             id: "summarize-in-new-chat",

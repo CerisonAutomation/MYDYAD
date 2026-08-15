@@ -15,6 +15,8 @@ import { z } from "zod";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import type { AgentContext, ToolDefinition } from "./types";
+import { escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const execFileAsync = promisify(execFile);
 
@@ -177,7 +179,7 @@ Use for: Reducing context size, saving costs, improving efficiency.`,
   buildXml: (args, isComplete) => {
     if (isComplete) return undefined;
     const attrs = [`op="${args.operation}"`];
-    if (args.command) attrs.push(`cmd="${args.command}"`);
+    if (args.command) attrs.push(`cmd="${escapeXmlAttr(args.command)}"`);
     return `<dyad-token-compress ${attrs.join(" ")}>Compressing...</dyad-token-compress>`;
   },
 
@@ -193,7 +195,11 @@ Use for: Reducing context size, saving costs, improving efficiency.`,
 
     switch (args.operation) {
       case "compress": {
-        if (!args.input) throw new Error("input is required for compress");
+        if (!args.input)
+          throw new DyadError(
+            "input is required for compress",
+            DyadErrorKind.Validation,
+          );
 
         const compressed = compressInput(
           args.input,
@@ -209,7 +215,11 @@ Use for: Reducing context size, saving costs, improving efficiency.`,
       }
 
       case "stats": {
-        if (!args.input) throw new Error("input is required for stats");
+        if (!args.input)
+          throw new DyadError(
+            "input is required for stats",
+            DyadErrorKind.Validation,
+          );
 
         const originalTokens = estimateTokens(args.input);
         const lines = args.input.split("\n");
@@ -225,7 +235,8 @@ Use for: Reducing context size, saving costs, improving efficiency.`,
       }
 
       case "compress_command": {
-        if (!args.command) throw new Error("command is required");
+        if (!args.command)
+          throw new DyadError("command is required", DyadErrorKind.Validation);
 
         try {
           const { stdout, stderr } = await execFileAsync(
@@ -259,7 +270,10 @@ Use for: Reducing context size, saving costs, improving efficiency.`,
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

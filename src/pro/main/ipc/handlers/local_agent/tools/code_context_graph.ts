@@ -16,6 +16,8 @@ import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
+import { escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const codeContextGraphSchema = z.object({
   operation: z
@@ -133,7 +135,7 @@ Output: Graph nodes, edges, and statistics`,
   buildXml: (args, isComplete) => {
     if (isComplete) return undefined;
     const attrs = [`op="${args.operation}"`];
-    if (args.file_path) attrs.push(`file="${args.file_path}"`);
+    if (args.file_path) attrs.push(`file="${escapeXmlAttr(args.file_path)}"`);
     return `<dyad-code-graph ${attrs.join(" ")}>Building...</dyad-code-graph>`;
   },
 
@@ -242,7 +244,8 @@ Output: Graph nodes, edges, and statistics`,
       }
 
       case "query_graph": {
-        if (!args.symbol) throw new Error("symbol is required");
+        if (!args.symbol)
+          throw new DyadError("symbol is required", DyadErrorKind.Validation);
 
         // Find nodes matching symbol
         const matchingNodes: GraphNode[] = [];
@@ -292,7 +295,11 @@ Output: Graph nodes, edges, and statistics`,
       }
 
       case "impact_analysis": {
-        if (!args.file_path) throw new Error("file_path is required");
+        if (!args.file_path)
+          throw new DyadError(
+            "file_path is required",
+            DyadErrorKind.Validation,
+          );
 
         // Find files that import this file
         const impactedFiles: string[] = [];
@@ -336,7 +343,11 @@ Output: Graph nodes, edges, and statistics`,
       }
 
       case "find_paths": {
-        if (!args.file_path) throw new Error("file_path is required");
+        if (!args.file_path)
+          throw new DyadError(
+            "file_path is required",
+            DyadErrorKind.Validation,
+          );
 
         // Simplified path finding
         result = [
@@ -394,7 +405,10 @@ Output: Graph nodes, edges, and statistics`,
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

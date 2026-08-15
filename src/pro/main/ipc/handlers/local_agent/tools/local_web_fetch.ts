@@ -110,6 +110,10 @@ export async function localWebFetch(
     };
   } catch (error) {
     logger.error(`Failed to fetch ${url}:`, error);
+    // Re-throw DyadError as-is to preserve the original error kind
+    if (error instanceof DyadError) {
+      throw error;
+    }
     throw new DyadError(
       `Failed to fetch URL: ${error instanceof Error ? error.message : "Unknown error"}`,
       DyadErrorKind.External,

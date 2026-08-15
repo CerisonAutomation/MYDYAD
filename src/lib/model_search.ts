@@ -82,8 +82,7 @@ export function buildModelSearchIndex(input: {
 
       const provider = providers?.find((p) => p.id === providerId);
       const providerName = provider?.name ?? providerId;
-      const providerType =
-        (provider?.type as "cloud" | "custom" | "local") ?? "cloud";
+      const providerType = (provider?.type as "custom" | "local") ?? "custom";
 
       for (const model of providerModels) {
         models.push({

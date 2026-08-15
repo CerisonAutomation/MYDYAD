@@ -1250,96 +1250,22 @@ export function registerAppHandlers() {
     });
   });
 
+  // Cloud sandbox removed — this handler always returns null
   createTypedHandler(
     appContracts.getCloudSandboxStatus,
-    async (event, params) => {
-      const { appId } = params;
-      const appInfo = runningApps.get(appId);
-
-      if (!appInfo || appInfo.mode !== "cloud" || !appInfo.cloudSandboxId) {
-        return null;
-      }
-      const sandboxId = appInfo.cloudSandboxId;
-      const invocationRef = appInfo.invocationRef;
-
-      try {
-        const status = await getCloudSandboxStatus(sandboxId);
-        const latestAppInfo = runningApps.get(appId);
-        const sameInvocation = invocationRef
-          ? !!latestAppInfo?.invocationRef &&
-            sameInvocationRef(latestAppInfo.invocationRef, invocationRef)
-          : !latestAppInfo?.invocationRef;
-        if (
-          latestAppInfo !== appInfo ||
-          latestAppInfo.cloudSandboxId !== sandboxId ||
-          !sameInvocation
-        ) {
-          return null;
-        }
-        const previewChanged =
-          appInfo.cloudPreviewUrl !== status.previewUrl ||
-          appInfo.cloudPreviewAuthToken !== status.previewAuthToken;
-        appInfo.cloudPreviewUrl = status.previewUrl;
-        appInfo.cloudPreviewAuthToken = status.previewAuthToken;
-
-        if (previewChanged && appInfo.proxyWorker) {
-          await ensureProxyForRunningApp({
-            appId,
-            output: invocationRef
-              ? appRunActorService.outputFor(appId, invocationRef)
-              : getIpcAppRuntimeOutput(event.sender),
-            originalUrl: status.previewUrl,
-            mode: "cloud",
-            invocationRef,
-          });
-        } else {
-          appInfo.originalUrl = status.previewUrl;
-        }
-
-        return {
-          ...status,
-          localSyncErrorMessage: appInfo.cloudSyncErrorMessage ?? null,
-        };
-      } catch (error) {
-        logger.error(
-          `Failed to fetch cloud sandbox status for app ${appId}:`,
-          error,
-        );
-        throw new DyadError(
-          formatCloudSandboxError(error),
-          DyadErrorKind.External,
-        );
-      }
+    async (_event, _params) => {
+      return null;
     },
   );
 
+  // Cloud sandbox removed — this handler always throws
   createTypedHandler(
     appContracts.createCloudSandboxShareLink,
-    async (_, params) => {
-      const { appId, expiresInSeconds } = params;
-      const appInfo = runningApps.get(appId);
-
-      if (!appInfo || appInfo.mode !== "cloud" || !appInfo.cloudSandboxId) {
-        throw new DyadError(
-          `App ${appId} is not running in cloud mode`,
-          DyadErrorKind.External,
-        );
-      }
-
-      try {
-        return await createCloudSandboxShareLink(appInfo.cloudSandboxId, {
-          expiresInSeconds,
-        });
-      } catch (error) {
-        logger.error(
-          `Failed to create cloud sandbox share link for app ${appId}:`,
-          error,
-        );
-        throw new DyadError(
-          formatCloudSandboxError(error),
-          DyadErrorKind.External,
-        );
-      }
+    async (_event, _params) => {
+      throw new DyadError(
+        "Cloud sandbox is no longer available. All execution runs locally.",
+        DyadErrorKind.External,
+      );
     },
   );
 
@@ -1376,6 +1302,15 @@ export function registerAppHandlers() {
 
     const appPath = getDyadAppPath(app.path);
     const fullPath = safeJoin(appPath, filePath);
+
+    // Guard against excessively large file writes that could exhaust disk.
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+    if (content.length > MAX_FILE_SIZE) {
+      throw new DyadError(
+        `File content exceeds the ${MAX_FILE_SIZE / 1024 / 1024}MB size limit`,
+        DyadErrorKind.Validation,
+      );
+    }
 
     if (app.neonProjectId && app.neonDevelopmentBranchId) {
       try {

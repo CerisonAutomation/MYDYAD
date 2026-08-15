@@ -1,3 +1,4 @@
+import log from "electron-log";
 import type { ChatTabSession } from "@/atoms/chatAtoms";
 import {
   PRIMARY_WINDOW_SESSION_ID,
@@ -5,6 +6,7 @@ import {
   type WindowSessionId,
 } from "@/window_infrastructure/types";
 
+const logger = log.scope("chat_tab_session_storage");
 export const CHAT_TAB_SESSION_STORAGE_PREFIX = "chat-tab-session-v2:";
 export const LEGACY_CHAT_TAB_SESSION_STORAGE_KEY = "chat-tab-session";
 export const LEGACY_CHAT_TAB_SESSION_MIGRATION_KEY =
@@ -132,7 +134,7 @@ export function clearSourceChatTabRemoval(transferId: string): void {
       `${CHAT_TAB_TRANSFER_REMOVAL_PREFIX}${transferId}`,
     );
   } catch (error) {
-    console.error("Failed to clear chat tab transfer receipt", error);
+    logger.error("Failed to clear chat tab transfer receipt", error);
   }
 }
 
@@ -391,7 +393,7 @@ export function pruneChatTabWindowSessions(
     }
     for (const key of staleTransferKeys) storage.removeItem(key);
   } catch (error) {
-    console.error("Failed to prune chat tab window sessions", error);
+    logger.error("Failed to prune chat tab window sessions", error);
   }
 }
 
@@ -446,7 +448,7 @@ export function promoteMostRecentChatTabSession(
       }),
     );
   } catch (error) {
-    console.error("Failed to promote a prior chat tab window session", error);
+    logger.error("Failed to promote a prior chat tab window session", error);
   }
 }
 
@@ -491,7 +493,7 @@ export function createChatTabSessionStorage(
         );
         return legacy;
       } catch (error) {
-        console.error("Failed to read chat tab window session", error);
+        logger.error("Failed to read chat tab window session", error);
         return initialValue;
       }
     },
@@ -512,7 +514,7 @@ export function createChatTabSessionStorage(
           ),
         );
       } catch (error) {
-        console.error("Failed to persist chat tab window session", error);
+        logger.error("Failed to persist chat tab window session", error);
       }
     },
     removeItem(): void {
@@ -521,7 +523,7 @@ export function createChatTabSessionStorage(
           chatTabSessionStorageKey(activeWindowSessionId),
         );
       } catch (error) {
-        console.error("Failed to remove chat tab window session", error);
+        logger.error("Failed to remove chat tab window session", error);
       }
     },
   };

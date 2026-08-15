@@ -5,10 +5,7 @@ import { ipc } from "@/ipc/types";
 const customLink = ({
   node: _node,
   ...props
-}: {
-  node?: any;
-  [key: string]: any;
-}) => (
+}: React.ComponentPropsWithoutRef<"a"> & { node?: unknown }) => (
   <a
     {...props}
     onClick={(e) => {

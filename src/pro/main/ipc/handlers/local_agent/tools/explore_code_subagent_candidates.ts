@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { CodeExplorerResult } from "../../../../../../../shared/code_explorer_types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 // Shared evidence model for the explore_code sub-agent. A "candidate" is one
 // observed code location (a file, optionally a line range) surfaced by a
@@ -697,7 +698,10 @@ function rangeWidth(range: CandidateRange | null): number {
 
 export function requireCandidateId(candidate: ExplorerCandidate): CandidateId {
   if (!candidate.id) {
-    throw new Error(`Candidate missing id: ${candidate.path}`);
+    throw new DyadError(
+      `Candidate missing id: ${candidate.path}`,
+      DyadErrorKind.Validation,
+    );
   }
   return candidate.id;
 }

@@ -197,7 +197,12 @@ export class PendingReceiptLedger<Value> {
     let remove = false;
     try {
       remove = retention?.(settlement) === "remove";
-    } catch {
+    } catch (retentionError) {
+      // Retention check failure defaults to removing the entry
+      console.warn(
+        "[pending_receipt_ledger] retention check failed:",
+        retentionError,
+      );
       remove = true;
     }
     if (
@@ -212,7 +217,8 @@ export class PendingReceiptLedger<Value> {
     let settledAt: number;
     try {
       settledAt = this.options.clock.now();
-    } catch {
+    } catch (clockError) {
+      console.warn("[pending_receipt_ledger] clock.now() failed:", clockError);
       this.deleteIfCurrent(scope, messageId, entry);
       return;
     }
@@ -230,7 +236,11 @@ export class PendingReceiptLedger<Value> {
     let now: number;
     try {
       now = this.options.clock.now();
-    } catch {
+    } catch (clockError) {
+      console.warn(
+        "[pending_receipt_ledger] pruneExpired clock.now() failed:",
+        clockError,
+      );
       return;
     }
     for (const [scope, entries] of this.scopes) {

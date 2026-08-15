@@ -43,71 +43,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
-import { unescapeXmlAttr } from "../../../shared/xmlEscape";
 import {
   isCancelledResponseContent,
   stripCancelledResponseNotice,
 } from "@/shared/chatCancellation";
 import { useVersionPreview } from "@/hooks/useVersionPreview";
-
-/** Extract <dyad-attachment> tags from message content and return parsed attachment data. */
-function extractAttachments(content: string): {
-  name: string;
-  type: string;
-  url: string;
-  path: string;
-  attachmentType: string;
-}[] {
-  const tagRegex = /<dyad-attachment\s+([^>]*)><\/dyad-attachment>/g;
-  const attrRegex = /([\w-]+)="([^"]*)"/g;
-  const results: {
-    name: string;
-    type: string;
-    url: string;
-    path: string;
-    attachmentType: string;
-  }[] = [];
-
-  let match;
-  while ((match = tagRegex.exec(content)) !== null) {
-    const attrs: Record<string, string> = {};
-    attrRegex.lastIndex = 0;
-    let attrMatch;
-    while ((attrMatch = attrRegex.exec(match[1])) !== null) {
-      attrs[attrMatch[1]] = unescapeXmlAttr(attrMatch[2]);
-    }
-    results.push({
-      name: attrs.name || "",
-      type: attrs.type || "",
-      url: attrs.url || "",
-      path: attrs.path || "",
-      attachmentType: attrs["attachment-type"] || "chat-context",
-    });
-  }
-  return results;
-}
-
-/** Strip <dyad-attachment> tags from user message content. */
-function stripAttachmentInfo(content: string): string {
-  return content
-    .replace(/<dyad-attachment\s+[^>]*><\/dyad-attachment>/g, "")
-    .trim();
-}
-
-/**
- * Extract tool calls from assistant message content by parsing
- * `<dyad-mcp-tool-call>` tags and return a summary map keyed by tool name.
- */
-function extractToolCallSummary(content: string): Map<string, number> | null {
-  const regex = /<dyad-mcp-tool-call\s+[^>]*tool="([^"]*)"[^>]*>/g;
-  const counts = new Map<string, number>();
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    const toolName = match[1];
-    counts.set(toolName, (counts.get(toolName) ?? 0) + 1);
-  }
-  return counts.size > 0 ? counts : null;
-}
+import {
+  extractAttachments,
+  stripAttachmentInfo,
+  extractToolCallSummary,
+} from "./chat-message-utils";
+import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
 
 // Format the message timestamp - defined outside component to avoid
 // recreation on every render.
@@ -348,53 +294,55 @@ const ChatMessage = memo(
                   Response cancelled before any content was generated.
                 </div>
               ) : (
-                <div
-                  className="prose dark:prose-invert prose-headings:mb-2 prose-p:my-1 prose-pre:my-0 max-w-none break-words text-[15px]"
-                  suppressHydrationWarning
-                >
-                  {message.role === "assistant" ? (
-                    <>
-                      {toolCallSummary && !isStreaming && (
-                        <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium">
-                            {Array.from(toolCallSummary.values()).reduce(
-                              (a, b) => a + b,
-                              0,
-                            )}{" "}
-                            tool
-                            {Array.from(toolCallSummary.values()).reduce(
-                              (a, b) => a + b,
-                              0,
-                            ) !== 1
-                              ? "s"
-                              : ""}
-                          </span>
-                          {Array.from(toolCallSummary.entries()).map(
-                            ([name, count]) => (
-                              <span
-                                key={name}
-                                className="inline-flex items-center gap-0.5 rounded-md bg-muted px-1.5 py-0.5"
-                              >
-                                {name}
-                                {count > 1 ? `\u00d7${count}` : ""}
-                              </span>
-                            ),
-                          )}
-                        </div>
-                      )}
-                      <DyadMarkdownParser
-                        content={assistantTextContent}
-                        messageId={message.id}
-                        showStreamingPreview={isLastMessage && isStreaming}
-                      />
-                      {isLastMessage && isStreaming && (
-                        <StreamingLoadingAnimation variant="streaming" />
-                      )}
-                    </>
-                  ) : (
-                    <VanillaMarkdownParser content={userTextContent} />
-                  )}
-                </div>
+                <ToolCardErrorBoundary toolName="Message content">
+                  <div
+                    className="prose dark:prose-invert prose-headings:mb-2 prose-p:my-1 prose-pre:my-0 max-w-none break-words text-[15px]"
+                    suppressHydrationWarning
+                  >
+                    {message.role === "assistant" ? (
+                      <>
+                        {toolCallSummary && !isStreaming && (
+                          <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium">
+                              {Array.from(toolCallSummary.values()).reduce(
+                                (a, b) => a + b,
+                                0,
+                              )}{" "}
+                              tool
+                              {Array.from(toolCallSummary.values()).reduce(
+                                (a, b) => a + b,
+                                0,
+                              ) !== 1
+                                ? "s"
+                                : ""}
+                            </span>
+                            {Array.from(toolCallSummary.entries()).map(
+                              ([name, count]) => (
+                                <span
+                                  key={name}
+                                  className="inline-flex items-center gap-0.5 rounded-md bg-muted px-1.5 py-0.5"
+                                >
+                                  {name}
+                                  {count > 1 ? `\u00d7${count}` : ""}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        )}
+                        <DyadMarkdownParser
+                          content={assistantTextContent}
+                          messageId={message.id}
+                          showStreamingPreview={isLastMessage && isStreaming}
+                        />
+                        {isLastMessage && isStreaming && (
+                          <StreamingLoadingAnimation variant="streaming" />
+                        )}
+                      </>
+                    ) : (
+                      <VanillaMarkdownParser content={userTextContent} />
+                    )}
+                  </div>
+                </ToolCardErrorBoundary>
               )}
               {(hasAssistantText && !isStreaming) || message.approvalState ? (
                 <div
@@ -461,7 +409,7 @@ const ChatMessage = memo(
               {!hasUserText && restoreButtonNode}
               {attachments.map((att, i) => (
                 <DyadAttachment
-                  key={i}
+                  key={att.path || att.name || i}
                   size={attachmentSize}
                   node={{
                     properties: {

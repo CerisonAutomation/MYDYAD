@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { Zap } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { useAutoCollapse } from "./useAutoCollapse";
 import {
   DyadCard,
@@ -17,7 +17,7 @@ import {
 
 interface DyadEditProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   path?: string;
   description?: string;
 }

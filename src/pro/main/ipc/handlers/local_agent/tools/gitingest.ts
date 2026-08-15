@@ -424,16 +424,15 @@ export const gitingestTool: ToolDefinition<GitingestArgs> = {
         }
         cloneArgs.push(args.source, sourceDir);
 
-        // Pass GitHub token if available
+        // Pass GitHub token via GIT_CONFIG env vars (never embed in URL — per AGENTS.md)
         const env = { ...process.env };
         const githubToken = process.env.GITHUB_TOKEN;
         if (githubToken && args.source.includes("github.com")) {
-          // Inject token into URL for authentication
-          const authUrl = args.source.replace(
-            "https://github.com",
-            `https://x-access-token:${githubToken}@github.com`,
-          );
-          cloneArgs[cloneArgs.length - 2] = authUrl;
+          env.GIT_CONFIG_COUNT = "2";
+          env.GIT_CONFIG_KEY_0 = "url.https://github.com/.insteadOf";
+          env.GIT_CONFIG_VALUE_0 = "https://github.com/";
+          env.GIT_CONFIG_KEY_1 = "http.extraHeader";
+          env.GIT_CONFIG_VALUE_1 = `Authorization: token ${githubToken}`;
         }
 
         try {

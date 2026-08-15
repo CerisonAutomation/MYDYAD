@@ -1,5 +1,5 @@
 import { DiffEditor } from "@monaco-editor/react";
-import "@/components/chat/monaco";
+import { beforeMonacoMount } from "@/components/chat/monaco";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getLanguage } from "@/utils/get_language";
 
@@ -29,6 +29,7 @@ export function FileDiffEditor({
         original={oldContent}
         modified={newContent}
         theme={editorTheme}
+        beforeMount={beforeMonacoMount}
         options={{
           readOnly: true,
           renderSideBySide: false,

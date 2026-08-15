@@ -62,7 +62,28 @@ const RETRYABLE_ERROR_PATTERNS = [
   "unknown_error",
 ];
 
-export function defaultShouldRetryThisError(error: any): boolean {
+/** Flexible error type from AI SDK providers */
+interface AiSdkError {
+  message?: string;
+  code?: string;
+  type?: string;
+  statusCode?: number;
+  status?: number;
+  error?: {
+    message?: string;
+    code?: string;
+    type?: string;
+    statusCode?: number;
+    status?: number;
+  };
+  response?: {
+    status?: number;
+  };
+}
+
+export function defaultShouldRetryThisError(
+  error: AiSdkError | null | undefined,
+): boolean {
   if (!error) return false;
 
   try {
@@ -405,7 +426,7 @@ class FallbackModel implements LanguageModelV3 {
 export { defaultShouldRetryThisError as isRetryableError };
 
 // Type guards for better error handling
-export function isNetworkError(error: any): boolean {
+export function isNetworkError(error: AiSdkError | null | undefined): boolean {
   const networkErrorCodes = [
     "ECONNREFUSED",
     "ENOTFOUND",
@@ -413,13 +434,16 @@ export function isNetworkError(error: any): boolean {
     "EPIPE",
     "ETIMEDOUT",
   ];
-  return error?.code && networkErrorCodes.includes(error.code);
+  return error?.code !== undefined && networkErrorCodes.includes(error.code);
 }
 
-export function isRateLimitError(error: any): boolean {
+export function isRateLimitError(
+  error: AiSdkError | null | undefined,
+): boolean {
   const statusCode = error?.statusCode || error?.status;
   return (
     statusCode === 429 ||
-    (error?.message && error.message.toLowerCase().includes("rate"))
+    (error?.message !== undefined &&
+      error.message.toLowerCase().includes("rate"))
   );
 }

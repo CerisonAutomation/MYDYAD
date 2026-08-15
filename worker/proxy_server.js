@@ -412,8 +412,14 @@ function rewriteSetCookieHeaders(headers) {
   return headers;
 }
 
+// CSP3: host-sources without a port match ANY port, so the wildcard-port
+// forms (`:*`) are invalid syntax and trigger Chrome console warnings
+// ("frame-ancestors does not support the source expression").
 const PROXY_FRAME_ANCESTORS_CSP =
-  "frame-ancestors 'self' file: http://127.0.0.1:* http://localhost:* http://[::1]:* https://*";
+  "frame-ancestors 'self' file: http://127.0.0.1 http://localhost http://[::1] https://*";
+
+const PROXY_SCRIPT_SRC_CSP =
+  "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://vercel.live; connect-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://vercel.live ws: wss:; frame-src 'self' https://* http://*;";
 
 function appendHeader(headers, name, value) {
   const lowerName = name.toLowerCase();
@@ -436,17 +442,32 @@ function appendHeader(headers, name, value) {
 function applyProxyFrameAncestorsCsp(headers) {
   // Replace the app's frame-ancestors directive with the proxy's version
   // that includes both localhost and 127.0.0.1 origins.
+  // Also add unsafe-eval to script-src for React development mode and Monaco editor.
   const existingCsp = headers["content-security-policy"];
   if (existingCsp) {
-    // Remove frame-ancestors from existing CSP and add proxy version
     const cspStr = Array.isArray(existingCsp) ? existingCsp[0] : existingCsp;
-    const replaced =
-      cspStr
+    let replaced = cspStr;
+
+    // Add unsafe-eval to script-src if not present
+    if (!replaced.includes("unsafe-eval")) {
+      // Match script-src directive (everything after it until the next semicolon)
+      const scriptSrcMatch = replaced.match(/(script-src[^;]*)/);
+      if (scriptSrcMatch) {
+        const scriptSrcDirective = scriptSrcMatch[1];
+        const updatedScriptSrc = scriptSrcDirective + " 'unsafe-eval'";
+        replaced = replaced.replace(scriptSrcDirective, updatedScriptSrc);
+      }
+    }
+
+    // Remove frame-ancestors and add proxy version
+    replaced =
+      replaced
         .replace(/frame-ancestors[^;]*;?/gi, "")
         .trim()
         .replace(/;\s*$/, "") +
       "; " +
       PROXY_FRAME_ANCESTORS_CSP;
+
     headers["content-security-policy"] = replaced;
     return headers;
   }

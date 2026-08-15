@@ -111,7 +111,7 @@ export const VULNERABILITY_PATTERNS: Array<{
     recommendation: "Prefer execFile for safety",
   },
   {
-    pattern: /readFile\s*\(\s*[^)]*\+/gi,
+    pattern: /readFile\s*\(\s*[^)]*(?:req\.|input|body|query|params|args)\b/gi,
     type: "path_traversal",
     severity: "high",
     message: "Dynamic file path",
@@ -158,6 +158,52 @@ export const VULNERABILITY_PATTERNS: Array<{
     severity: "high",
     message: "eval() usage",
     recommendation: "Avoid eval, use safer alternatives",
+  },
+  // Prototype pollution
+  {
+    pattern: /Object\.assign\s*\([^)]*,\s*(?:req\.|input|body|query|params)/gi,
+    type: "prototype_pollution",
+    severity: "critical",
+    message:
+      "Object.assign with user-controlled source — prototype pollution risk",
+    recommendation:
+      "Sanitize input or use a schema validator; avoid merging untrusted objects",
+  },
+  {
+    pattern: /\[[\w.]+\]\s*=\s*(?:req\.|input|body|query|params)/gi,
+    type: "prototype_pollution",
+    severity: "critical",
+    message:
+      "Computed property assignment from user input — prototype pollution risk",
+    recommendation:
+      "Reject __proto__ and constructor keys; use Object.create(null) for untrusted data",
+  },
+  // ReDoS (catastrophic backtracking)
+  {
+    pattern: /new\s+RegExp\s*\(\s*[^)]*\+/gi,
+    type: "redos",
+    severity: "high",
+    message: "Dynamic regex construction — potential ReDoS",
+    recommendation:
+      "Use a regex linter or limit input length; avoid user-controlled patterns",
+  },
+  {
+    pattern: /\/(?:\(\?:[^/])*[+*]\)(?:[+*]|{[2,}])/g,
+    type: "redos",
+    severity: "medium",
+    message:
+      "Nested quantifiers in regex — potential catastrophic backtracking",
+    recommendation:
+      "Rewrite the regex to avoid nested quantifiers or use atomic groups",
+  },
+  // Path traversal with ../
+  {
+    pattern: /\.\.\/|\.\\.|\.\.\//g,
+    type: "path_traversal",
+    severity: "high",
+    message: "Path traversal sequence (../) detected",
+    recommendation:
+      "Validate paths stay within allowed directory; use path.resolve and check prefix",
   },
 ];
 

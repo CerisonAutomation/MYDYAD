@@ -1,7 +1,7 @@
-import { ipcMain } from "electron";
+import { registerTrustedIpcHandler } from "./trusted_handle";
 
 export function registerFreeModelQuotaHandlers() {
-  ipcMain.handle("free-model-quota:get-status", async () => {
+  registerTrustedIpcHandler("free-model-quota:get-status", async () => {
     return {
       messagesUsed: 0,
       messagesLimit: 999999,

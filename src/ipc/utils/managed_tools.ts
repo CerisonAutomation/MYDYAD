@@ -5,11 +5,25 @@ import { getPathEnvKey } from "@/ipc/utils/path_env";
 
 export const MANAGED_TOOLS_DIR = "managed-tools";
 const SANITIZED_PATH_CACHE_TTL_MS = 5_000;
+const MAX_SANITIZED_PATH_CACHE_SIZE = 128;
 
 const sanitizedPathCache = new Map<
   string,
   { expiresAt: number; sanitizedPath: string }
 >();
+
+function evictSanitizedPathCache(): void {
+  if (sanitizedPathCache.size > MAX_SANITIZED_PATH_CACHE_SIZE) {
+    const excess = sanitizedPathCache.size - MAX_SANITIZED_PATH_CACHE_SIZE;
+    const keys = sanitizedPathCache.keys();
+    for (let i = 0; i < excess; i++) {
+      const key = keys.next().value;
+      if (key !== undefined) {
+        sanitizedPathCache.delete(key);
+      }
+    }
+  }
+}
 
 export function clearSanitizedPathCache(): void {
   sanitizedPathCache.clear();
@@ -149,6 +163,7 @@ export function sanitizePathEnv(
     expiresAt: now + SANITIZED_PATH_CACHE_TTL_MS,
     sanitizedPath,
   });
+  evictSanitizedPathCache();
 
   if (existingSegments.length === pathSegments.length) {
     return env;

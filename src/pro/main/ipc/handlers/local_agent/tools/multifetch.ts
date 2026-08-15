@@ -123,14 +123,30 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), timeout_ms);
 
+        // Use redirect: "manual" to validate each redirect target for SSRF
+        let currentUrl = url;
+        let response!: Response;
+        const MAX_REDIRECTS = 5;
         try {
-          const response = await fetch(url, {
-            signal: controller.signal,
-            headers: {
-              "User-Agent": "Dyad-Multifetch/1.0",
-              ...headers,
-            },
-          });
+          for (let i = 0; i <= MAX_REDIRECTS; i++) {
+            response = await fetch(currentUrl, {
+              signal: controller.signal,
+              headers: {
+                "User-Agent": "Dyad-Multifetch/1.0",
+                ...headers,
+              },
+              redirect: "manual",
+            });
+            if (response.status >= 300 && response.status < 400) {
+              const location = response.headers.get("location");
+              if (!location) break;
+              const redirectUrl = new URL(location, currentUrl).toString();
+              assertNotPrivateIp(redirectUrl);
+              currentUrl = redirectUrl;
+              continue;
+            }
+            break;
+          }
 
           clearTimeout(timeout);
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ToolDefinition, AgentContext } from "./types";
 import { ExecuteAddDependencyError } from "@/ipc/processors/executeAddDependency";
 import { ensureNitroOnViteApp } from "@/ipc/utils/nitro_setup";
+import { trackAppMutation } from "./tool_invocation";
 
 const enableNitroSchema = z.object({
   reason: z
@@ -66,6 +67,7 @@ export const enableNitroTool: ToolDefinition<
         ctx.onWarningMessage?.(warningMessage);
       }
       ctx.frameworkType = "vite-nitro";
+      trackAppMutation(ctx, "enable_nitro");
     } catch (error) {
       if (error instanceof ExecuteAddDependencyError) {
         for (const warningMessage of error.warningMessages) {

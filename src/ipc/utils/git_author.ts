@@ -1,4 +1,4 @@
-import { getGithubUser } from "../handlers/github_handlers";
+import { getGithubUser } from "../services/github_user_service";
 
 export async function getGitAuthor() {
   const user = await getGithubUser();

@@ -1,7 +1,9 @@
+import log from "electron-log";
 import { EntityDisposalRegistry } from "@/state_machines/entity_disposal";
 import type { EntityDisposalEvent, VisibleEntity } from "../types";
 import { windowRegistry, type WindowRegistry } from "./window_registry";
 
+const logger = log.scope("entity_disposal_bus");
 const ENTITY_DISPOSAL_CHANNEL = "window:entity-disposed";
 
 export class EntityDisposalBus {
@@ -20,7 +22,7 @@ export class EntityDisposalBus {
         this.mainDisposals.disposeForChat(entity.id);
       }
     } catch (error) {
-      console.error("Main entity disposal failed", { entity, error });
+      logger.error("Main entity disposal failed", { entity, error });
     }
 
     const event: EntityDisposalEvent = {
@@ -31,7 +33,7 @@ export class EntityDisposalBus {
       try {
         endpoint.send(ENTITY_DISPOSAL_CHANNEL, event);
       } catch (error) {
-        console.error("Renderer entity disposal delivery failed", {
+        logger.error("Renderer entity disposal delivery failed", {
           entity,
           webContentsId: endpoint.id,
           error,

@@ -95,7 +95,7 @@ describe("getTemperature", () => {
     mockFindLanguageModel.mockResolvedValueOnce({
       apiName: "cloud-model",
       displayName: "Cloud Model",
-      type: "cloud",
+      type: "custom",
     });
 
     await expect(
@@ -107,7 +107,7 @@ describe("getTemperature", () => {
     mockFindLanguageModel.mockResolvedValueOnce({
       apiName: "cloud-model",
       displayName: "Cloud Model",
-      type: "cloud",
+      type: "custom",
       temperature: 0.7,
     });
 

@@ -40,7 +40,10 @@ export class ToolCardErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="my-1.5 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 px-3 py-2">
+        <div
+          className="my-1.5 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 px-3 py-2"
+          role="alert"
+        >
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
             <AlertTriangle size={14} />
             <span className="text-xs font-medium">

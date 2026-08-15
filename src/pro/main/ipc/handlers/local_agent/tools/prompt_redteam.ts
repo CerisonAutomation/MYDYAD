@@ -15,6 +15,7 @@ import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
 import { escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const promptRedTeamSchema = z.object({
   operation: z.enum([
@@ -731,7 +732,10 @@ Output: Vulnerability report with CVSS scores, CWE IDs, OWASP LLM mapping, remed
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

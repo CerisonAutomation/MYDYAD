@@ -51,82 +51,92 @@ export const appCollections = sqliteTable(
   (table) => [unique("app_collections_name_unique").on(table.name)],
 );
 
-export const apps = sqliteTable("apps", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  path: text("path").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  githubOrg: text("github_org"),
-  githubRepo: text("github_repo"),
-  githubBranch: text("github_branch"),
-  supabaseProjectId: text("supabase_project_id"),
-  // If supabaseProjectId is a branch, then the parent project id set.
-  // This is because there's no way to retrieve ALL the branches for ALL projects
-  // in a single API call
-  // This is only used for display purposes but is NOT used for any actual
-  // supabase management logic.
-  supabaseParentProjectId: text("supabase_parent_project_id"),
-  // Supabase organization slug for credential lookup
-  supabaseOrganizationSlug: text("supabase_organization_slug"),
-  // In-flight ephemeral test-user id for isolated e2e runs against Supabase.
-  // Supabase's free tier has no DB branching, so instead of a throwaway branch
-  // we create a dedicated throwaway auth user (via the Auth Admin API, stamped
-  // app_metadata.dyad_test=true) and run the tests authenticated as it. Set
-  // while a test session holds that user, cleared on teardown. Persisted so a
-  // crash mid-session can be reconciled (orphan user deleted) on the next
-  // launch. See ipc/utils/supabase_test_user.ts.
-  supabaseTestUserId: text("supabase_test_user_id"),
-  neonProjectId: text("neon_project_id"),
-  neonDevelopmentBranchId: text("neon_development_branch_id"),
-  neonPreviewBranchId: text("neon_preview_branch_id"),
-  neonActiveBranchId: text("neon_active_branch_id"),
-  // In-flight ephemeral test branch for isolated e2e test runs. Set while a
-  // test session holds a throwaway copy-on-write branch, cleared on teardown.
-  // Persisted so a crash mid-session can be reconciled (orphan branch deleted)
-  // on the next launch. See ipc/utils/neon_test_branch.ts.
-  neonTestBranchId: text("neon_test_branch_id"),
-  neonProductionAuthCookieSecret: text("neon_production_auth_cookie_secret"),
-  neonDevelopmentAuthCookieSecret: text("neon_development_auth_cookie_secret"),
-  // Which Neon branch the unified database section is set to deploy/sync
-  // against ("production" | "development"). Null is interpreted differently by
-  // each consumer: the backend sync (getSelectedDeployBranchType) treats null
-  // as production, while the DatabaseSection UI treats null as "not yet chosen"
-  // and shows the branch picker until the user selects one.
-  // Read by the main process when syncing env vars + trusted domains to Vercel.
-  selectedDatabaseBranchType: text("selected_database_branch_type").$type<
-    "production" | "development"
-  >(),
-  vercelProjectId: text("vercel_project_id"),
-  vercelProjectName: text("vercel_project_name"),
-  vercelTeamId: text("vercel_team_id"),
-  vercelDeploymentUrl: text("vercel_deployment_url"),
-  installCommand: text("install_command"),
-  startCommand: text("start_command"),
-  chatContext: text("chat_context", { mode: "json" }),
-  isFavorite: integer("is_favorite", { mode: "boolean" })
-    .notNull()
-    .default(sql`0`),
-  // Theme ID for design system theming (null means "no theme")
-  themeId: text("theme_id"),
-  needsAppBlueprint: integer("needs_app_blueprint", { mode: "boolean" })
-    .notNull()
-    .default(sql`0`),
-  // Per-app opt-in for the experimental AI E2E testing feature. Off by default:
-  // running tests can mutate the app's real data, so the Tests panel gates all
-  // run/generate controls behind this flag until the user explicitly enables it
-  // (after acknowledging the data-backup warning). See TestsPanel.tsx.
-  testingEnabled: integer("testing_enabled", { mode: "boolean" })
-    .notNull()
-    .default(sql`0`),
-  collectionId: integer("collection_id").references(() => appCollections.id, {
-    onDelete: "set null",
-  }),
-});
+export const apps = sqliteTable(
+  "apps",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    githubOrg: text("github_org"),
+    githubRepo: text("github_repo"),
+    githubBranch: text("github_branch"),
+    supabaseProjectId: text("supabase_project_id"),
+    // If supabaseProjectId is a branch, then the parent project id set.
+    // This is because there's no way to retrieve ALL the branches for ALL projects
+    // in a single API call
+    // This is only used for display purposes but is NOT used for any actual
+    // supabase management logic.
+    supabaseParentProjectId: text("supabase_parent_project_id"),
+    // Supabase organization slug for credential lookup
+    supabaseOrganizationSlug: text("supabase_organization_slug"),
+    // In-flight ephemeral test-user id for isolated e2e runs against Supabase.
+    // Supabase's free tier has no DB branching, so instead of a throwaway branch
+    // we create a dedicated throwaway auth user (via the Auth Admin API, stamped
+    // app_metadata.dyad_test=true) and run the tests authenticated as it. Set
+    // while a test session holds that user, cleared on teardown. Persisted so a
+    // crash mid-session can be reconciled (orphan user deleted) on the next
+    // launch. See ipc/utils/supabase_test_user.ts.
+    supabaseTestUserId: text("supabase_test_user_id"),
+    neonProjectId: text("neon_project_id"),
+    neonDevelopmentBranchId: text("neon_development_branch_id"),
+    neonPreviewBranchId: text("neon_preview_branch_id"),
+    neonActiveBranchId: text("neon_active_branch_id"),
+    // In-flight ephemeral test branch for isolated e2e test runs. Set while a
+    // test session holds a throwaway copy-on-write branch, cleared on teardown.
+    // Persisted so a crash mid-session can be reconciled (orphan branch deleted)
+    // on the next launch. See ipc/utils/neon_test_branch.ts.
+    neonTestBranchId: text("neon_test_branch_id"),
+    neonProductionAuthCookieSecret: text("neon_production_auth_cookie_secret"),
+    neonDevelopmentAuthCookieSecret: text(
+      "neon_development_auth_cookie_secret",
+    ),
+    // Which Neon branch the unified database section is set to deploy/sync
+    // against ("production" | "development"). Null is interpreted differently by
+    // each consumer: the backend sync (getSelectedDeployBranchType) treats null
+    // as production, while the DatabaseSection UI treats null as "not yet chosen"
+    // and shows the branch picker until the user selects one.
+    // Read by the main process when syncing env vars + trusted domains to Vercel.
+    selectedDatabaseBranchType: text("selected_database_branch_type").$type<
+      "production" | "development"
+    >(),
+    vercelProjectId: text("vercel_project_id"),
+    vercelProjectName: text("vercel_project_name"),
+    vercelTeamId: text("vercel_team_id"),
+    vercelDeploymentUrl: text("vercel_deployment_url"),
+    installCommand: text("install_command"),
+    startCommand: text("start_command"),
+    chatContext: text("chat_context", { mode: "json" }),
+    isFavorite: integer("is_favorite", { mode: "boolean" })
+      .notNull()
+      .default(sql`0`),
+    // Theme ID for design system theming (null means "no theme")
+    themeId: text("theme_id"),
+    needsAppBlueprint: integer("needs_app_blueprint", { mode: "boolean" })
+      .notNull()
+      .default(sql`0`),
+    // Per-app opt-in for the experimental AI E2E testing feature. Off by default:
+    // running tests can mutate the app's real data, so the Tests panel gates all
+    // run/generate controls behind this flag until the user explicitly enables it
+    // (after acknowledging the data-backup warning). See TestsPanel.tsx.
+    testingEnabled: integer("testing_enabled", { mode: "boolean" })
+      .notNull()
+      .default(sql`0`),
+    collectionId: integer("collection_id").references(() => appCollections.id, {
+      onDelete: "set null",
+    }),
+  },
+  (table) => [
+    index("apps_name_idx").on(table.name),
+    index("apps_path_idx").on(table.path),
+    index("apps_github_org_repo_idx").on(table.githubOrg, table.githubRepo),
+  ],
+);
 
 export const chats = sqliteTable(
   "chats",

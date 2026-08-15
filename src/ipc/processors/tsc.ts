@@ -160,6 +160,7 @@ interface ParsedDiagnostics {
 
 interface TypeScriptCli {
   entryPath: string;
+  args?: string[];
 }
 
 interface TypeScriptPackageJson {
@@ -390,21 +391,16 @@ async function resolveTypeScriptCli(appPath: string): Promise<TypeScriptCli> {
   }
 
   if (typeof binPath !== "string") {
-    throw new TypeCheckPreconditionError(
-      "typescript-not-found",
-      `No local TypeScript CLI declared in ${packageJsonPath}`,
-    );
+    // Fallback: try npx tsc (TypeScript may be a devDependency not yet installed locally)
+    return { entryPath: "npx", args: ["tsc"] };
   }
 
   const entryPath = path.resolve(packagePath, binPath);
   try {
     await fs.access(entryPath);
   } catch (error) {
-    throw new TypeCheckPreconditionError(
-      "typescript-not-found",
-      `No local TypeScript CLI found at ${entryPath}`,
-      { cause: error },
-    );
+    // Fallback: try npx tsc
+    return { entryPath: "npx", args: ["tsc"] };
   }
 
   return { entryPath };
@@ -428,9 +424,11 @@ async function runCli(
   // packaged builds disable the RunAsNode fuse. Not the node_modules/.bin
   // shim either: it needs cmd.exe on Windows, whose argument quoting breaks
   // for paths containing spaces.
+  // Support npx fallback: when entryPath is "npx", run `npx tsc` instead of `node entryPath`
+  const isNpx = cli.entryPath === "npx";
   return runBufferedProcess({
-    command: "node",
-    args: [cli.entryPath, ...args],
+    command: isNpx ? "npx" : "node",
+    args: isNpx ? ["tsc", ...args] : [cli.entryPath, ...args],
     cwd: appPath,
     env: getTypeScriptCommandEnv(appPath),
     shell: false,
@@ -446,6 +444,10 @@ async function getTypeScriptVersion(
   cli: TypeScriptCli,
   appPath: string,
 ): Promise<string> {
+  // npx fallback: can't stat the path, return unknown
+  if (cli.entryPath === "npx") {
+    return "unknown (npx fallback)";
+  }
   const realEntryPath = await fs.realpath(cli.entryPath);
   const stats = await fs.stat(realEntryPath);
   const cacheKey = `${realEntryPath}:${stats.mtimeMs}`;

@@ -90,6 +90,7 @@ import {
   stopAppGarbageCollection,
 } from "./ipc/utils/process_manager";
 import { cleanupOldAiMessagesJson } from "./pro/main/ipc/handlers/local_agent/ai_messages_cleanup";
+import { shutdownBrowser } from "./pro/main/ipc/handlers/local_agent/tools/browser_session";
 import {
   startChatSearchIndexer,
   stopChatSearchIndexer,
@@ -162,6 +163,15 @@ import { DyadError, DyadErrorKind, isDyadError } from "./errors/dyad_error";
 log.errorHandler.startCatching();
 log.eventLogger.startLogging();
 log.scope.labelPadding = false;
+
+// Log unhandled promise rejections (from fire-and-forget `void` calls) without
+// swallowing them. Do NOT add an uncaughtException handler — it would prevent
+// the process from crashing on fatal errors, leaving the app in a half-dead
+// unresponsive state instead of exiting cleanly.
+const errorLogger = log.scope("uncaught");
+process.on("unhandledRejection", (reason: unknown) => {
+  errorLogger.error("Unhandled promise rejection:", reason);
+});
 
 // Fix EIO errors when writing to console after stream is closed (e.g., child process exit)
 // This wraps the console transport's writeFn with error handling for broken pipes
@@ -1400,6 +1410,11 @@ app.on("open-url", (event, url) => {
 });
 
 function startAppWhenReady() {
+  // Disable hardware acceleration to prevent GPU process crashes
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch("disable-gpu");
+  app.commandLine.appendSwitch("disable-gpu-compositing");
+
   app.whenReady().then(onReady);
 }
 
@@ -1687,6 +1702,11 @@ app.on("will-quit", () => {
 
   // Stop the garbage collection timer
   stopAppGarbageCollection();
+
+  // Tear down the shared Playwright browser (fire-and-forget — this handler
+  // must stay synchronous). Prevents an orphaned Chromium from outliving the
+  // app or keeping the process alive.
+  shutdownBrowser();
 
   // Synchronously send kill signals to all running apps (fire-and-forget).
   // We cannot use async/await here because Electron won't wait for it.

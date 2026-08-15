@@ -307,8 +307,12 @@ export function prepareRequest<Admission, Outcome, Refusal>(
               if (!rejectTerminal(error)) {
                 try {
                   options.reportError?.(error);
-                } catch {
+                } catch (reportError) {
                   // Reporting cannot replace the authoritative failure.
+                  console.error(
+                    "[prepared_request] reportError failed:",
+                    reportError,
+                  );
                 }
               }
             },
@@ -327,8 +331,12 @@ export function prepareRequest<Admission, Outcome, Refusal>(
             if (!rejectTerminal(classificationError)) {
               try {
                 options.reportError?.(classificationError);
-              } catch {
+              } catch (reportError) {
                 // Reporting cannot replace the classifier failure.
+                console.error(
+                  "[prepared_request] reportError (classification) failed:",
+                  reportError,
+                );
               }
             }
             throw classificationError;
@@ -337,8 +345,12 @@ export function prepareRequest<Admission, Outcome, Refusal>(
             if (!rejectTerminal(error)) {
               try {
                 options.reportError?.(error);
-              } catch {
+              } catch (reportError) {
                 // Reporting cannot replace the transport failure.
+                console.error(
+                  "[prepared_request] reportError (transport) failed:",
+                  reportError,
+                );
               }
             }
             throw error;

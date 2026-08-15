@@ -189,7 +189,7 @@ export function ModelsSection({ providerId }: ModelsSectionProps) {
               </div>
               <div className="flex flex-wrap gap-x-2">
                 <span className="mt-2 inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                  {model.type === "cloud" ? "Built-in" : "Custom"}
+                  {model.type === "custom" ? "BYOK" : "Built-in"}
                 </span>
 
                 {model.tag && (

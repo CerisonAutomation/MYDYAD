@@ -114,7 +114,10 @@ CRITICAL REQUIREMENTS FOR USING THIS TOOL:
     }
 
     await withLock(getFileWriteKey(fullFilePath), async () => {
-      if (!fs.existsSync(fullFilePath)) {
+      // Use async access check instead of sync existsSync
+      try {
+        await fs.promises.access(fullFilePath);
+      } catch {
         throw new DyadError(
           `File does not exist: ${args.file_path}`,
           DyadErrorKind.NotFound,
@@ -135,8 +138,9 @@ CRITICAL REQUIREMENTS FOR USING THIS TOOL:
           filePath: operationPath,
           error: result.error ?? "unknown",
         });
-        throw new Error(
+        throw new DyadError(
           `Failed to apply search-replace: ${result.error ?? "unknown"}`,
+          DyadErrorKind.Validation,
         );
       }
 

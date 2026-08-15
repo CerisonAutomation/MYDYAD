@@ -11,6 +11,7 @@ import { resolveTargetAppPath } from "./resolve_app_context";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 import { walkDirectory } from "./file_utils";
+import { quickFuzzySearch } from "@/ipc/utils/fuse_search";
 
 const logger = log.scope("symbol_ops");
 
@@ -73,7 +74,7 @@ async function findSymbolInFile(
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      // TypeScript/JavaScript
+      // TypeScript/JavaScript — exact match first, then fuzzy fallback
       const tsMatch = line.match(
         /^(?:export\s+)?(?:async\s+)?(?:function|const|let|var|class|interface|type|enum)\s+(\w+)/,
       );
@@ -92,6 +93,37 @@ async function findSymbolInFile(
           column: line.indexOf(symbolName),
           signature: line.trim(),
         });
+      } else if (tsMatch && results.length === 0) {
+        // Fuzzy fallback: if no exact match found, try fuzzy matching
+        const fuzzyResults = quickFuzzySearch(
+          [{ name: tsMatch[1], type: "symbol", filePath, line: i + 1 }],
+          symbolName,
+          {
+            keys: ["name"],
+            threshold: 0.3,
+            includeScore: true,
+            minMatchCharLength: 2,
+          },
+          5,
+        );
+        for (const fr of fuzzyResults) {
+          if (fr.score > 0.5) {
+            results.push({
+              name: fr.item.name,
+              kind: line.includes("function")
+                ? "function"
+                : line.includes("class")
+                  ? "class"
+                  : line.includes("interface")
+                    ? "interface"
+                    : "variable",
+              file: fr.item.filePath,
+              line: fr.item.line,
+              column: line.indexOf(fr.item.name),
+              signature: line.trim(),
+            });
+          }
+        }
       }
 
       // Python

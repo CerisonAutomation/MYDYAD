@@ -88,6 +88,16 @@ export const colorContrastTool: ToolDefinition<
     );
 
     try {
+      const contrastResults: Array<{
+        file: string;
+        line: number;
+        fg: string;
+        bg: string;
+        ratio: number;
+        passesAA: boolean;
+        passesAAA: boolean;
+        passesLargeAA: boolean;
+      }> = [];
       const colors: string[] = [];
       let filesScanned = 0;
 
@@ -105,6 +115,7 @@ export const colorContrastTool: ToolDefinition<
             colors.push(`${filePath}:${i + 1} - ${rgb} (rgb)`);
           });
         }
+        analyzeContrastPairs(filePath, content, contrastResults);
       };
 
       if (args.file_path) {
@@ -162,10 +173,43 @@ export const colorContrastTool: ToolDefinition<
         return "No colors found.";
       }
 
-      const resultText = `Found ${colors.length} color usage(s):\n${colors
+      // Group ratios by pass/fail and render the most useful picture first.
+      const failing = contrastResults.filter((c) => !c.passesAA);
+      const passing = contrastResults.filter((c) => c.passesAA);
+
+      let resultText = `Found ${colors.length} color usage(s) and ${contrastResults.length} foreground/background pair(s).\n`;
+
+      if (contrastResults.length > 0) {
+        resultText += `\n❌ Failing WCAG AA (${failing.length}):\n`;
+        resultText +=
+          failing
+            .slice(0, 15)
+            .map(
+              (c) =>
+                `• ${c.file}:${c.line} — ${c.fg} on ${c.bg} → ratio ${c.ratio.toFixed(2)}:1 (AA ${c.passesAA ? "✓" : "✗"}, AAA ${c.passesAAA ? "✓" : "✗"}, large-text AA 3:1 ${c.passesLargeAA ? "✓" : "✗"})`,
+            )
+            .join("\n") || "(none)";
+        if (failing.length > 15) {
+          resultText += `\n... and ${failing.length - 15} more failing pair(s)`;
+        }
+        resultText += `\n\n✅ Passing WCAG AA (${passing.length}):\n`;
+        resultText +=
+          passing
+            .slice(0, 10)
+            .map(
+              (c) =>
+                `• ${c.file}:${c.line} — ${c.fg} on ${c.bg} → ratio ${c.ratio.toFixed(2)}:1`,
+            )
+            .join("\n") || "(none)";
+        if (passing.length > 10) {
+          resultText += `\n... and ${passing.length - 10} more passing pair(s)`;
+        }
+        resultText += `\n\nAll color usage(s):\n`;
+      }
+      resultText += colors
         .slice(0, 20)
         .map((c) => `• ${c}`)
-        .join("\n")}`;
+        .join("\n");
 
       ctx.onXmlComplete(
         `<dyad-color-contrast ${attrs}>\n${escapeXmlContent(resultText)}\n</dyad-color-contrast>`,
@@ -180,3 +224,132 @@ export const colorContrastTool: ToolDefinition<
     }
   },
 };
+
+// ─── WCAG contrast helpers (relative luminance per WCAG 2.x) ────────────────
+
+const NAMED_COLORS: Record<string, [number, number, number]> = {
+  white: [255, 255, 255],
+  black: [0, 0, 0],
+  red: [255, 0, 0],
+  green: [0, 128, 0],
+  blue: [0, 0, 255],
+  gray: [128, 128, 128],
+  grey: [128, 128, 128],
+  silver: [192, 192, 192],
+  yellow: [255, 255, 0],
+  orange: [255, 165, 0],
+  purple: [128, 0, 128],
+  pink: [255, 192, 203],
+  brown: [165, 42, 42],
+  cyan: [0, 255, 255],
+  magenta: [255, 0, 255],
+  transparent: [0, 0, 0],
+  inherit: [0, 0, 0],
+  currentcolor: [0, 0, 0],
+};
+
+function parseColor(value: string): [number, number, number] | null {
+  const v = value.trim().toLowerCase();
+  if (v.startsWith("#")) {
+    let hex = v.slice(1);
+    if (hex.length === 3 || hex.length === 4) {
+      hex = hex
+        .split("")
+        .map((c) => c + c)
+        .join("");
+    }
+    if (hex.length >= 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      if (![r, g, b].some(Number.isNaN)) return [r, g, b];
+    }
+    return null;
+  }
+  const rgb = v.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  const named = NAMED_COLORS[v];
+  return named ?? null;
+}
+
+function luminance([r, g, b]: [number, number, number]): number {
+  const chan = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b);
+}
+
+export function contrastRatio(fg: string, bg: string): number | null {
+  const f = parseColor(fg);
+  const b = parseColor(bg);
+  if (!f || !b) return null;
+  const l1 = luminance(f);
+  const l2 = luminance(b);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+interface ContrastPair {
+  file: string;
+  line: number;
+  fg: string;
+  bg: string;
+  ratio: number;
+  passesAA: boolean;
+  passesAAA: boolean;
+  passesLargeAA: boolean;
+}
+
+/** Extract (color, background-color) pairs from CSS rule blocks and TSX style objects. */
+function analyzeContrastPairs(
+  filePath: string,
+  content: string,
+  results: ContrastPair[],
+): void {
+  const pushPair = (line: number, fg: string, bg: string) => {
+    const ratio = contrastRatio(fg, bg);
+    if (ratio === null) return;
+    results.push({
+      file: filePath,
+      line,
+      fg,
+      bg,
+      ratio,
+      passesAA: ratio >= 4.5,
+      passesAAA: ratio >= 7,
+      passesLargeAA: ratio >= 3,
+    });
+  };
+
+  // CSS rules: selector { color: X; background(-color): Y }
+  const ruleRe = /[^{}]+\{[^{}]*\}/g;
+  for (const rule of content.matchAll(ruleRe)) {
+    const block = rule[0];
+    const brace = block.indexOf("{");
+    const decls = block.slice(brace + 1, block.length - 1);
+    const colorMatch = decls.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+    const bgMatch = decls.match(
+      /(?:^|;)\s*background(?:-color)?\s*:\s*([^;]+)/i,
+    );
+    if (colorMatch && bgMatch) {
+      const lineNumber = content.slice(0, rule.index).split("\n").length || 1;
+      pushPair(lineNumber, colorMatch[1].trim(), bgMatch[1].trim());
+    }
+  }
+
+  // TSX inline styles: style={{ color: "#fff", backgroundColor: "#000" }}
+  const styleObjRe = /style=\{\{\s*([\s\S]*?)\s*\}\}/g;
+  for (const match of content.matchAll(styleObjRe)) {
+    const obj = match[1];
+    const colorMatch = obj.match(/(?:^|[,;])\s*color\s*:\s*['"]([^'"]+)['"]/);
+    const bgMatch = obj.match(
+      /(?:^|[,;])\s*backgroundColor\s*:\s*['"]([^'"]+)['"]/,
+    );
+    if (colorMatch && bgMatch) {
+      const lineNumber = content.slice(0, match.index).split("\n").length || 1;
+      pushPair(lineNumber, colorMatch[1], bgMatch[1]);
+    }
+  }
+}

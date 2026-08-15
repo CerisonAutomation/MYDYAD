@@ -362,6 +362,46 @@ line 5`;
         readFileTool.execute({ path: "binary.dat" }, mockContext),
       ).rejects.toThrow("Cannot read binary file as UTF-8 text: binary.dat");
     });
+
+    it("returns an image marker for png screenshots instead of failing", async () => {
+      // 1x1 transparent PNG
+      const png = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "base64",
+      );
+      await fs.promises.writeFile(path.join(testDir, "shot.png"), png);
+      await fs.promises.mkdir(path.join(testDir, ".dyad", "screenshot"), {
+        recursive: true,
+      });
+      await fs.promises.writeFile(
+        path.join(testDir, ".dyad", "screenshot", "shot.png"),
+        png,
+      );
+
+      const result = await readFileTool.execute(
+        { path: ".dyad/screenshot/shot.png" },
+        mockContext,
+      );
+      expect(result).toBe("[Image: .dyad/screenshot/shot.png]");
+
+      const resultDirect = await readFileTool.execute(
+        { path: "shot.png" },
+        mockContext,
+      );
+      expect(resultDirect).toBe("[Image: shot.png]");
+    });
+
+    it("returns an oversized-image notice instead of failing on huge images", async () => {
+      const big = Buffer.alloc(16 * 1024 * 1024, 0x89); // > 15 MB cap
+      await fs.promises.writeFile(path.join(testDir, "huge.png"), big);
+
+      const result = await readFileTool.execute(
+        { path: "huge.png" },
+        mockContext,
+      );
+      expect(result).toContain("[Image: huge.png]");
+      expect(result).toContain("image too large");
+    });
   });
 
   describe("execute - start_line_one_indexed only", () => {

@@ -73,8 +73,9 @@ export const searchMcpToolsTool: ToolDefinition<SearchMcpToolsArgs> = {
   inputSchema: searchMcpToolsSchema,
   defaultConsent: "always",
 
-  // Only registered in search mode; see ctx.isMcpToolSearchAvailable.
-  isEnabled: (ctx) => !!ctx.isMcpToolSearchAvailable,
+  // Only registered in search mode AND when MCP tool defs are available.
+  isEnabled: (ctx) =>
+    !!ctx.isMcpToolSearchAvailable && ctx.mcpToolDefs !== undefined,
 
   getConsentPreview: (args) =>
     args.server

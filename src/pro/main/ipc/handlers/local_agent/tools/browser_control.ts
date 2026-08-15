@@ -12,6 +12,7 @@ import {
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { DYAD_SCREENSHOT_DIR_NAME } from "@/ipc/utils/media_path_utils";
 import { getPage, resolveTargetUrl, waitForPageReady } from "./browser_session";
+import { resolveTargetAppPath } from "./resolve_app_context";
 import type { Page, Browser } from "playwright";
 
 const logger = log.scope("browser_control");
@@ -34,8 +35,17 @@ const clickAction = z.object({
   action: z.literal("click"),
   selector: z
     .string()
+    .optional()
     .describe(
-      "CSS selector for the element to click (e.g. 'button.submit', '#login', 'a[href=\"/about\"]')",
+      "CSS selector for the element to click (e.g. 'button.submit', '#login', 'a[href=\"/about\"]'). Alternative to ref.",
+    ),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      "Stable ref number from a prior read_page call (e.g. [3] <button>). Alternative to selector — use when the page was just read.",
     ),
   wait_ms: z
     .number()
@@ -47,7 +57,18 @@ const typeAction = z.object({
   action: z.literal("type"),
   selector: z
     .string()
-    .describe("CSS selector for the input element to type into"),
+    .optional()
+    .describe(
+      "CSS selector for the input element to type into. Alternative to ref.",
+    ),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      "Stable ref number from a prior read_page call. Alternative to selector.",
+    ),
   text: z.string().describe("Text to type into the input"),
 });
 
@@ -76,12 +97,34 @@ const getTextAction = z.object({
   action: z.literal("get_text"),
   selector: z
     .string()
-    .describe("CSS selector for the element to read text from"),
+    .optional()
+    .describe(
+      "CSS selector for the element to read text from. Alternative to ref.",
+    ),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      "Stable ref number from a prior read_page call. Alternative to selector.",
+    ),
 });
 
 const waitForAction = z.object({
   action: z.literal("wait_for"),
-  selector: z.string().describe("CSS selector for the element to wait for"),
+  selector: z
+    .string()
+    .optional()
+    .describe("CSS selector for the element to wait for. Alternative to ref."),
+  ref: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      "Stable ref number from a prior read_page call. Alternative to selector.",
+    ),
   timeout_ms: z
     .number()
     .optional()
@@ -124,6 +167,61 @@ const batchAction = z.object({
     .describe("Ordered list of actions to execute sequentially"),
 });
 
+const locatorSchema = z.object({
+  text: z
+    .string()
+    .optional()
+    .describe("Visible text content to locate element"),
+  role: z
+    .string()
+    .optional()
+    .describe("ARIA role (e.g., button, link, textbox)"),
+  label: z.string().optional().describe("Form label text"),
+  placeholder: z.string().optional().describe("Input placeholder text"),
+  selector: z.string().optional().describe("CSS selector"),
+  testId: z.string().optional().describe("data-testid attribute value"),
+  nth: z.number().optional().describe("Zero-based index when multiple matches"),
+  exact: z.boolean().optional().describe("Exact text match (default: false)"),
+});
+
+type Locator = z.infer<typeof locatorSchema>;
+
+const formDataAction = z.object({
+  action: z.literal("form_data"),
+  selector: z.string().describe("CSS selector for the form"),
+});
+
+const fillFormAction = z.object({
+  action: z.literal("fill_form"),
+  selector: z.string().describe("CSS selector for the form"),
+  data: z
+    .record(z.string(), z.string())
+    .describe("Form field values as name-value pairs"),
+});
+
+const submitFormAction = z.object({
+  action: z.literal("submit_form"),
+  selector: z.string().describe("CSS selector for the form"),
+});
+
+const validateFormAction = z.object({
+  action: z.literal("validate_form"),
+  selector: z.string().describe("CSS selector for the form"),
+});
+
+const frameIframeAction = z.object({
+  action: z.literal("frame_iframe"),
+  selector: z.string().describe("CSS selector for the frame/iframe element"),
+  inner_selector: z
+    .string()
+    .optional()
+    .describe("CSS selector for element inside the frame"),
+  action_type: z
+    .enum(["click", "type", "get_text", "screenshot"])
+    .describe("Action to perform inside the frame"),
+  text: z.string().optional().describe("Text to type (if action_type is type)"),
+});
+
 const browserControlSchema = z.discriminatedUnion("action", [
   navigateAction,
   clickAction,
@@ -134,6 +232,11 @@ const browserControlSchema = z.discriminatedUnion("action", [
   waitForAction,
   readPageAction,
   batchAction,
+  formDataAction,
+  fillFormAction,
+  submitFormAction,
+  validateFormAction,
+  frameIframeAction,
 ]);
 
 type BrowserControlArgs = z.infer<typeof browserControlSchema>;
@@ -147,14 +250,19 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 ### Supported Actions
 
 - **navigate** — Go to a URL. Provide \`url\` (optional — defaults to the running app's preview URL).
-- **click** — Click an element by CSS selector. Provide \`selector\`. Optional \`wait_ms\` to pause after click.
-- **type** — Type text into an input field. Provide \`selector\` and \`text\`.
+- **click** — Click an element. Provide \`selector\` (CSS) **or** \`ref\` (a stable ref number from read_page, e.g. \`[3] <button>\`). Optional \`wait_ms\` to pause after click.
+- **type** — Type text into an input field. Provide \`selector\` **or** \`ref\` plus \`text\`.
 - **scroll** — Scroll the page in a direction. Provide \`direction\` (up/down/left/right). Optional \`amount\` in pixels (default 500).
 - **screenshot** — Take a screenshot and save it to the project's .dyad/media directory. Optional \`full_page\` to capture the entire scrollable page.
-- **get_text** — Get the visible text content of an element. Provide \`selector\`.
-- **wait_for** — Wait for an element to appear in the DOM. Provide \`selector\`. Optional \`timeout_ms\` (default 10000).
+- **get_text** — Get the visible text content of an element. Provide \`selector\` **or** \`ref\`.
+- **wait_for** — Wait for an element to appear in the DOM. Provide \`selector\` **or** \`ref\`. Optional \`timeout_ms\` (default 10000).
 - **read_page** — Get a structured representation of the page with interactive elements (forms, links, buttons) labeled with stable refs. Provide \`mode\` (interactive/all/viewport). Optional \`depth\` (default 5).
 - **batch** — Execute multiple actions sequentially. Provide \`steps\` array with {action, params} objects. Max 20 steps.
+
+### Canonical Read → Act Loop
+1. Call \`read_page\` to get the page structure with refs like \`[3] <button> "Sign in"\`.
+2. Act on elements by \`ref\` (\`{action: "click", ref: 3}\`) — no need to guess CSS selectors.
+3. If the page changed (navigation, dynamic render), call \`read_page\` again before acting.
 
 ### When to Use
 - Verifying that a UI change renders correctly in a real browser
@@ -163,18 +271,157 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - Automating form filling or navigation flows for testing
 
 ### Notes
-- A fresh headless Chromium browser is launched and closed for each invocation.
+- A persistent shared headless Chromium session is reused across calls (not launched per invocation). The browser auto-closes after 5 minutes of inactivity and on app quit.
 - Screenshots are saved to .dyad/media/ and the file path is returned.
-- CSS selectors must match exactly one visible element for click/type/get_text actions.
+- Actions accept either a CSS \`selector\` or a \`ref\` from a recent \`read_page\` call. Refs are positional — re-read the page after any navigation.
+- \`batch\` steps may omit \`url\` for \`navigate\` — it defaults to the running app's preview URL.
 `;
 
 // ============================================================================
-// Playwright Helpers
 // ============================================================================
-
 type PlaywrightPage = Awaited<
   ReturnType<import("playwright").Browser["newPage"]>
 >;
+
+// Form Workflow Helpers
+// ============================================================================
+
+async function executeFormData(
+  page: PlaywrightPage,
+  args: z.infer<typeof formDataAction>,
+): Promise<string> {
+  if (!args.selector) {
+    throw new DyadError(
+      "form_data requires a 'selector' parameter. Provide a CSS selector to identify the form.",
+      DyadErrorKind.Validation,
+    );
+  }
+  const form = page.locator(args.selector);
+  const fields = await form.locator("input, select, textarea").all();
+  const formData: Record<string, string> = {};
+
+  for (const field of fields) {
+    const name = await field.getAttribute("name");
+    const type = await field.getAttribute("type");
+    const value = await field.inputValue().catch(() => "");
+    if (name) {
+      formData[name] = type === "password" ? "[hidden]" : value;
+    }
+  }
+
+  return JSON.stringify(formData, null, 2);
+}
+
+async function executeFillForm(
+  page: PlaywrightPage,
+  args: z.infer<typeof fillFormAction>,
+): Promise<string> {
+  if (!args.selector) {
+    throw new DyadError(
+      "fill_form requires a 'selector' parameter. Provide a CSS selector to identify the form.",
+      DyadErrorKind.Validation,
+    );
+  }
+  const form = page.locator(args.selector);
+  const filled: string[] = [];
+
+  for (const [name, value] of Object.entries(args.data)) {
+    const field = form.locator(`[name="${name}"]`);
+    const count = await field.count();
+    if (count === 0) {
+      filled.push(`⚠ Field '${name}' not found`);
+      continue;
+    }
+
+    const tagName = await field.evaluate((el) => el.tagName.toLowerCase());
+    if (tagName === "select") {
+      await field.selectOption(value);
+    } else {
+      await field.fill(value);
+    }
+    filled.push(`✓ ${name} = ${value}`);
+  }
+
+  return filled.join("\n");
+}
+
+async function executeSubmitForm(
+  page: PlaywrightPage,
+  args: z.infer<typeof submitFormAction>,
+): Promise<string> {
+  if (!args.selector) {
+    throw new DyadError(
+      "submit_form requires a 'selector' parameter. Provide a CSS selector to identify the form.",
+      DyadErrorKind.Validation,
+    );
+  }
+  const form = page.locator(args.selector);
+  const submitBtn = form.locator("button[type=submit], input[type=submit]");
+  const count = await submitBtn.count();
+
+  if (count > 0) {
+    await submitBtn.first().click();
+    return "Form submitted via submit button";
+  }
+
+  await form.evaluate((el) => {
+    if (el instanceof HTMLFormElement) {
+      el.requestSubmit();
+    }
+  });
+  return "Form submitted via requestSubmit()";
+}
+
+async function executeValidateForm(
+  page: PlaywrightPage,
+  args: z.infer<typeof validateFormAction>,
+): Promise<string> {
+  if (!args.selector) {
+    throw new DyadError(
+      "validate_form requires a 'selector' parameter. Provide a CSS selector to identify the form.",
+      DyadErrorKind.Validation,
+    );
+  }
+  const form = page.locator(args.selector);
+  const fields = await form.locator("input, select, textarea").all();
+  const issues: string[] = [];
+
+  for (const field of fields) {
+    const name = (await field.getAttribute("name")) || "unknown";
+    const required = await field.getAttribute("required");
+    const value = await field.inputValue().catch(() => "");
+    const type = await field.getAttribute("type");
+
+    if (required !== null && !value.trim()) {
+      issues.push(`❌ ${name}: required but empty`);
+    }
+
+    if (
+      type === "email" &&
+      value &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+    ) {
+      issues.push(`❌ ${name}: invalid email format`);
+    }
+
+    if (type === "url" && value && !/^https?:\/\//.test(value)) {
+      issues.push(`❌ ${name}: invalid URL format`);
+    }
+
+    if (type === "number" && value && isNaN(Number(value))) {
+      issues.push(`❌ ${name}: not a valid number`);
+    }
+  }
+
+  if (issues.length === 0) {
+    return "✅ All form fields pass validation";
+  }
+
+  return `Validation issues:\n${issues.join("\n")}`;
+}
+
+// Playwright Helpers
+// ============================================================================
 
 async function saveScreenshot(
   screenshotBuffer: Buffer,
@@ -209,6 +456,97 @@ function validateHttpUrl(url: string): void {
 }
 
 // ============================================================================
+// Element Resolution (selector | ref)
+// ============================================================================
+
+/**
+ * Resolve an action target to a CSS selector.
+ *
+ * If \`ref\` is provided, the interactive elements are stamped in document
+ * order with data-dyad-ref attributes using the SAME walk as read_page, so
+ * refs from a recent read_page call map 1:1 to elements. Stamping is
+ * re-run on every call so refs always reflect the current DOM.
+ */
+async function resolveTargetSelector(
+  page: PlaywrightPage,
+  args: { selector?: string; ref?: number; mode?: string },
+): Promise<string> {
+  if (args.selector) return args.selector;
+  if (args.ref !== undefined) {
+    const ref = args.ref;
+    const visibleOnly = args.mode === "viewport";
+    await page.evaluate(
+      (opts: { targetRef: number; visibleOnly: boolean }) => {
+        const interactiveTags = new Set([
+          "A",
+          "BUTTON",
+          "INPUT",
+          "SELECT",
+          "TEXTAREA",
+          "DETAILS",
+          "SUMMARY",
+        ]);
+        const interactiveRoles = new Set([
+          "button",
+          "link",
+          "textbox",
+          "combobox",
+          "checkbox",
+          "radio",
+          "tab",
+          "menuitem",
+          "option",
+        ]);
+        // Clear previous stamps, then re-stamp in document order using the
+        // SAME numbering rules as read_page (interactive-only, optional
+        // visibility filter) so refs map 1:1.
+        document
+          .querySelectorAll("[data-dyad-ref]")
+          .forEach((el) => el.removeAttribute("data-dyad-ref"));
+        let counter = 0;
+        const walk = (el: Element): void => {
+          const role = el.getAttribute("role");
+          const isInteractive =
+            interactiveTags.has(el.tagName) ||
+            (role !== null && interactiveRoles.has(role));
+          if (isInteractive) {
+            const isVisible =
+              el instanceof HTMLElement
+                ? (() => {
+                    const style = getComputedStyle(el);
+                    return (
+                      style.display !== "none" && style.visibility !== "hidden"
+                    );
+                  })()
+                : true;
+            if (!opts.visibleOnly || isVisible) {
+              counter += 1;
+              el.setAttribute("data-dyad-ref", String(counter));
+            }
+          }
+          for (const child of Array.from(el.children)) walk(child);
+        };
+        for (const child of Array.from(document.body.children)) walk(child);
+      },
+      { targetRef: ref, visibleOnly },
+    );
+
+    const stamped = await page.$(`[data-dyad-ref="${ref}"]`);
+    if (!stamped) {
+      throw new DyadError(
+        `No element with ref [${ref}] found. The page may have changed since read_page — call read_page again.`,
+        DyadErrorKind.NotFound,
+      );
+    }
+    return `[data-dyad-ref="${ref}"]`;
+  }
+  throw new DyadError(
+    "Either 'selector' or 'ref' must be provided",
+    DyadErrorKind.Validation,
+  );
+}
+
+// ============================================================================
 // Action Executors
 // ============================================================================
 
@@ -217,8 +555,9 @@ async function executeNavigate(
   url: string,
 ): Promise<string> {
   validateHttpUrl(url);
-  await waitForPageReady(page, url);
-  const response = await page.goto(url, { waitUntil: "domcontentloaded" });
+  // waitForPageReady performs the navigation and waits for network idle;
+  // it returns the HTTP response so we don't navigate twice.
+  const response = await waitForPageReady(page, url);
   const status = response?.status() ?? "unknown";
   const title = await page.title();
   return `Navigated to ${url} (status: ${status}, title: "${title}")`;
@@ -228,10 +567,11 @@ async function executeClick(
   page: PlaywrightPage,
   args: z.infer<typeof clickAction>,
 ): Promise<string> {
-  const element = await page.$(args.selector);
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
   if (!element) {
     throw new DyadError(
-      `No element found matching selector: ${args.selector}`,
+      `No element found matching selector: ${selector}`,
       DyadErrorKind.NotFound,
     );
   }
@@ -239,22 +579,23 @@ async function executeClick(
   if (args.wait_ms && args.wait_ms > 0) {
     await page.waitForTimeout(args.wait_ms);
   }
-  return `Clicked element matching selector: ${args.selector}`;
+  return `Clicked element matching: ${selector}`;
 }
 
 async function executeType(
   page: PlaywrightPage,
   args: z.infer<typeof typeAction>,
 ): Promise<string> {
-  const element = await page.$(args.selector);
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
   if (!element) {
     throw new DyadError(
-      `No element found matching selector: ${args.selector}`,
+      `No element found matching selector: ${selector}`,
       DyadErrorKind.NotFound,
     );
   }
   await element.fill(args.text);
-  return `Typed text into element matching selector: ${args.selector}`;
+  return `Typed text into element matching: ${selector}`;
 }
 
 const SCROLL_PIXELS: Record<string, [number, number]> = {
@@ -269,7 +610,7 @@ async function executeScroll(
   args: z.infer<typeof scrollAction>,
 ): Promise<string> {
   const base = SCROLL_PIXELS[args.direction] ?? [0, 0];
-  const amount = args.amount ?? 500;
+  const amount = Number(args.amount ?? 500);
   const scale = amount / 500;
   const deltaX = base[0] * scale;
   const deltaY = base[1] * scale;
@@ -286,7 +627,8 @@ async function executeScreenshot(
   ctx: AgentContext,
 ): Promise<string> {
   const screenshotBuffer = await page.screenshot({
-    fullPage: args.full_page ?? false,
+    fullPage:
+      String(args.full_page ?? "false") === "true" || args.full_page === true,
     type: "png",
   });
 
@@ -304,17 +646,18 @@ async function executeGetText(
   page: PlaywrightPage,
   args: z.infer<typeof getTextAction>,
 ): Promise<string> {
-  const element = await page.$(args.selector);
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
   if (!element) {
     throw new DyadError(
-      `No element found matching selector: ${args.selector}`,
+      `No element found matching selector: ${selector}`,
       DyadErrorKind.NotFound,
     );
   }
   const text = await element.textContent();
   if (text === null) {
     throw new DyadError(
-      `Could not read text content from selector: ${args.selector}`,
+      `Could not read text content from selector: ${selector}`,
       DyadErrorKind.NotFound,
     );
   }
@@ -325,13 +668,14 @@ async function executeWaitFor(
   page: PlaywrightPage,
   args: z.infer<typeof waitForAction>,
 ): Promise<string> {
-  const timeout = args.timeout_ms ?? 10000;
+  const selector = await resolveTargetSelector(page, args);
+  const timeout = Number(args.timeout_ms ?? 10000);
   try {
-    await page.waitForSelector(args.selector, { timeout });
-    return `Element matching selector "${args.selector}" appeared within ${timeout}ms`;
+    await page.waitForSelector(selector, { timeout });
+    return `Element matching selector "${selector}" appeared within ${timeout}ms`;
   } catch {
     throw new DyadError(
-      `Timed out waiting for element matching selector: ${args.selector} (timeout: ${timeout}ms)`,
+      `Timed out waiting for element matching selector: ${selector} (timeout: ${timeout}ms)`,
       DyadErrorKind.External,
     );
   }
@@ -342,7 +686,7 @@ async function executeReadPage(
   args: z.infer<typeof readPageAction>,
 ): Promise<string> {
   const mode = args.mode ?? "interactive";
-  const depth = Math.min(args.depth ?? 5, 20);
+  const depth = Math.min(Number(args.depth ?? 5), 20);
 
   const tree = await page.evaluate(
     ({ mode, depth }: { mode: string; depth: number }) => {
@@ -354,7 +698,11 @@ async function executeReadPage(
         href?: string;
         type?: string;
         placeholder?: string;
+        name?: string;
+        ariaLabel?: string;
+        testId?: string;
         checked?: boolean;
+        disabled?: boolean;
         children?: RefNode[];
       }
 
@@ -386,33 +734,48 @@ async function executeReadPage(
         const tag = el.tagName?.toLowerCase();
         const role = el.getAttribute("role");
         const isVisible =
-          el instanceof HTMLElement &&
-          el.offsetParent !== null &&
-          getComputedStyle(el).display !== "none";
-
-        if (!isVisible && mode === "viewport") return null;
+          el instanceof HTMLElement
+            ? (() => {
+                const style = getComputedStyle(el);
+                return (
+                  style.display !== "none" && style.visibility !== "hidden"
+                );
+              })()
+            : true;
 
         const isInteractive =
           interactiveTags.has(el.tagName) ||
-          (role && interactiveRoles.has(role));
+          (role !== null && interactiveRoles.has(role));
 
         if (mode === "interactive" && !isInteractive) {
           // Still walk children to find nested interactive elements
           const children: RefNode[] = [];
-          for (const child of el.children) {
+          for (const child of Array.from(el.children)) {
             const childNode = walk(child, currentDepth + 1);
             if (childNode) children.push(childNode);
           }
           return children.length > 0 ? { ref: -1, tag, children } : null;
         }
 
-        const ref = ++refCounter;
+        // Refs always number interactive elements in document order across
+        // ALL modes, so a ref from any read_page call maps 1:1 to the same
+        // element via click/type/get_text/wait_for. In viewport mode, hidden
+        // interactive elements still consume a ref number (keeps numbering
+        // stable) but are omitted from the tree output.
+        if (isInteractive && !isVisible && mode === "viewport") {
+          refCounter += 1;
+          return null;
+        }
+
+        const ref = isInteractive ? ++refCounter : -1;
         const node: RefNode = { ref, tag };
 
         if (role) node.role = role;
         if (el instanceof HTMLElement) {
-          const text = el.innerText?.trim().slice(0, 100);
+          const text = el.innerText?.trim().slice(0, 120);
           if (text) node.text = text;
+          const aria = el.getAttribute("aria-label");
+          if (aria) node.ariaLabel = aria;
         }
         if (el.hasAttribute("href"))
           node.href = el.getAttribute("href") ?? undefined;
@@ -420,10 +783,23 @@ async function executeReadPage(
           node.type = el.getAttribute("type") ?? undefined;
         if (el.hasAttribute("placeholder"))
           node.placeholder = el.getAttribute("placeholder") ?? undefined;
-        if (el instanceof HTMLInputElement) node.checked = el.checked;
+        if (el.hasAttribute("name"))
+          node.name = el.getAttribute("name") ?? undefined;
+        if (el.hasAttribute("data-testid"))
+          node.testId = el.getAttribute("data-testid") ?? undefined;
+        if (el instanceof HTMLInputElement) {
+          node.checked = el.checked;
+          node.disabled = el.disabled;
+        } else if (
+          el instanceof HTMLButtonElement ||
+          el instanceof HTMLSelectElement ||
+          el instanceof HTMLTextAreaElement
+        ) {
+          node.disabled = el.disabled;
+        }
 
         const children: RefNode[] = [];
-        for (const child of el.children) {
+        for (const child of Array.from(el.children)) {
           const childNode = walk(child, currentDepth + 1);
           if (childNode) children.push(childNode);
         }
@@ -434,7 +810,7 @@ async function executeReadPage(
 
       const body = document.body;
       const result: RefNode[] = [];
-      for (const child of body.children) {
+      for (const child of Array.from(body.children)) {
         const node = walk(child, 0);
         if (node) result.push(node);
       }
@@ -447,11 +823,15 @@ async function executeReadPage(
     const pad = "  ".repeat(indent);
     const parts = [`[${node.ref}] <${node.tag}>`];
     if (node.role) parts.push(`role="${node.role}"`);
-    if (node.text) parts.push(`"${node.text.slice(0, 60)}"`);
+    if (node.ariaLabel) parts.push(`aria="${node.ariaLabel}"`);
+    if (node.text) parts.push(`"${node.text.slice(0, 80)}"`);
     if (node.href) parts.push(`href="${node.href}"`);
     if (node.type) parts.push(`type="${node.type}"`);
+    if (node.name) parts.push(`name="${node.name}"`);
     if (node.placeholder) parts.push(`placeholder="${node.placeholder}"`);
+    if (node.testId) parts.push(`testid="${node.testId}"`);
     if (node.checked !== undefined) parts.push(`checked=${node.checked}`);
+    if (node.disabled !== undefined) parts.push(`disabled=${node.disabled}`);
 
     let result = pad + parts.join(" ");
     if (node.children) {
@@ -462,8 +842,51 @@ async function executeReadPage(
     return result;
   };
 
-  const lines = tree.tree.map((n) => formatNode(n)).join("\n");
-  return `Page structure (${tree.refs} interactive elements, mode: ${mode}):\n\n${lines}`;
+  const MAX_READ_PAGE_CHARS = 40_000;
+  let lines = tree.tree.map((n) => formatNode(n)).join("\n");
+  const truncated = lines.length > MAX_READ_PAGE_CHARS;
+  if (truncated) {
+    lines = lines.slice(0, MAX_READ_PAGE_CHARS) + "\n…[truncated]";
+  }
+
+  const interactiveCount = tree.refs;
+  return `Page structure (${interactiveCount} interactive elements, mode: ${mode}${truncated ? ", output truncated" : ""}):
+Use ref numbers (e.g. [3]) with click/type/get_text/wait_for to act on elements.
+
+${lines}`;
+}
+
+/**
+ * Normalize batch steps to an array, tolerating the platform serialization
+ * quirk where arrays arrive as JSON strings.
+ */
+function normalizeBatchSteps(steps: unknown): Array<{
+  action: string;
+  params?: Record<string, unknown>;
+}> {
+  if (typeof steps === "string") {
+    try {
+      const parsed = JSON.parse(steps);
+      if (Array.isArray(parsed))
+        return parsed as Array<{
+          action: string;
+          params?: Record<string, unknown>;
+        }>;
+    } catch {
+      // fall through to validation error
+    }
+    throw new DyadError(
+      "batch steps must be a valid JSON array",
+      DyadErrorKind.Validation,
+    );
+  }
+  if (!Array.isArray(steps)) {
+    throw new DyadError(
+      "batch steps must be an array",
+      DyadErrorKind.Validation,
+    );
+  }
+  return steps as Array<{ action: string; params?: Record<string, unknown> }>;
 }
 
 async function executeBatch(
@@ -471,22 +894,34 @@ async function executeBatch(
   args: z.infer<typeof batchAction>,
   ctx: AgentContext,
 ): Promise<string> {
+  // Coerce steps to array if received as string (serialization issue)
+  const steps = normalizeBatchSteps(args.steps);
+
   const results: string[] = [];
 
-  for (let i = 0; i < args.steps.length; i++) {
-    const step = args.steps[i];
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i] as {
+      action: string;
+      params?: Record<string, unknown>;
+    };
     const actionName = step.action;
-    const params = step.params;
+    const params = step.params ?? {};
 
     ctx.onXmlStream(
-      `<dyad-browser action="batch" step="${i + 1}/${args.steps.length}" subaction="${escapeXmlAttr(actionName)}">`,
+      `<dyad-browser action="batch" step="${i + 1}/${steps.length}" subaction="${escapeXmlAttr(actionName)}">`,
     );
 
     try {
-      let result: string;
+      let result: string = "";
       switch (actionName) {
         case "navigate":
-          result = await executeNavigate(page, params as any);
+          // Default to the running app's preview URL when a navigate step
+          // omits url (mirrors the single-action behavior).
+          result = await executeNavigate(
+            page,
+            (params.url as string | undefined) ??
+              resolveTargetUrl(undefined, ctx.appId),
+          );
           break;
         case "click":
           result = await executeClick(page, params as any);
@@ -512,22 +947,85 @@ async function executeBatch(
         default:
           result = `Unknown action: ${actionName}`;
       }
-      results.push(`[${i + 1}/${args.steps.length}] ${actionName}: ${result}`);
+      results.push(`[${i + 1}/${steps.length}] ${actionName}: ${result}`);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      results.push(
-        `[${i + 1}/${args.steps.length}] ${actionName}: ERROR - ${msg}`,
-      );
+      results.push(`[${i + 1}/${steps.length}] ${actionName}: ERROR - ${msg}`);
       // Continue with remaining steps
     }
 
     // Random delay between actions (100-200ms) to appear more natural
-    if (i < args.steps.length - 1) {
+    if (i < steps.length - 1) {
       await page.waitForTimeout(100 + Math.random() * 100);
     }
   }
 
   return results.join("\n");
+}
+
+async function executeFrameIframe(
+  page: PlaywrightPage,
+  args: z.infer<typeof frameIframeAction>,
+  ctx: AgentContext,
+): Promise<string> {
+  if (!args.selector) {
+    throw new DyadError(
+      "frame_iframe requires a 'selector' parameter. Provide a CSS selector to identify the frame/iframe element.",
+      DyadErrorKind.Validation,
+    );
+  }
+  const frame = page.frameLocator(args.selector);
+
+  switch (args.action_type) {
+    case "click":
+      if (!args.inner_selector) {
+        throw new DyadError(
+          "inner_selector is required for click action",
+          DyadErrorKind.Validation,
+        );
+      }
+      await frame.locator(args.inner_selector).click();
+      return `Clicked element in frame: ${args.inner_selector}`;
+
+    case "type":
+      if (!args.inner_selector || !args.text) {
+        throw new DyadError(
+          "inner_selector and text are required for type action",
+          DyadErrorKind.Validation,
+        );
+      }
+      await frame.locator(args.inner_selector).fill(args.text);
+      return `Typed "${args.text}" into element in frame: ${args.inner_selector}`;
+
+    case "get_text":
+      if (!args.inner_selector) {
+        throw new DyadError(
+          "inner_selector is required for get_text action",
+          DyadErrorKind.Validation,
+        );
+      }
+      const text = await frame.locator(args.inner_selector).textContent();
+      return text || "";
+
+    case "screenshot":
+      // Capture the frame element itself (not the whole page) so the
+      // screenshot matches the requested frame.
+      const frameEl = page.locator(args.selector).first();
+      const screenshotBuffer = (await frameEl.screenshot({
+        type: "png",
+      })) as Buffer;
+      const screenshotPath = await saveScreenshot(
+        screenshotBuffer,
+        resolveTargetAppPath(ctx, undefined),
+      );
+      return `Frame screenshot saved to: ${screenshotPath}`;
+
+    default:
+      throw new DyadError(
+        `Unknown action_type: ${args.action_type}`,
+        DyadErrorKind.Validation,
+      );
+  }
 }
 
 // ============================================================================
@@ -550,21 +1048,41 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
           ? `Navigate browser to: "${args.url}"`
           : "Navigate to running app";
       case "click":
-        return `Click element: "${args.selector}"`;
+        return args.ref
+          ? `Click element ref [${args.ref}]`
+          : `Click element: "${args.selector}"`;
       case "type":
-        return `Type into "${args.selector}": "${args.text}"`;
+        return args.ref
+          ? `Type into ref [${args.ref}]: "${args.text}"`
+          : `Type into "${args.selector}": "${args.text}"`;
       case "scroll":
         return `Scroll ${args.direction} by ${args.amount ?? 500}px`;
       case "screenshot":
         return `Take ${args.full_page ? "full-page " : ""}screenshot`;
       case "get_text":
-        return `Get text from: "${args.selector}"`;
+        return args.ref
+          ? `Get text from ref [${args.ref}]`
+          : `Get text from: "${args.selector}"`;
       case "wait_for":
-        return `Wait for element: "${args.selector}"`;
+        return args.ref
+          ? `Wait for element ref [${args.ref}]`
+          : `Wait for element: "${args.selector}"`;
       case "read_page":
         return `Read page structure (${args.mode ?? "interactive"} mode)`;
-      case "batch":
-        return `Execute ${args.steps.length} browser actions sequentially`;
+      case "batch": {
+        const steps = normalizeBatchSteps(args.steps);
+        return `Execute ${steps.length} browser actions sequentially`;
+      }
+      case "form_data":
+        return `Extract form data from: "${args.selector}"`;
+      case "fill_form":
+        return `Fill form at "${args.selector}" with ${Object.keys(args.data).length} fields`;
+      case "submit_form":
+        return `Submit form at "${args.selector}"`;
+      case "validate_form":
+        return `Validate form at "${args.selector}"`;
+      case "frame_iframe":
+        return `Interact with frame/iframe: "${args.selector}"`;
     }
   },
 
@@ -576,9 +1094,11 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
       case "navigate":
         return `<dyad-browser action="navigate"${args.url ? ` url="${escapeXmlAttr(args.url)}"` : ""}>`;
       case "click":
+        if (args.ref) return `<dyad-browser action="click" ref="${args.ref}">`;
         if (!args.selector) return undefined;
         return `<dyad-browser action="click" selector="${escapeXmlAttr(args.selector)}">`;
       case "type":
+        if (args.ref) return `<dyad-browser action="type" ref="${args.ref}">`;
         if (!args.selector || !args.text) return undefined;
         return `<dyad-browser action="type" selector="${escapeXmlAttr(args.selector)}">`;
       case "scroll":
@@ -586,15 +1106,29 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
       case "screenshot":
         return `<dyad-browser action="screenshot">`;
       case "get_text":
+        if (args.ref)
+          return `<dyad-browser action="get_text" ref="${args.ref}">`;
         if (!args.selector) return undefined;
         return `<dyad-browser action="get_text" selector="${escapeXmlAttr(args.selector)}">`;
       case "wait_for":
+        if (args.ref)
+          return `<dyad-browser action="wait_for" ref="${args.ref}">`;
         if (!args.selector) return undefined;
         return `<dyad-browser action="wait_for" selector="${escapeXmlAttr(args.selector)}">`;
       case "read_page":
         return `<dyad-browser action="read_page" mode="${escapeXmlAttr(args.mode ?? "interactive")}">`;
-      case "batch":
-        return `<dyad-browser action="batch" steps="${args.steps?.length ?? 0}">`;
+      case "batch": {
+        const steps = normalizeBatchSteps(args.steps);
+        return `<dyad-browser action="batch" steps="${steps.length}">`;
+      }
+      case "form_data":
+        return `<dyad-browser action="form_data" selector="${escapeXmlAttr(args.selector)}">`;
+      case "fill_form":
+        return `<dyad-browser action="fill_form" selector="${escapeXmlAttr(args.selector)}">`;
+      case "submit_form":
+        return `<dyad-browser action="submit_form" selector="${escapeXmlAttr(args.selector)}">`;
+      case "validate_form":
+        return `<dyad-browser action="validate_form" selector="${escapeXmlAttr(args.selector)}">`;
     }
   },
 
@@ -602,7 +1136,7 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
     logger.log(`Executing browser_control: ${args.action}`);
 
     // Build initial XML based on action
-    let initialXml: string;
+    let initialXml: string = "";
     switch (args.action) {
       case "navigate":
         initialXml = `<dyad-browser action="navigate"${args.url ? ` url="${escapeXmlAttr(args.url)}"` : ""}>`;
@@ -629,7 +1163,7 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         initialXml = `<dyad-browser action="read_page" mode="${escapeXmlAttr(args.mode ?? "interactive")}">`;
         break;
       case "batch":
-        initialXml = `<dyad-browser action="batch" steps="${args.steps.length}">`;
+        initialXml = `<dyad-browser action="batch" steps="${normalizeBatchSteps(args.steps).length}">`;
         break;
     }
 
@@ -642,7 +1176,7 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         ctx.appId,
       );
 
-      let result: string;
+      let result: string = "";
 
       switch (args.action) {
         case "navigate":
@@ -671,6 +1205,21 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
           break;
         case "batch":
           result = await executeBatch(page, args, ctx);
+          break;
+        case "frame_iframe":
+          result = await executeFrameIframe(page, args, ctx);
+          break;
+        case "form_data":
+          result = await executeFormData(page, args);
+          break;
+        case "fill_form":
+          result = await executeFillForm(page, args);
+          break;
+        case "submit_form":
+          result = await executeSubmitForm(page, args);
+          break;
+        case "validate_form":
+          result = await executeValidateForm(page, args);
           break;
       }
 

@@ -12,6 +12,7 @@ import {
 import { resolveTargetAppPath } from "./resolve_app_context";
 import { DYAD_SCREENSHOT_DIR_NAME } from "@/ipc/utils/media_path_utils";
 import { getPage, resolveTargetUrl, waitForPageReady } from "./browser_session";
+import { withRetry } from "./retry_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("take_screenshot");
@@ -103,31 +104,85 @@ async function screenshotUrl(
     selector?: string;
   },
 ): Promise<Buffer> {
-  const page = await getPage();
+  return withRetry(
+    async () => {
+      const page = await getPage();
 
-  await waitForPageReady(page, url, 30_000);
+      // Apply requested viewport size BEFORE navigation so the capture
+      // actually reflects the requested dimensions (previously width/height
+      // were accepted but silently ignored).
+      if (options.width || options.height) {
+        const current = page.viewportSize() ?? { width: 1280, height: 720 };
+        await page.setViewportSize({
+          width: options.width ?? current.width,
+          height: options.height ?? current.height,
+        });
+      }
 
-  let screenshotBuffer: Buffer;
+      await waitForPageReady(page, url, 30_000);
 
-  if (options.selector) {
-    const element = await page.$(options.selector);
-    if (!element) {
-      throw new DyadError(
-        `Element matching selector "${options.selector}" not found on page`,
-        DyadErrorKind.Validation,
-      );
+      let screenshotBuffer: Buffer;
+
+      if (options.selector) {
+        const element = await page.$(options.selector);
+        if (!element) {
+          throw new DyadError(
+            `Element matching selector "${options.selector}" not found on page`,
+            DyadErrorKind.Validation,
+          );
+        }
+        screenshotBuffer = (await element.screenshot({
+          type: "png",
+        })) as Buffer;
+      } else {
+        screenshotBuffer = (await page.screenshot({
+          fullPage: options.fullPage ?? false,
+          type: "png",
+        })) as Buffer;
+      }
+
+      return screenshotBuffer;
+    },
+    {
+      maxRetries: 2,
+      baseDelay: 1000,
+      operationName: "screenshot",
+    },
+  );
+}
+
+/**
+ * Prune old screenshots in a project's .dyad/screenshot directory so the
+ * folder cannot grow without bound. Keeps the newest MAX_SCREENSHOTS files.
+ * Non-blocking — failures are logged, never thrown.
+ */
+const MAX_SCREENSHOTS_PER_PROJECT = 50;
+
+async function pruneOldScreenshots(appPath: string): Promise<void> {
+  try {
+    const mediaDir = path.join(appPath, DYAD_SCREENSHOT_DIR_NAME);
+    const entries = await fs.readdir(mediaDir);
+    const screenshots = entries
+      .filter((name) => /^screenshot-\d+-[0-9a-f]+\.png$/.test(name))
+      .map((name) => ({ name, mtime: 0 }));
+
+    // Sort by embedded timestamp (screenshot-<ts>-<hash>.png)
+    screenshots.sort((a, b) => {
+      const ta = Number(a.name.split("-")[1] ?? 0);
+      const tb = Number(b.name.split("-")[1] ?? 0);
+      return tb - ta;
+    });
+
+    const excess = screenshots.length - MAX_SCREENSHOTS_PER_PROJECT;
+    if (excess <= 0) return;
+
+    for (const old of screenshots.slice(-excess)) {
+      await fs.unlink(path.join(mediaDir, old.name)).catch(() => {});
     }
-    screenshotBuffer = (await element.screenshot({
-      type: "png",
-    })) as Buffer;
-  } else {
-    screenshotBuffer = (await page.screenshot({
-      fullPage: options.fullPage ?? false,
-      type: "png",
-    })) as Buffer;
+    logger.log(`Pruned ${excess} old screenshot(s) in ${mediaDir}`);
+  } catch (error) {
+    logger.warn("Screenshot prune skipped:", error);
   }
-
-  return screenshotBuffer;
 }
 
 export const takeScreenshotTool: ToolDefinition<
@@ -163,6 +218,13 @@ export const takeScreenshotTool: ToolDefinition<
     );
 
     try {
+      if (args.selector && args.full_page) {
+        throw new DyadError(
+          "Cannot combine selector with full_page — capture either an element or the full page, not both",
+          DyadErrorKind.Validation,
+        );
+      }
+
       const targetUrl = resolveTargetUrl(args.url, ctx.appId);
 
       const screenshotBuffer = await screenshotUrl(targetUrl, {
@@ -176,6 +238,9 @@ export const takeScreenshotTool: ToolDefinition<
         screenshotBuffer,
         targetAppPath,
       );
+
+      // Keep the project's screenshot folder bounded (fire-and-forget).
+      void pruneOldScreenshots(targetAppPath);
 
       const widthAttr = args.width
         ? ` width="${escapeXmlAttr(String(args.width))}"`

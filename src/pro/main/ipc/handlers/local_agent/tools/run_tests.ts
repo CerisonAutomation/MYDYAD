@@ -104,6 +104,10 @@ function targetKeyFromKnownCases(
 ): string | null {
   let regex: RegExp;
   try {
+    // Reject patterns with nested quantifiers to prevent ReDoS
+    if (/(?:\+|\*)\??\s*(?:\+|\*)/.test(grep)) {
+      return null;
+    }
     regex = new RegExp(grep);
   } catch {
     return null;

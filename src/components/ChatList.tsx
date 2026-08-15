@@ -221,7 +221,7 @@ export function ChatList({
         selectChat({ chatId, appId: selectedAppId });
       } catch (error) {
         // DO A TOAST
-        showError(t("failedCreateChat", { error: (error as any).toString() }));
+        showError(t("failedCreateChat", { error: String(error) }));
       }
     } else {
       // If no app is selected, navigate to home page
@@ -250,7 +250,7 @@ export function ChatList({
       // Refresh the chat list
       await invalidateChats();
     } catch (error) {
-      showError(t("failedDeleteChat", { error: (error as any).toString() }));
+      showError(t("failedDeleteChat", { error: String(error) }));
     }
   };
 

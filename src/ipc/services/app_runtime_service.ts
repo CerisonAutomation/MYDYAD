@@ -93,34 +93,9 @@ export type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 fixPath();
 
 export function formatCloudSandboxError(error: unknown) {
-  if (!(error instanceof CloudSandboxApiError)) {
-    return error instanceof Error ? error.message : String(error);
-  }
-
-  switch (error.code) {
-    case "sandbox_pro_required":
-      return "Dyad Pro is required to use cloud sandboxes.";
-    case "sandbox_insufficient_credits":
-      return "You need at least 1 credit available to start a cloud sandbox.";
-    case "sandbox_billing_unavailable":
-      return "Dyad couldn’t verify sandbox billing right now. Please try again.";
-    case "sandbox_credits_exhausted":
-      return "This cloud sandbox stopped because your credits ran out.";
-    default:
-      if (error.status === 404) {
-        return "This cloud sandbox is no longer available.";
-      }
-      if (error.status === 401 || error.status === 403) {
-        return "Dyad couldn’t authorize the cloud sandbox request. Please try again.";
-      }
-      if (error.status === 429) {
-        return "Dyad is rate limiting cloud sandbox requests right now. Please try again.";
-      }
-      if (typeof error.status === "number" && error.status >= 500) {
-        return "Dyad’s cloud sandbox service is temporarily unavailable. Please try again.";
-      }
-      return error.message;
-  }
+  // Cloud sandbox removed — this function is kept for backward compatibility
+  // but errors now come from local execution, not remote API
+  return error instanceof Error ? error.message : String(error);
 }
 
 function getPnpmInstallCommand(): string {
@@ -187,7 +162,7 @@ async function getDefaultCommand({
     pnpmAvailable: pnpmSupport.available,
   });
 
-  // Only warn about pnpm when the app actually wants pnpm — including while
+  // Only warn about pnpm when the app actually wants pnpm - including while
   // it temporarily falls back to npm because pnpm is missing/too old. Apps
   // that explicitly select npm should not see pnpm warnings.
   if (
@@ -301,15 +276,6 @@ export async function executeApp({
       startCommand,
       invocationRef,
     });
-  } else if (runtimeMode === "cloud") {
-    await executeAppInCloud({
-      appPath,
-      appId,
-      output,
-      installCommand,
-      startCommand,
-      invocationRef,
-    });
   } else {
     notifyPnpmVersionMigrationAvailable({ appPath, appId, output });
     await executeAppLocalNode({
@@ -412,7 +378,7 @@ export async function ensureProxyForRunningApp({
   }
 
   const proxyAuthToken =
-    mode === "cloud" ? appInfo.cloudPreviewAuthToken : undefined;
+    mode === "host" ? appInfo.cloudPreviewAuthToken : undefined;
 
   if (
     appInfo.proxyWorker &&
@@ -438,7 +404,7 @@ export async function ensureProxyForRunningApp({
   }
 
   // Prefer the deterministic port so the iframe origin stays stable across
-  // restarts — otherwise origin-scoped browser state (auth sessions,
+  // restarts - otherwise origin-scoped browser state (auth sessions,
   // localStorage) gets orphaned and users appear logged out. If that port is
   // already taken (by a foreign service, or another Dyad app in the rare 10k
   // overlap), the proxy worker scans the fallback band upward rather than
@@ -484,7 +450,7 @@ export async function ensureProxyForRunningApp({
       });
     },
     fixedHeaders:
-      mode === "cloud" && proxyAuthToken
+      mode === "host" && proxyAuthToken
         ? {
             Authorization: `Bearer ${proxyAuthToken}`,
           }
@@ -653,7 +619,7 @@ export function registerCloudSandboxSyncUpdateListener(): void {
 
   setCloudSandboxSyncUpdateListener(({ appId, errorMessage }) => {
     const appInfo = runningApps.get(appId);
-    if (!appInfo || appInfo.mode !== "cloud") {
+    if (!appInfo || appInfo.mode !== "host") {
       return;
     }
 
@@ -802,7 +768,7 @@ function listenToProcess({
       if (urlMatch) {
         const originalUrl = urlMatch[1];
         // The dev-server URL appearing means the install phase completed
-        // successfully — the one point in the `install && dev` chain where
+        // successfully - the one point in the `install && dev` chain where
         // ignored builds can be read and recorded.
         if (appPath && !ignoredBuildsRecordedAfterInstall) {
           ignoredBuildsRecordedAfterInstall = true;
@@ -913,7 +879,7 @@ async function selfHealDeniedPnpmBuilds({
   output: string;
   telemetrySource: "self-heal";
   // Docker installs use the container volume, not host node_modules, and an
-  // explicit `pkg: false` entry passes even a fast-path install — so the
+  // explicit `pkg: false` entry passes even a fast-path install - so the
   // Docker caller skips the host cleanup.
   removeNodeModules?: boolean;
 }): Promise<boolean> {
@@ -1138,7 +1104,7 @@ ${errorOutput || "(empty)"}`,
 
   // Mirrors the host path: custom `install && start` chains run strict pnpm
   // inside the container, so an ERR_PNPM_IGNORED_BUILDS exit needs the same
-  // record-denials-and-retry treatment (executeAppInDocker is restart-safe —
+  // record-denials-and-retry treatment (executeAppInDocker is restart-safe -
   // it stops and removes the previous container first).
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
   listenToProcess({
@@ -1250,7 +1216,7 @@ async function executeAppInCloud({
     process: null,
     processId: currentProcessId,
     invocationRef,
-    mode: "cloud",
+    mode: "host",
     output,
     cloudSandboxId: sandboxId,
     cloudPreviewUrl: resolvedPreviewUrl,
@@ -1269,7 +1235,7 @@ async function executeAppInCloud({
     appId,
     output,
     originalUrl: resolvedPreviewUrl,
-    mode: "cloud",
+    mode: "host",
     invocationRef,
   });
 
@@ -1477,7 +1443,7 @@ export interface AppRuntimeServiceDependencies {
   cleanPort(port: number): Promise<void>;
   restartSandbox(sandboxId: string): Promise<{
     previewUrl: string;
-    previewAuthToken: string;
+    previewAuthToken?: string;
   }>;
   ensureProxy(input: {
     appId: number;
@@ -1633,7 +1599,7 @@ export class AppRuntimeService {
       const appInfo = this.dependencies.getRunningApp(appId);
 
       if (
-        appInfo?.mode === "cloud" &&
+        appInfo?.mode === "host" &&
         appInfo.cloudSandboxId &&
         !recreateSandbox
       ) {
@@ -1712,7 +1678,7 @@ export class AppRuntimeService {
         );
         if (process) {
           this.dependencies.removeCurrentProcess(appId, process);
-        } else if (appInfo.mode !== "cloud") {
+        } else if (appInfo.mode !== "host") {
           this.dependencies.deleteRunningApp(appId);
         }
         throw new DyadError(
@@ -1895,7 +1861,7 @@ export class AppRuntimeService {
       appId: input.appId,
       output: input.output,
       originalUrl: result.previewUrl,
-      mode: "cloud",
+      mode: "host",
       invocationRef: input.invocationRef,
     });
     this.dependencies.startCloudLogs({

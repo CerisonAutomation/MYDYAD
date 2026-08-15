@@ -330,7 +330,6 @@ export function transition(
           : [],
       );
     case "PICKER_TOGGLED": {
-      if (!state.selectorReady) return ignore(state, "picker-not-ready");
       const picking = !state.picking;
       const commands: PreviewIframeCommand[] = [];
       if (!picking) {

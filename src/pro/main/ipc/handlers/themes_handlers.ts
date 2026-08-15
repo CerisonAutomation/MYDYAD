@@ -3,6 +3,7 @@ import log from "electron-log";
 import path from "path";
 import os from "os";
 import fs from "fs";
+import crypto from "crypto";
 import { readFile, writeFile, unlink, mkdir } from "fs/promises";
 import { themesData, type Theme } from "../../../../shared/themes";
 import { db } from "../../../../db";
@@ -38,6 +39,7 @@ import {
   resolveBuiltinModelAlias,
 } from "@/ipc/shared/remote_language_model_catalog";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { assertNotPrivateIp } from "./local_agent/tools/network_utils";
 import { getDyadEngineBaseUrl } from "@/ipc/utils/dyad_engine_url";
 
 const logger = log.scope("themes_handlers");
@@ -538,8 +540,8 @@ export function registerThemesHandlers() {
         );
       }
 
-      // Generate unique filename
-      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}${ext}`;
+      // Generate unique filename using cryptographically secure random
+      const uniqueFilename = `${Date.now()}-${crypto.randomUUID()}${ext}`;
       const filePath = path.join(THEME_IMAGES_TEMP_DIR, uniqueFilename);
 
       // Validate size (base64 to bytes approximation)
@@ -783,24 +785,10 @@ Modern theme extracted from website for testing.
         );
       }
 
-      // SSRF protection: block internal/private network addresses
-      const hostname = parsedUrl.hostname.toLowerCase();
-      const blockedPatterns = [
-        /^localhost$/i,
-        /^127\.\d+\.\d+\.\d+$/,
-        /^10\.\d+\.\d+\.\d+$/,
-        /^192\.168\.\d+\.\d+$/,
-        /^172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+$/,
-        /^169\.254\.\d+\.\d+$/,
-        /^::1$/,
-        /\.local$/i,
-      ];
-      if (blockedPatterns.some((p) => p.test(hostname))) {
-        throw new DyadError(
-          "Cannot crawl internal network addresses.",
-          DyadErrorKind.External,
-        );
-      }
+      // SSRF protection: use centralized assertNotPrivateIp for comprehensive
+      // IPv4/IPv6 private address blocking (RFC 1918, link-local, loopback,
+      // unique-local, IPv6-mapped, etc.)
+      assertNotPrivateIp(params.url);
 
       // Validate keywords length
       if (params.keywords.length > 500) {

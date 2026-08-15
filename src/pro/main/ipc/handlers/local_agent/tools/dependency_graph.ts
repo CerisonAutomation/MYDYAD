@@ -88,23 +88,57 @@ export const dependencyGraphTool: ToolDefinition<
     );
 
     try {
-      const imports: string[] = [];
+      // Track per-file local imports so we can detect circular dependencies.
+      const fileImports = new Map<
+        string,
+        Array<{ line: number; spec: string; isTypeOnly: boolean }>
+      >();
       let filesScanned = 0;
 
       const analyzeFile = (filePath: string, content: string) => {
         filesScanned++;
         const lines = content.split("\n");
+        const local: Array<{
+          line: number;
+          spec: string;
+          isTypeOnly: boolean;
+        }> = [];
         for (let i = 0; i < lines.length; i++) {
-          const match = lines[i].match(/import\s+.*from\s+['"]([^'"]+)['"]/);
+          const line = lines[i];
+          const trimmed = line.trimStart();
+          // Skip comment/doc lines — they are not real import edges.
           if (
-            match &&
-            (match[1].startsWith("./") ||
-              match[1].startsWith("../") ||
-              match[1].startsWith("@/"))
-          ) {
-            imports.push(`${filePath}:${i + 1} → ${match[1]}`);
+            trimmed.startsWith("//") ||
+            trimmed.startsWith("/*") ||
+            trimmed.startsWith("*") ||
+            trimmed.startsWith("<!--")
+          )
+            continue;
+          // import x from "..." / import "..." / export { x } from "..." / dynamic import("...")
+          const matches = line.matchAll(
+            /(?:import|export)\s+[^'"]*?from\s+['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]/g,
+          );
+          for (const m of matches) {
+            const spec = m[1] ?? m[2] ?? m[3];
+            if (!spec) continue;
+            if (
+              spec.startsWith("./") ||
+              spec.startsWith("../") ||
+              spec.startsWith("@/") ||
+              spec.startsWith("~/")
+            ) {
+              const importClause = line.split("from")[0] ?? "";
+              const isTypeOnly =
+                /^\s*(?:import|export)\s+type\b/.test(line) ||
+                /\bimport\s*\(\s*type\s/.test(line) ||
+                // mixed imports: `import { type Foo, bar }` — only bar is runtime
+                /\btype\s+[A-Za-z_$][\w$]*\b/.test(importClause) ||
+                /\btype\s*\{[^}]*\}/.test(importClause);
+              local.push({ line: i + 1, spec, isTypeOnly });
+            }
           }
         }
+        fileImports.set(filePath, local);
       };
 
       if (args.file_path) {
@@ -150,22 +184,139 @@ export const dependencyGraphTool: ToolDefinition<
         await scanDir(targetAppPath);
       }
 
+      // Resolve local specifiers to concrete relative paths (handles @/ → src/).
+      const specToTarget = (spec: string, fromFile: string): string | null => {
+        if (spec.startsWith("@/") || spec.startsWith("~/")) {
+          const rel = spec.slice(2).replace(/\.(ts|tsx|js|jsx)$/, "");
+          return `src/${rel}`;
+        }
+        const base = path.posix.dirname(fromFile.replace(/\\/g, "/"));
+        const joined = path.posix.normalize(path.posix.join(base, spec));
+        const noExt = joined.replace(/\.(ts|tsx|js|jsx)$/, "");
+        for (const candidate of [
+          `${noExt}.ts`,
+          `${noExt}.tsx`,
+          `${noExt}.js`,
+          `${noExt}.jsx`,
+          noExt,
+        ]) {
+          if (fileImports.has(candidate)) return candidate;
+        }
+        return noExt;
+      };
+
+      // Build adjacency and detect circular dependency chains (DFS).
+      // Only runtime edges can form a real cycle: `import type` edges are
+      // erased at compile time, so a loop of type-only imports is benign.
+      const adjacency = new Map<string, string[]>();
+      const typeOnlyEdges: string[] = [];
+      for (const [file, localImports] of fileImports) {
+        for (const l of localImports) {
+          const target = specToTarget(l.spec, file);
+          if (target === null) continue;
+          if (l.isTypeOnly) {
+            typeOnlyEdges.push(`${file}:${l.line} → ${target} (type-only)`);
+            continue;
+          }
+          adjacency.set(file, [...(adjacency.get(file) ?? []), target]);
+        }
+      }
+      const cycles: string[][] = [];
+      const visiting = new Set<string>();
+      const visited = new Set<string>();
+      const stack: string[] = [];
+      const findCycles = (node: string) => {
+        if (visiting.has(node)) {
+          const start = stack.indexOf(node);
+          if (start >= 0) {
+            const cycle = [...stack.slice(start), node];
+            if (
+              !cycles.some(
+                (c) => c.length === cycle.length && c[0] === cycle[0],
+              )
+            ) {
+              cycles.push(cycle);
+            }
+          }
+          return;
+        }
+        if (visited.has(node)) return;
+        visiting.add(node);
+        stack.push(node);
+        for (const next of adjacency.get(node) ?? []) {
+          findCycles(next);
+        }
+        stack.pop();
+        visiting.delete(node);
+        visited.add(node);
+      };
+      for (const file of adjacency.keys()) findCycles(file);
+
+      // Stats + flat listing.
+      const allImports: string[] = [];
+      for (const [file, localImports] of fileImports) {
+        for (const l of localImports) {
+          allImports.push(`${file}:${l.line} → ${l.spec}`);
+        }
+      }
+      const uniqueTargets = new Set<string>();
+      for (const targets of adjacency.values()) {
+        targets.forEach((t) => uniqueTargets.add(t));
+      }
+
       const attrs = buildAttributes(args, {
-        imports: imports.length,
+        imports: allImports.length,
         files: filesScanned,
       });
 
-      if (imports.length === 0) {
+      if (allImports.length === 0) {
         ctx.onXmlComplete(
           `<dyad-dep-graph ${attrs}>No local imports found.</dyad-dep-graph>`,
         );
         return "No local imports found.";
       }
 
-      const resultText = `Found ${imports.length} local import(s):\n${imports
-        .slice(0, 30)
+      let resultText = `Found ${allImports.length} local import(s) across ${filesScanned} file(s) (${uniqueTargets.size} unique targets):\n`;
+      resultText += allImports
+        .slice(0, 40)
         .map((i) => `• ${i}`)
-        .join("\n")}`;
+        .join("\n");
+      if (allImports.length > 40) {
+        resultText += `\n... and ${allImports.length - 40} more`;
+      }
+      resultText += `\n\n📊 Top dependencies:\n`;
+      const topTargets = [...uniqueTargets]
+        .map((t) => ({
+          target: t,
+          count: [...adjacency.values()].filter((a) => a.includes(t)).length,
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+      resultText +=
+        topTargets
+          .map((t) => `• ${t.target} (${t.count} importer(s))`)
+          .join("\n") || "(none)";
+      resultText += `\n\n🔁 Runtime circular dependencies: ${cycles.length}`;
+      if (cycles.length > 0) {
+        resultText += `\n${cycles
+          .slice(0, 5)
+          .map((c) => `• ${c.join(" → ")}`)
+          .join("\n")}`;
+        if (cycles.length > 5)
+          resultText += `\n... and ${cycles.length - 5} more cycle(s)`;
+      } else {
+        resultText += " (none detected)";
+      }
+      if (typeOnlyEdges.length > 0) {
+        resultText += `\nℹ️ ${typeOnlyEdges.length} type-only edge(s) (erased at compile time — benign):\n`;
+        resultText += typeOnlyEdges
+          .slice(0, 5)
+          .map((e) => `• ${e}`)
+          .join("\n");
+        if (typeOnlyEdges.length > 5) {
+          resultText += `\n... and ${typeOnlyEdges.length - 5} more`;
+        }
+      }
 
       ctx.onXmlComplete(
         `<dyad-dep-graph ${attrs}>\n${escapeXmlContent(resultText)}\n</dyad-dep-graph>`,

@@ -21,7 +21,6 @@ export async function neonTemplateHook({
   appId: number;
   appName: string;
 }) {
-  console.log("Creating Neon project");
   let connectionString: string;
   try {
     const neonProject = await ipc.neon.createProject({
@@ -29,7 +28,6 @@ export async function neonTemplateHook({
       appId: appId,
     });
     connectionString = neonProject.connectionString;
-    console.log("Neon project created", neonProject);
   } catch (error) {
     if (!isAlreadyLinkedNeonProjectError(error)) throw error;
     const branchEnvVars = await ipc.neon.getBranchEnvVars({
@@ -37,7 +35,6 @@ export async function neonTemplateHook({
       branchType: "development",
     });
     connectionString = branchEnvVars.databaseUrl;
-    console.log("Resuming setup for existing Neon project");
   }
 
   await ipc.misc.setAppEnvVars({
@@ -65,5 +62,4 @@ export async function neonTemplateHook({
       },
     ],
   });
-  console.log("App env vars set");
 }

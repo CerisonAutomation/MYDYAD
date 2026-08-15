@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { FileCode, FileText } from "lucide-react";
+import type { DyadTagNode } from "./stateTypes";
 import {
   DyadCard,
   DyadCardHeader,
@@ -9,7 +10,7 @@ import {
 } from "./DyadCardPrimitives";
 
 interface DyadCodeSearchResultProps {
-  node?: any;
+  node?: DyadTagNode;
   children?: React.ReactNode;
 }
 

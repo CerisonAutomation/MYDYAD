@@ -189,9 +189,8 @@ function versionRuntimeAction(
   changedCodebase: boolean,
 ): "none" | "restart" {
   if (!changedCodebase) return "none";
-  return readSettings().runtimeMode2 === "cloud" || app.neonProjectId
-    ? "restart"
-    : "none";
+  // Cloud sandbox removed — all execution is local
+  return app.neonProjectId ? "restart" : "none";
 }
 
 function versionCommandResult({

@@ -21,6 +21,32 @@ import {
   selectTextLineRange,
 } from "@/utils/dotenv_redaction";
 
+/** Image file extensions read_file can return as a viewable image marker. */
+const IMAGE_EXTENSIONS = new Set([
+  "png",
+  "jpg",
+  "jpeg",
+  "webp",
+  "gif",
+  "bmp",
+  "avif",
+]);
+
+/**
+ * Marker read_file returns for image files instead of failing on binary
+ * content. The local-agent handler detects this marker in tool results and
+ * injects the actual image into the next model step so the agent can SEE it.
+ */
+export const IMAGE_READ_MARKER = "[Image:";
+
+/** Cap for images read via read_file (well above any screenshot size). */
+const MAX_IMAGE_READ_BYTES = 15 * 1024 * 1024;
+
+export function isImageFilePath(filePath: string): boolean {
+  const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
+  return IMAGE_EXTENSIONS.has(ext);
+}
+
 const readFileSchema = z
   .object({
     path: z.string().describe("The file path to read"),
@@ -66,6 +92,8 @@ const readFileSchema = z
 export const readFileTool: ToolDefinition<z.infer<typeof readFileSchema>> = {
   name: "read_file",
   description: `Read the content of a file from the codebase or an attachment path such as attachments:notes.txt.
+
+- Image files (png/jpg/jpeg/webp/gif/bmp/avif) are returned as a viewable image marker (\`${IMAGE_READ_MARKER} <path>\`) — the image is then visible to you in the next step. Use this to view screenshots in .dyad/screenshot/.
 
 - Batch independent file reads when several files are concretely likely to be useful.`,
   inputSchema: readFileSchema,
@@ -142,6 +170,19 @@ export const readFileTool: ToolDefinition<z.infer<typeof readFileSchema>> = {
     } catch {
       // The bounded reader below provides the user-facing filesystem error.
     }
+
+    // Images are binary — reading them as UTF-8 text fails. Return a marker
+    // instead; the handler turns it into a real image part for the next step.
+    if (isImageFilePath(canonicalFilePath)) {
+      const stat = await fs.stat(canonicalFilePath).catch(() => null);
+      if (stat && !stat.isDirectory()) {
+        if (stat.size > MAX_IMAGE_READ_BYTES) {
+          return `${IMAGE_READ_MARKER} ${displayPath}] (image too large: ${Math.round(stat.size / 1024 / 1024)} MB, max ${Math.round(MAX_IMAGE_READ_BYTES / 1024 / 1024)} MB)`;
+        }
+        return `${IMAGE_READ_MARKER} ${displayPath}]`;
+      }
+    }
+
     const shouldRedactDotenv =
       isDotenvFilePath(args.path) || isDotenvFilePath(canonicalFilePath);
 

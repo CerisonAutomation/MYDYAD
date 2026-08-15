@@ -28,8 +28,12 @@ export function GitHubIntegration() {
       } else {
         showError(t("integrations.github.failedDisconnect"));
       }
-    } catch (err: any) {
-      showError(err.message || t("integrations.github.errorDisconnect"));
+    } catch (err) {
+      showError(
+        err instanceof Error
+          ? err.message
+          : t("integrations.github.errorDisconnect"),
+      );
     } finally {
       setIsDisconnecting(false);
     }

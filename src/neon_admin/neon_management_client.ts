@@ -451,11 +451,26 @@ const DEFAULT_EMAIL_PASSWORD_CONFIG = {
 type EmailPasswordConfig = typeof DEFAULT_EMAIL_PASSWORD_CONFIG;
 
 const EMAIL_PASSWORD_CONFIG_TTL_MS = 60_000;
+const MAX_EMAIL_PASSWORD_CONFIG_CACHE_SIZE = 32;
 
 const emailPasswordConfigCache = new Map<
   string,
   { data: EmailPasswordConfig; expiry: number }
 >();
+
+function evictEmailPasswordConfigCache(): void {
+  if (emailPasswordConfigCache.size > MAX_EMAIL_PASSWORD_CONFIG_CACHE_SIZE) {
+    const excess =
+      emailPasswordConfigCache.size - MAX_EMAIL_PASSWORD_CONFIG_CACHE_SIZE;
+    const keys = emailPasswordConfigCache.keys();
+    for (let i = 0; i < excess; i++) {
+      const key = keys.next().value;
+      if (key !== undefined) {
+        emailPasswordConfigCache.delete(key);
+      }
+    }
+  }
+}
 
 export function invalidateEmailPasswordConfigCache(
   projectId: string,
@@ -485,6 +500,7 @@ export async function getCachedEmailPasswordConfig(
       data,
       expiry: Date.now() + EMAIL_PASSWORD_CONFIG_TTL_MS,
     });
+    evictEmailPasswordConfigCache();
     return data;
   } catch (error: any) {
     if (error.response?.status === 404) {
@@ -492,6 +508,7 @@ export async function getCachedEmailPasswordConfig(
         data: DEFAULT_EMAIL_PASSWORD_CONFIG,
         expiry: Date.now() + EMAIL_PASSWORD_CONFIG_TTL_MS,
       });
+      evictEmailPasswordConfigCache();
       return DEFAULT_EMAIL_PASSWORD_CONFIG;
     }
     logger.error(

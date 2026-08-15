@@ -9,6 +9,14 @@ import { VITE_CONFIG_FILES } from "@/lib/framework_constants";
 const b = recast.types.builders;
 const n = recast.types.namedTypes;
 
+// Type aliases for recast AST nodes to avoid `any`
+type AstNode = recast.types.namedTypes.Node;
+type File = recast.types.namedTypes.File;
+type Program = recast.types.namedTypes.Program;
+type CallExpression = recast.types.namedTypes.CallExpression;
+type ObjectExpression = recast.types.namedTypes.ObjectExpression;
+type ArrayExpression = recast.types.namedTypes.ArrayExpression;
+
 const NITRO_IMPORT_SOURCE = "nitro/vite";
 const NITRO_LOCAL_NAME = "nitro";
 
@@ -40,8 +48,8 @@ async function findViteConfig(appPath: string): Promise<string> {
   );
 }
 
-function findDefineConfigCallExpr(ast: any): any | null {
-  let found: any = null;
+function findDefineConfigCallExpr(ast: AstNode): CallExpression | null {
+  let found: CallExpression | null = null;
   recast.types.visit(ast, {
     visitExportDefaultDeclaration(p) {
       const decl = p.node.declaration;
@@ -58,7 +66,9 @@ function findDefineConfigCallExpr(ast: any): any | null {
   return found;
 }
 
-function getConfigObjectFromDefineConfig(callExpr: any): any | null {
+function getConfigObjectFromDefineConfig(
+  callExpr: CallExpression,
+): ObjectExpression | null {
   const arg = callExpr.arguments?.[0];
   if (!arg) return null;
   if (n.ObjectExpression.check(arg)) return arg;
@@ -79,7 +89,7 @@ function getConfigObjectFromDefineConfig(callExpr: any): any | null {
   return null;
 }
 
-function findPluginsArray(configObj: any): any | null {
+function findPluginsArray(configObj: ObjectExpression): ArrayExpression | null {
   for (const prop of configObj.properties ?? []) {
     if (
       (n.ObjectProperty.check(prop) || n.Property.check(prop)) &&
@@ -94,7 +104,7 @@ function findPluginsArray(configObj: any): any | null {
   return null;
 }
 
-function pluginsArrayContainsNitroCall(pluginsArr: any): boolean {
+function pluginsArrayContainsNitroCall(pluginsArr: ArrayExpression): boolean {
   for (const el of pluginsArr.elements ?? []) {
     if (
       el &&
@@ -113,7 +123,7 @@ type NitroBindingState =
   | { kind: "conflict"; source: string }
   | { kind: "none" };
 
-function getNitroBindingState(ast: any): NitroBindingState {
+function getNitroBindingState(ast: File): NitroBindingState {
   const program = ast.program;
   if (!program || !Array.isArray(program.body)) return { kind: "none" };
 
@@ -124,7 +134,8 @@ function getNitroBindingState(ast: any): NitroBindingState {
         ? stmt.source.value
         : "";
       for (const spec of stmt.specifiers ?? []) {
-        const localName = (spec as any).local?.name;
+        // All import specifiers have a `local` property with a name
+        const localName = "local" in spec ? spec.local?.name : undefined;
         if (localName !== NITRO_LOCAL_NAME) continue;
         if (sourceValue === NITRO_IMPORT_SOURCE) {
           return { kind: "fromNitroVite" };

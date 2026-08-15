@@ -931,8 +931,9 @@ class HostedActor<
         key: this.key,
         failure,
       });
-    } catch {
+    } catch (reportError) {
       // Failure reporting must not become another lifecycle failure.
+      console.error("[actor_host] reportError callback failed:", reportError);
     }
   }
 }
@@ -1990,8 +1991,9 @@ export class ActorHost {
   private reportFailure(machineId: string, key: unknown, failure: unknown) {
     try {
       this.options.reportError?.({ machineId, key, failure });
-    } catch {
+    } catch (reportError) {
       // Failure reporting must not become another lifecycle failure.
+      console.error("[actor_host] reportFailure callback failed:", reportError);
     }
   }
 

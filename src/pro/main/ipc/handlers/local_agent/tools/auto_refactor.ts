@@ -106,7 +106,30 @@ function findFunctions(lines: string[]): Array<{
     }
 
     // Count opening and closing braces to track nesting
-    for (const ch of line) {
+    // Skip braces inside strings and template literals
+    let inString = false;
+    let stringChar = "";
+    let inTemplate = false;
+    for (let ci = 0; ci < line.length; ci++) {
+      const ch = line[ci];
+      const prev = ci > 0 ? line[ci - 1] : "";
+      if (inString) {
+        if (ch === stringChar && prev !== "\\") inString = false;
+        continue;
+      }
+      if (inTemplate) {
+        if (ch === "`" && prev !== "\\") inTemplate = false;
+        continue;
+      }
+      if (ch === '"' || ch === "'") {
+        inString = true;
+        stringChar = ch;
+        continue;
+      }
+      if (ch === "`") {
+        inTemplate = true;
+        continue;
+      }
       if (ch === "{") {
         if (stack.length > 0) stack[stack.length - 1].braceCount++;
       } else if (ch === "}") {

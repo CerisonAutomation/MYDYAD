@@ -3,11 +3,36 @@ import log from "electron-log";
 
 const logger = log.scope("runShellCommand");
 
+/**
+ * Allowlist of commands safe to execute via shell.
+ * SECURITY: Only hardcoded, non-user-controllable commands are permitted.
+ * Never pass user-provided input as the `command` parameter.
+ */
+const SAFE_COMMANDS = new Set([
+  "node --version",
+  "where node",
+  "where.exe node",
+  "which node",
+  "command -v node",
+  "pnpm --version",
+  "npm --version",
+]);
+
 export function runShellCommand(
   command: string,
   options: { env?: NodeJS.ProcessEnv } = {},
 ): Promise<string | null> {
-  logger.debug(`Running command: ${command}`);
+  if (!SAFE_COMMANDS.has(command)) {
+    logger.error(
+      `Refusing to run unallowlisted shell command: "${command}". ` +
+        `Add it to SAFE_COMMANDS if it is safe.`,
+    );
+    return Promise.resolve(null);
+  }
+
+  // Sanitize command for logging — strip any embedded newlines or control chars
+  const safeLogCommand = command.replace(/[\r\n\x00-\x1f]/g, "?");
+  logger.debug(`Running command: ${safeLogCommand}`);
   return new Promise((resolve) => {
     let output = "";
     const process = spawn(command, {

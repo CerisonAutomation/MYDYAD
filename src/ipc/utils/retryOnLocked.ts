@@ -4,8 +4,16 @@ import { isRateLimitError } from "./retryWithRateLimit";
 
 export const logger = log.scope("retryOnLocked");
 
-export function isLockedError(error: any): boolean {
-  return error.response?.status === 423;
+/** Error type from Neon management API responses */
+interface NeonApiError {
+  response?: {
+    status?: number;
+  };
+  message?: string;
+}
+
+export function isLockedError(error: NeonApiError | null | undefined): boolean {
+  return error?.response?.status === 423;
 }
 
 /**
@@ -22,7 +30,7 @@ export function isLockedError(error: any): boolean {
  * `retryWithRateLimit` instead. Before this, non-locked callers didn't retry
  * 429s at all, so honoring them here only makes those paths more resilient.
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: NeonApiError | null | undefined): boolean {
   return isLockedError(error) || isRateLimitError(error);
 }
 
@@ -46,19 +54,19 @@ export async function retryOnLocked<T>(
     retryBranchWithChildError = false,
   }: { retryBranchWithChildError?: boolean } = {},
 ): Promise<T> {
-  let lastError: any;
+  let lastError: NeonApiError | undefined;
 
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
     try {
       const result = await operation();
       logger.info(`${context}: Success after ${attempt + 1} attempts`);
       return result;
-    } catch (error: any) {
-      lastError = error;
+    } catch (error: unknown) {
+      lastError = error as NeonApiError;
 
       // Only retry on locked (423) or rate-limit (429) errors
-      if (!isRetryableError(error)) {
-        if (retryBranchWithChildError && error.response?.status === 422) {
+      if (!isRetryableError(lastError)) {
+        if (retryBranchWithChildError && lastError?.response?.status === 422) {
           logger.info(
             `${context}: Branch with child error (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1})`,
           );

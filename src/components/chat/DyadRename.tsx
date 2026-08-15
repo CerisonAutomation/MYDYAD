@@ -8,11 +8,11 @@ import {
   DyadFilePath,
   DyadDescription,
 } from "./DyadCardPrimitives";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 
 interface DyadRenameProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   from?: string;
   to?: string;
 }

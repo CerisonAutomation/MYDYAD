@@ -1,10 +1,10 @@
-import { ipcMain } from "electron";
 import { freeAgentQuotaContracts } from "../types/free_agent_quota";
+import { registerTrustedIpcHandler } from "./trusted_handle";
 
 export const QUOTA_WINDOW_MS = 23 * 60 * 60 * 1000;
 
 export function registerFreeAgentQuotaHandlers() {
-  ipcMain.handle(
+  registerTrustedIpcHandler(
     freeAgentQuotaContracts.getFreeAgentQuotaStatus.channel,
     async () => {
       return getFreeAgentQuotaStatus();

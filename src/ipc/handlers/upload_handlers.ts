@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import { createTypedHandler } from "./base";
 import { systemContracts } from "../types/system";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { assertNotPrivateIp } from "@/pro/main/ipc/handlers/local_agent/tools/network_utils";
 
 const logger = log.scope("upload_handlers");
 
@@ -18,6 +19,9 @@ export function registerUploadHandlers() {
         DyadErrorKind.Validation,
       );
     }
+
+    // SSRF protection: block private/internal IP addresses
+    assertNotPrivateIp(url);
 
     // Validate content type
     if (!contentType || typeof contentType !== "string") {

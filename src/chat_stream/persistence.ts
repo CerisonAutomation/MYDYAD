@@ -32,6 +32,7 @@ interface QueueAggregate {
   intentIds: string[];
 }
 
+const MAX_INTENT_RECORDS = 1000;
 const intentRecords = new Map<string, IntentRecord>();
 const queues = new Map<number, QueueAggregate>();
 
@@ -46,6 +47,20 @@ function queueFor(chatId: number): QueueAggregate {
 
 function recordFor(intentId: string): IntentRecord | undefined {
   return intentRecords.get(intentId);
+}
+
+function evictIntentRecords(): void {
+  if (intentRecords.size > MAX_INTENT_RECORDS) {
+    // Remove oldest entries (Map preserves insertion order)
+    const excess = intentRecords.size - MAX_INTENT_RECORDS;
+    const keys = intentRecords.keys();
+    for (let i = 0; i < excess; i++) {
+      const key = keys.next().value;
+      if (key !== undefined) {
+        intentRecords.delete(key);
+      }
+    }
+  }
 }
 
 function releaseIntentPayload(record: IntentRecord): void {
@@ -245,6 +260,7 @@ function persistIntentInQueue(
     acceptance: "queued",
     recovery: "not-started",
   });
+  evictIntentRecords();
   aggregate.intentIds.push(intent.intentId);
   aggregate.revision += 1;
   return {
@@ -287,6 +303,7 @@ export function stageActiveIntent(
     acceptance: "queued",
     recovery: "not-started",
   });
+  evictIntentRecords();
   return null;
 }
 
@@ -304,6 +321,7 @@ export function ensureIntentRecord(intent: SerializableChatTurnIntent): void {
     acceptance: "queued",
     recovery: "not-started",
   });
+  evictIntentRecords();
 }
 
 export function getIntentAcceptance(

@@ -36,11 +36,15 @@ const deadCodeSchema = z.object({
 const DESCRIPTION = `Detect unused exports, unreachable code, and unused variables with confidence scores.
 
 - Returns list of files with issues and scores
-- Detects: unused exports, unused variables, unreachable code, unused imports
+- Detects: unused exports, unused variables, unreachable code (after return/throw/break/continue), unused imports
 - Use for code cleanup and bundle size optimization`;
 
 interface DeadCodeItem {
-  type: "unused_export" | "unused_variable" | "unused_import";
+  type:
+    | "unused_export"
+    | "unused_variable"
+    | "unused_import"
+    | "unreachable_code";
   name: string;
   line: number;
   confidence: number;
@@ -82,8 +86,9 @@ function analyzeFile(filePath: string, content: string): DeadCodeReport {
   }
 
   for (const [name, line] of exports) {
+    const wordRegex = new RegExp(`\\b${name}\\b`);
     const usageCount = lines.filter(
-      (l, i) => i !== line - 1 && l.includes(name),
+      (l, i) => i !== line - 1 && wordRegex.test(l),
     ).length;
     if (usageCount === 0) {
       items.push({ type: "unused_export", name, line, confidence: 0.75 });
@@ -91,8 +96,9 @@ function analyzeFile(filePath: string, content: string): DeadCodeReport {
   }
 
   for (const [name, line] of variables) {
+    const wordRegex = new RegExp(`\\b${name}\\b`);
     const usageCount = lines.filter(
-      (l, i) => i !== line - 1 && l.includes(name),
+      (l, i) => i !== line - 1 && wordRegex.test(l),
     ).length;
     if (usageCount === 0) {
       items.push({ type: "unused_variable", name, line, confidence: 0.85 });
@@ -100,11 +106,40 @@ function analyzeFile(filePath: string, content: string): DeadCodeReport {
   }
 
   for (const [name, line] of imports) {
+    const wordRegex = new RegExp(`\\b${name}\\b`);
     const usageCount = lines.filter(
-      (l, i) => i !== line - 1 && l.includes(name),
+      (l, i) => i !== line - 1 && wordRegex.test(l),
     ).length;
     if (usageCount === 0) {
       items.push({ type: "unused_import", name, line, confidence: 0.92 });
+    }
+  }
+
+  // Detect unreachable code: code after return/throw/break/continue
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    // Check for unconditional return/throw/break/continue
+    if (
+      /^return\b/.test(trimmed) ||
+      /^throw\b/.test(trimmed) ||
+      /^break\b/.test(trimmed) ||
+      /^continue\b/.test(trimmed)
+    ) {
+      // The next non-empty, non-comment line is unreachable
+      for (let j = i + 1; j < lines.length; j++) {
+        const nextLine = lines[j].trim();
+        if (!nextLine || nextLine.startsWith("//") || nextLine.startsWith("*"))
+          continue;
+        // Skip closing braces — they end the current block
+        if (nextLine === "}") break;
+        items.push({
+          type: "unreachable_code",
+          name: `code after ${trimmed.split("(")[0].trim()}`,
+          line: j + 1,
+          confidence: 0.9,
+        });
+        break;
+      }
     }
   }
 
@@ -169,7 +204,7 @@ export const deadCodeTool: ToolDefinition<z.infer<typeof deadCodeSchema>> = {
         const content = await Promise.race([
           fs.readFile(filePath, "utf-8"),
           sleep(READ_TIMEOUT_MS).then(() => {
-            throw new Error("Read timeout");
+            throw new DyadError("Read timeout", DyadErrorKind.Validation);
           }),
         ]);
         reports = [analyzeFile(args.file, content)];
@@ -190,7 +225,7 @@ export const deadCodeTool: ToolDefinition<z.infer<typeof deadCodeSchema>> = {
             const content = await Promise.race([
               fs.readFile(file, "utf-8"),
               sleep(READ_TIMEOUT_MS).then(() => {
-                throw new Error("Read timeout");
+                throw new DyadError("Read timeout", DyadErrorKind.Validation);
               }),
             ]);
             const relativePath = path.relative(targetAppPath, file);

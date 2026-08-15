@@ -1,4 +1,9 @@
-import React, { useDeferredValue, useMemo, useRef } from "react";
+import React, {
+  useDeferredValue,
+  useMemo,
+  useRef,
+  type ComponentProps,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -21,6 +26,7 @@ import { DyadSearchReplace } from "./DyadSearchReplace";
 import { DyadCodebaseContext } from "./DyadCodebaseContext";
 import { DyadThink } from "./DyadThink";
 import { CodeHighlight } from "./CodeHighlight";
+import { customLink } from "./VanillaMarkdownParser";
 import { useAtomValue } from "jotai";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
@@ -29,7 +35,7 @@ import {
   useChatStreamState,
 } from "@/hooks/useChatStream";
 import { isStreamActive } from "@/chat_stream/transition";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { DyadOutput } from "./DyadOutput";
 import { DyadProblemSummary } from "./DyadProblemSummary";
 import { DyadSecurityFinding } from "./DyadSecurityFinding";
@@ -68,7 +74,7 @@ import { DyadTestAssertionsCard } from "./DyadTestAssertionsCard";
 import { DyadReadGuide } from "./DyadReadGuide";
 import { DyadScript } from "./DyadScript";
 import { DyadGit } from "./DyadGit";
-import { mapActionToButton } from "./ChatInput";
+import { mapActionToButton } from "./chat-input/mapActionToButton";
 import { SuggestedAction } from "@/lib/schemas";
 import { FixAllErrorsButton } from "./FixAllErrorsButton";
 import {
@@ -86,38 +92,7 @@ interface DyadMarkdownParserProps {
   showStreamingPreview?: boolean;
 }
 
-const customLink = ({
-  node: _node,
-  ...props
-}: {
-  node?: any;
-  [key: string]: any;
-}) => (
-  <a
-    {...props}
-    onClick={(e) => {
-      const url = props.href;
-      if (url) {
-        e.preventDefault();
-        ipc.instructions.openExternalUrl(url);
-      }
-    }}
-  />
-);
-
-export const VanillaMarkdownParser = ({ content }: { content: string }) => {
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        code: CodeHighlight,
-        a: customLink,
-      }}
-    >
-      {content}
-    </ReactMarkdown>
-  );
-};
+export { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 
 /**
  * Custom component to parse markdown content with Dyad-specific tags.

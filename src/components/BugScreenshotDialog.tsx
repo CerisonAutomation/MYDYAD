@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { BugIcon, Camera } from "lucide-react";
 import { useState } from "react";
 import { ScreenshotSuccessDialog } from "./ScreenshotSuccessDialog";
+import { getLastErrorScreenshot } from "@/utils/error_screenshot";
 
 interface BugScreenshotDialogProps {
   isOpen: boolean;

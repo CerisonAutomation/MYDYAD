@@ -51,7 +51,7 @@ const codeReviewBotSchema = z
 
 type CodeReviewBotArgs = z.infer<typeof codeReviewBotSchema>;
 
-interface ReviewComment {
+export interface ReviewComment {
   line: number;
   severity: "error" | "warning" | "info";
   category: string;
@@ -147,13 +147,6 @@ const REVIEW_PATTERNS: Array<{
     message: "Loose equality with null",
     suggestion: "Use === null or === undefined",
   },
-  {
-    pattern: /(?:if|else|for|while)\s*\([^)]*\)\s*\{[^}]*\{[^}]*\{/g,
-    severity: "warning",
-    category: "complexity",
-    message: "Deep nesting detected (3+ levels)",
-    suggestion: "Reduce nesting with early returns or extraction",
-  },
   // React-specific
   {
     pattern: /useEffect\s*\(\s*\(\)\s*=>\s*\{[^}]*\}\s*,\s*\[\s*\]\s*\)/g,
@@ -195,6 +188,80 @@ const REVIEW_PATTERNS: Array<{
   },
 ];
 
+// Detect deep nesting by tracking brace depth across lines
+function detectDeepNesting(lines: string[]): ReviewComment[] {
+  const comments: ReviewComment[] = [];
+  let maxDepth = 0;
+  let maxDepthLine = 0;
+  let depth = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    let inSingle = false;
+    let inDouble = false;
+    let inTemplate = false;
+    let escape = false;
+
+    for (let j = 0; j < line.length; j++) {
+      const ch = line[j];
+
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\") {
+        escape = true;
+        continue;
+      }
+
+      if (inSingle) {
+        if (ch === "'") inSingle = false;
+        continue;
+      }
+      if (inDouble) {
+        if (ch === '"') inDouble = false;
+        continue;
+      }
+      if (inTemplate) {
+        if (ch === "`") inTemplate = false;
+        continue;
+      }
+
+      if (ch === "'") {
+        inSingle = true;
+        continue;
+      }
+      if (ch === '"') {
+        inDouble = true;
+        continue;
+      }
+      if (ch === "`") {
+        inTemplate = true;
+        continue;
+      }
+
+      if (ch === "{") depth++;
+      if (ch === "}") depth--;
+    }
+
+    if (depth > maxDepth) {
+      maxDepth = depth;
+      maxDepthLine = i + 1;
+    }
+  }
+
+  if (maxDepth > 4) {
+    comments.push({
+      line: maxDepthLine,
+      severity: "warning",
+      category: "complexity",
+      message: `Deep nesting detected (depth ${maxDepth})`,
+      suggestion: "Reduce nesting with early returns or extraction",
+    });
+  }
+  return comments;
+}
+
 // Generate review comments
 function generateReviewComments(
   content: string,
@@ -224,18 +291,41 @@ function generateReviewComments(
     }
   }
 
+  comments.push(...detectDeepNesting(lines));
+
   return comments;
 }
 
-// Calculate score
-function calculateScore(comments: ReviewComment[]): number {
+// Calculate score — complexity-aware so a perfect score requires both a
+// clean review AND reasonable structure (100/100 on a 1000-line file with
+// deep nesting would be misleading).
+export function calculateScore(
+  comments: ReviewComment[],
+  extra?: { lineCount?: number; maxDepth?: number },
+): number {
   let score = 100;
   for (const comment of comments) {
     if (comment.severity === "error") score -= 10;
     else if (comment.severity === "warning") score -= 5;
     else score -= 1;
   }
-  return Math.max(0, score);
+
+  // Maintainability deductions for structurally heavy files.
+  if (extra?.lineCount) {
+    if (extra.lineCount > 1000) score -= 10;
+    else if (extra.lineCount > 500) score -= 5;
+  }
+  if (extra?.maxDepth) {
+    if (extra.maxDepth > 8) score -= 8;
+    else if (extra.maxDepth > 6) score -= 4;
+  }
+  // Complexity comments (deep nesting) carry extra weight.
+  const complexityComments = comments.filter(
+    (c) => c.category === "complexity",
+  ).length;
+  score -= complexityComments * 2;
+
+  return Math.max(0, Math.round(score));
 }
 
 export const codeReviewBotTool: ToolDefinition<CodeReviewBotArgs> = {
@@ -294,7 +384,9 @@ Output: Review comments with line numbers, severity, and suggestions`,
             "utf-8",
           );
           const comments = generateReviewComments(content, focus);
-          const score = calculateScore(comments);
+          const score = calculateScore(comments, {
+            lineCount: content.split("\n").length,
+          });
 
           result = {
             file: args.file_path,
@@ -321,7 +413,9 @@ Output: Review comments with line numbers, severity, and suggestions`,
             throw new DyadError("diff is required", DyadErrorKind.Validation);
 
           const comments = generateReviewComments(args.diff, focus);
-          const score = calculateScore(comments);
+          const score = calculateScore(comments, {
+            lineCount: args.diff.split("\n").length,
+          });
 
           result = {
             file: "diff",
@@ -355,7 +449,9 @@ Output: Review comments with line numbers, severity, and suggestions`,
             "utf-8",
           );
           const comments = generateReviewComments(content, focus);
-          const score = calculateScore(comments);
+          const score = calculateScore(comments, {
+            lineCount: content.split("\n").length,
+          });
 
           result = {
             file: args.file_path,

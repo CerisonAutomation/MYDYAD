@@ -49,8 +49,20 @@ export async function simpleSpawn({
   } catch (error) {
     if (error instanceof BufferedProcessSpawnError) {
       logger.error(`Failed to spawn command: ${command}`, error);
+      // Truncate output in error messages to avoid leaking sensitive data
+      // (tokens, keys, etc.) into user-visible errors. Full output is in the
+      // logger above.
+      const maxLen = 500;
+      const truncatedStdout =
+        error.stdout.length > maxLen
+          ? `${error.stdout.slice(0, maxLen)}... (truncated)`
+          : error.stdout;
+      const truncatedStderr =
+        error.stderr.length > maxLen
+          ? `${error.stderr.slice(0, maxLen)}... (truncated)`
+          : error.stderr;
       throw new DyadError(
-        `Failed to spawn command: ${error.message}\n\nSTDOUT:\n${error.stdout}\n\nSTDERR:\n${error.stderr}`,
+        `Failed to spawn command: ${error.message}\n\nSTDOUT:\n${truncatedStdout}\n\nSTDERR:\n${truncatedStderr}`,
         DyadErrorKind.External,
         { cause: error },
       );
@@ -75,8 +87,19 @@ export async function simpleSpawn({
   }
 
   logger.error(`${errorPrefix}, ${failureReason}`);
+  // Truncate output in error messages to avoid leaking sensitive data.
+  // Full output is logged above.
+  const maxLen = 500;
+  const truncatedStdout =
+    result.stdout.length > maxLen
+      ? `${result.stdout.slice(0, maxLen)}... (truncated)`
+      : result.stdout;
+  const truncatedStderr =
+    result.stderr.length > maxLen
+      ? `${result.stderr.slice(0, maxLen)}... (truncated)`
+      : result.stderr;
   throw new DyadError(
-    `${errorPrefix} (${failureReason})\n\nSTDOUT:\n${result.stdout}\n\nSTDERR:\n${result.stderr}`,
+    `${errorPrefix} (${failureReason})\n\nSTDOUT:\n${truncatedStdout}\n\nSTDERR:\n${truncatedStderr}`,
     // An abort comes from the caller's AbortSignal, so it is not an upstream
     // failure worth reporting to telemetry.
     result.aborted ? DyadErrorKind.UserCancelled : DyadErrorKind.External,

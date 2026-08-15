@@ -35,6 +35,7 @@ import {
 import {
   CheckIcon,
   ChevronRightIcon,
+  Loader2,
   LockIcon,
   SearchIcon,
   SparklesIcon,
@@ -277,20 +278,30 @@ export function ModelPicker() {
       );
     }
 
-    // For cloud models, look up in the modelsByProviders data
-    if (modelsByProviders && modelsByProviders[selectedModel.provider]) {
-      const customFoundModel = modelsByProviders[selectedModel.provider].find(
-        (model) =>
-          model.type === "custom" && model.id === selectedModel.customModelId,
-      );
-      if (customFoundModel) {
-        return customFoundModel.displayName;
-      }
-      const foundModel = modelsByProviders[selectedModel.provider].find(
+    // For cloud models, look up in the modelsByProviders data.
+    // Prefer the BUILTIN provider (key = selectedModel.provider) over the
+    // DB custom provider (key = custom::provider). Builtins carry the correct
+    // display names; DB custom providers may have stale/incorrect ones.
+    const builtinModels = modelsByProviders?.[selectedModel.provider];
+    const customModels =
+      modelsByProviders?.[`custom::${selectedModel.provider}`];
+    const lookupModels = builtinModels ?? customModels;
+    if (lookupModels) {
+      const foundModel = lookupModels.find(
         (model) => model.apiName === selectedModel.name,
       );
       if (foundModel) {
         return foundModel.displayName;
+      }
+      // Also try custom model ID match as fallback
+      if (selectedModel.customModelId) {
+        const customFoundModel = lookupModels.find(
+          (model) =>
+            model.type === "custom" && model.id === selectedModel.customModelId,
+        );
+        if (customFoundModel) {
+          return customFoundModel.displayName;
+        }
       }
     }
 
@@ -784,7 +795,7 @@ export function ModelPicker() {
               {provider?.type === "cloud" &&
                 !provider?.secondary &&
                 agent2Enabled && <span className={PRO_PILL_CLASS}>Pro</span>}
-              {provider?.type === "custom" && (
+              {provider?.type === "cloud" && (
                 <span className={cn(PILL_CLASS, "bg-amber-500 text-white")}>
                   Custom
                 </span>
@@ -935,6 +946,13 @@ export function ModelPicker() {
           </button>
         </div>
         <DropdownMenuContent className="w-[17rem]" align="start">
+          {/* Loading indicator */}
+          {loading && (
+            <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
+              <Loader2 size={16} className="animate-spin mr-2" />
+              Loading models...
+            </div>
+          )}
           {/* Trial user upgrade banner */}
           {isTrial && (
             <>

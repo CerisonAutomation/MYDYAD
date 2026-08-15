@@ -2,10 +2,11 @@ import type React from "react";
 import type { ReactNode } from "react";
 import { ScanQrCode } from "lucide-react";
 import { DyadCard, DyadCardHeader, DyadBadge } from "./DyadCardPrimitives";
+import type { DyadTagNode } from "./stateTypes";
 
 interface DyadWebCrawlProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
 }
 
 export const DyadWebCrawl: React.FC<DyadWebCrawlProps> = ({

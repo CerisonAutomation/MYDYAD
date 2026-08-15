@@ -2,10 +2,11 @@ import type React from "react";
 import type { ReactNode } from "react";
 import { FileText } from "lucide-react";
 import { DyadBadge } from "./DyadCardPrimitives";
+import type { DyadTagNode } from "./stateTypes";
 
 interface DyadReadProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   path?: string;
   startLine?: string;
   endLine?: string;

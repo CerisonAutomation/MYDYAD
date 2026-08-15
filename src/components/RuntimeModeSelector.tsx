@@ -7,9 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSettings } from "@/hooks/useSettings";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
 import { showError } from "@/lib/toast";
-import { ipc } from "@/ipc/types";
 import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { useCurrentAppUrl } from "@/hooks/useAppRun";
@@ -27,20 +25,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export function shouldShowCloudSandboxOption({
-  runtimeMode,
-  cloudSandboxExperimentEnabled,
-}: {
-  runtimeMode: RuntimeMode2;
+/** Cloud sandbox removed — always returns false. Kept for backward compatibility. */
+export function shouldShowCloudSandboxOption(_input: {
+  runtimeMode: string;
   cloudSandboxExperimentEnabled: boolean;
-}) {
-  return cloudSandboxExperimentEnabled || runtimeMode === "cloud";
+}): boolean {
+  return false;
 }
 
 export function RuntimeModeSelector() {
   const { settings, updateSettings } = useSettings();
   const { t } = useTranslation(["settings", "common"]);
-  const { userBudget } = useUserBudgetInfo();
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const currentAppUrl = useCurrentAppUrl(selectedAppId);
   const [pendingRuntimeMode, setPendingRuntimeMode] =
@@ -52,12 +47,6 @@ export function RuntimeModeSelector() {
   }
 
   const isDockerMode = settings?.runtimeMode2 === "docker";
-  const isCloudMode = settings?.runtimeMode2 === "cloud";
-  const hasCloudSandboxAccess = Boolean(userBudget);
-  const showCloudSandboxOption = shouldShowCloudSandboxOption({
-    runtimeMode: settings.runtimeMode2 ?? "host",
-    cloudSandboxExperimentEnabled: !!settings.experiments?.enableCloudSandbox,
-  });
 
   const applyRuntimeModeChange = async (value: RuntimeMode2) => {
     try {
@@ -68,13 +57,6 @@ export function RuntimeModeSelector() {
   };
 
   const handleRuntimeModeChange = (value: RuntimeMode2) => {
-    if (
-      value === "cloud" &&
-      (!hasCloudSandboxAccess || !showCloudSandboxOption)
-    ) {
-      return;
-    }
-
     if (currentAppUrl.appUrl && value !== (settings.runtimeMode2 ?? "host")) {
       setPendingRuntimeMode(value);
       setIsConfirmDialogOpen(true);
@@ -104,50 +86,22 @@ export function RuntimeModeSelector() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="host">Local (default)</SelectItem>
-            <SelectItem value="docker">Docker (experimental)</SelectItem>
-            {showCloudSandboxOption && (
-              <SelectItem disabled={!hasCloudSandboxAccess} value="cloud">
-                Cloud Sandbox (Pro)
-              </SelectItem>
-            )}
+            <SelectItem value="docker">Colima (recommended)</SelectItem>
           </SelectContent>
         </Select>
       </SettingField>
-      {showCloudSandboxOption && !hasCloudSandboxAccess && (
-        <div className="text-sm text-muted-foreground bg-muted/40 p-2 rounded">
-          Cloud sandboxes are a Dyad Pro feature.{" "}
-          <button
-            type="button"
-            className="underline font-medium cursor-pointer text-primary"
-            onClick={() =>
-              ipc.instructions.openExternalUrl("https://dyad.sh/pro#ai")
-            }
-          >
-            Upgrade to Pro
-          </button>
-        </div>
-      )}
       {isDockerMode && (
         <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded">
-          ⚠️ Docker mode is <b>experimental</b> and requires{" "}
-          <button
-            type="button"
-            className="underline font-medium cursor-pointer"
-            onClick={() =>
-              ipc.instructions.openExternalUrl(
-                "https://www.docker.com/products/docker-desktop/",
-              )
-            }
-          >
-            Docker Desktop
-          </button>{" "}
-          to be installed and running
-        </div>
-      )}
-      {isCloudMode && hasCloudSandboxAccess && (
-        <div className="text-sm text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/30 p-2 rounded">
-          Cloud Sandbox runs previews remotely and gives you a shareable preview
-          link. Note: running in cloud mode consumes Pro credits.
+          ⚠️ Container mode requires Colima or Docker Desktop to be installed
+          and running. Install with:{" "}
+          <code className="bg-amber-100 dark:bg-amber-800 px-1 rounded">
+            brew install colima docker
+          </code>
+          Start with:{" "}
+          <code className="bg-amber-100 dark:bg-amber-800 px-1 rounded">
+            colima start --cpu 4 --memory 8 --disk 20 --vm-type vz --mount-type
+            virtiofs
+          </code>
         </div>
       )}
       <AlertDialog

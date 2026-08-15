@@ -21,6 +21,7 @@ const {
   mockPageWaitForTimeout,
   mockPageWaitForSelector,
   mockPageEvaluate,
+  mockPageSetViewportSize,
   mockContextClose,
   mockBrowserClose,
   mockNewPage,
@@ -28,23 +29,22 @@ const {
   mockLaunch,
   mockFsMkdir,
   mockFsWriteFile,
+  mockFsReaddir,
+  mockFsUnlink,
 } = vi.hoisted(() => ({
   mockGoto: vi.fn(),
   mockTitle: vi.fn().mockResolvedValue("Test Page"),
   mockElementClick: vi.fn(),
   mockElementFill: vi.fn(),
   mockElementTextContent: vi.fn().mockResolvedValue("Hello world"),
-  mockElementScreenshot: vi
-    .fn()
-    .mockResolvedValue(Buffer.from("png-data")),
-  mockPageScreenshot: vi
-    .fn()
-    .mockResolvedValue(Buffer.from("png-data")),
+  mockElementScreenshot: vi.fn().mockResolvedValue(Buffer.from("png-data")),
+  mockPageScreenshot: vi.fn().mockResolvedValue(Buffer.from("png-data")),
   mockPageDollar: vi.fn(),
   mockMouseWheel: vi.fn(),
   mockPageWaitForTimeout: vi.fn(),
   mockPageWaitForSelector: vi.fn(),
   mockPageEvaluate: vi.fn(),
+  mockPageSetViewportSize: vi.fn().mockResolvedValue(undefined),
   mockContextClose: vi.fn().mockResolvedValue(undefined),
   mockBrowserClose: vi.fn().mockResolvedValue(undefined),
   mockNewPage: vi.fn(),
@@ -52,6 +52,8 @@ const {
   mockLaunch: vi.fn(),
   mockFsMkdir: vi.fn().mockResolvedValue(undefined),
   mockFsWriteFile: vi.fn().mockResolvedValue(undefined),
+  mockFsReaddir: vi.fn().mockResolvedValue([]),
+  mockFsUnlink: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Set up mock return values after hoisted declarations are available
@@ -63,18 +65,25 @@ mockNewPage.mockResolvedValue({
   mouse: { wheel: mockMouseWheel },
   waitForTimeout: mockPageWaitForTimeout,
   waitForSelector: mockPageWaitForSelector,
+  waitForLoadState: vi.fn().mockResolvedValue(undefined),
   evaluate: mockPageEvaluate,
+  viewportSize: vi.fn().mockReturnValue({ width: 1280, height: 720 }),
+  setViewportSize: mockPageSetViewportSize,
+  isClosed: vi.fn().mockReturnValue(false),
 });
 
 mockNewContext.mockResolvedValue({
   newPage: mockNewPage,
   close: mockContextClose,
+  pages: vi.fn().mockReturnValue([]),
 });
 
 mockLaunch.mockResolvedValue({
   newPage: mockNewPage,
   newContext: mockNewContext,
   close: mockBrowserClose,
+  isConnected: vi.fn().mockReturnValue(true),
+  on: vi.fn(),
 });
 
 vi.mock("playwright", () => ({
@@ -86,9 +95,13 @@ vi.mock("node:fs/promises", () => ({
   default: {
     mkdir: mockFsMkdir,
     writeFile: mockFsWriteFile,
+    readdir: mockFsReaddir,
+    unlink: mockFsUnlink,
   },
   mkdir: mockFsMkdir,
   writeFile: mockFsWriteFile,
+  readdir: mockFsReaddir,
+  unlink: mockFsUnlink,
 }));
 
 // ---------------------------------------------------------------------------
@@ -98,6 +111,7 @@ vi.mock("node:fs/promises", () => ({
 import { browserControlTool } from "./browser_control";
 import { takeScreenshotTool } from "./take_screenshot";
 import { domSnapshotTool } from "./dom_snapshot";
+import { resetPreviewProbeCache } from "./browser_session";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -136,6 +150,8 @@ function createMockContext(overrides?: Partial<AgentContext>): AgentContext {
 
 function resetMocks(): void {
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
+  resetPreviewProbeCache();
   // Re-establish default mock return values after clearAllMocks
   mockGoto.mockResolvedValue({ status: () => 200 });
   mockTitle.mockResolvedValue("Test Page");
@@ -147,10 +163,13 @@ function resetMocks(): void {
   });
   mockPageScreenshot.mockResolvedValue(Buffer.from("png-data"));
   mockElementScreenshot.mockResolvedValue(Buffer.from("png-data"));
+  mockPageSetViewportSize.mockResolvedValue(undefined);
   mockLaunch.mockResolvedValue({
     newPage: mockNewPage,
     newContext: mockNewContext,
     close: mockBrowserClose,
+    isConnected: vi.fn().mockReturnValue(true),
+    on: vi.fn(),
   });
   mockFsMkdir.mockResolvedValue(undefined);
   mockFsWriteFile.mockResolvedValue(undefined);
@@ -306,11 +325,11 @@ describe("browserControlTool", () => {
       expect(result.success).toBe(false);
     });
 
-    it("rejects navigate without url", () => {
+    it("accepts navigate without url (preview fallback)", () => {
       const result = browserControlTool.inputSchema.safeParse({
         action: "navigate",
       });
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     });
   });
 
@@ -383,10 +402,7 @@ describe("browserControlTool", () => {
     });
 
     it("builds screenshot XML", () => {
-      const xml = browserControlTool.buildXml!(
-        { action: "screenshot" },
-        false,
-      );
+      const xml = browserControlTool.buildXml!({ action: "screenshot" }, false);
       expect(xml).toContain('action="screenshot"');
     });
   });
@@ -404,10 +420,12 @@ describe("browserControlTool", () => {
       expect(mockLaunch).toHaveBeenCalledOnce();
       expect(mockGoto).toHaveBeenCalledWith("https://example.com", {
         waitUntil: "domcontentloaded",
+        timeout: 15_000,
       });
       expect(result).toContain("200");
       expect(result).toContain("Test Page");
-      expect(mockBrowserClose).toHaveBeenCalledOnce();
+      // Shared session persists — browser is NOT closed per invocation.
+      expect(mockBrowserClose).not.toHaveBeenCalled();
     });
 
     it("rejects invalid URL", async () => {
@@ -432,7 +450,7 @@ describe("browserControlTool", () => {
       ).rejects.toThrow("Unsupported URL scheme");
     });
 
-    it("closes browser even on error", async () => {
+    it("keeps the shared browser session on error", async () => {
       mockGoto.mockRejectedValueOnce(new Error("Navigation failed"));
       const ctx = createMockContext();
 
@@ -443,7 +461,9 @@ describe("browserControlTool", () => {
         ),
       ).rejects.toThrow();
 
-      expect(mockBrowserClose).toHaveBeenCalledOnce();
+      // Errors do not tear down the shared session — the browser stays alive
+      // for the next tool call (idle sweep + app quit handle cleanup).
+      expect(mockBrowserClose).not.toHaveBeenCalled();
     });
 
     it("calls onXmlStream and onXmlComplete", async () => {
@@ -595,10 +615,7 @@ describe("browserControlTool", () => {
       const ctx = createMockContext();
 
       await expect(
-        browserControlTool.execute(
-          { action: "get_text", selector: "h1" },
-          ctx,
-        ),
+        browserControlTool.execute({ action: "get_text", selector: "h1" }, ctx),
       ).rejects.toThrow(DyadError);
     });
   });
@@ -772,19 +789,34 @@ describe("takeScreenshotTool", () => {
         ctx,
       );
 
-      expect(mockLaunch).toHaveBeenCalled();
       expect(result).toContain("Screenshot saved to:");
-      expect(result).toContain(".dyad/media/screenshot-");
+      expect(result).toContain(".dyad/screenshot/screenshot-");
     });
 
-    it("throws when no URL is provided (preview not yet supported)", async () => {
-      const ctx = createMockContext();
-      await expect(takeScreenshotTool.execute({}, ctx)).rejects.toThrow(
-        "Preview panel screenshot is not yet supported",
-      );
+    it("uses the running app's preview URL when no URL is provided", async () => {
+      // Pre-flight probe: stub fetch so the preview proxy appears reachable.
+      const fetchStub = vi.fn().mockResolvedValue({ status: 200 });
+      vi.stubGlobal("fetch", fetchStub);
+      try {
+        const ctx = createMockContext();
+        const result = await takeScreenshotTool.execute({}, ctx);
+
+        // appId 1 → proxy port 42101
+        expect(fetchStub).toHaveBeenCalledWith(
+          "http://localhost:42101",
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        );
+        expect(mockGoto).toHaveBeenCalledWith(
+          "http://localhost:42101",
+          expect.objectContaining({ waitUntil: "domcontentloaded" }),
+        );
+        expect(result).toContain("Screenshot saved to:");
+      } finally {
+        vi.unstubAllGlobals();
+      }
     });
 
-    it("passes viewport dimensions to browser context", async () => {
+    it("passes viewport dimensions to the page viewport", async () => {
       const ctx = createMockContext();
       await takeScreenshotTool.execute(
         {
@@ -795,21 +827,17 @@ describe("takeScreenshotTool", () => {
         ctx,
       );
 
-      expect(mockNewContext).toHaveBeenCalledWith({
-        viewport: { width: 1920, height: 1080 },
+      expect(mockPageSetViewportSize).toHaveBeenCalledWith({
+        width: 1920,
+        height: 1080,
       });
     });
 
-    it("uses default viewport when not specified", async () => {
+    it("does not resize the viewport when dimensions are not specified", async () => {
       const ctx = createMockContext();
-      await takeScreenshotTool.execute(
-        { url: "https://example.com" },
-        ctx,
-      );
+      await takeScreenshotTool.execute({ url: "https://example.com" }, ctx);
 
-      expect(mockNewContext).toHaveBeenCalledWith({
-        viewport: { width: 1280, height: 720 },
-      });
+      expect(mockPageSetViewportSize).not.toHaveBeenCalled();
     });
 
     it("passes fullPage option to page screenshot", async () => {
@@ -840,7 +868,9 @@ describe("takeScreenshotTool", () => {
     });
 
     it("throws DyadError when element selector is not found", async () => {
-      mockPageDollar.mockResolvedValueOnce(null);
+      // Persistent null across retries so the final error is the DyadError
+      // (the retry helper treats "selector" errors as retryable).
+      mockPageDollar.mockResolvedValue(null);
       const ctx = createMockContext();
 
       await expect(
@@ -853,10 +883,7 @@ describe("takeScreenshotTool", () => {
 
     it("calls onXmlStream and onXmlComplete", async () => {
       const ctx = createMockContext();
-      await takeScreenshotTool.execute(
-        { url: "https://example.com" },
-        ctx,
-      );
+      await takeScreenshotTool.execute({ url: "https://example.com" }, ctx);
 
       expect(ctx.onXmlStream).toHaveBeenCalledWith(
         expect.stringContaining("dyad-screenshot"),
@@ -996,16 +1023,13 @@ describe("domSnapshotTool", () => {
 
   describe("buildXml", () => {
     it("returns undefined when isComplete is true", () => {
-      const xml = domSnapshotTool.buildXml!(
-        { url: "https://x.com" },
-        true,
-      );
+      const xml = domSnapshotTool.buildXml!({ url: "https://x.com" }, true);
       expect(xml).toBeUndefined();
     });
 
-    it("returns undefined when no url or app_name", () => {
+    it("emits a tag even when no url or app_name (preview panel)", () => {
       const xml = domSnapshotTool.buildXml!({}, false);
-      expect(xml).toBeUndefined();
+      expect(xml).toContain("dyad-dom-snapshot");
     });
 
     it("builds XML with URL", () => {
@@ -1018,10 +1042,7 @@ describe("domSnapshotTool", () => {
     });
 
     it("builds XML with app_name", () => {
-      const xml = domSnapshotTool.buildXml!(
-        { app_name: "my-app" },
-        false,
-      );
+      const xml = domSnapshotTool.buildXml!({ app_name: "my-app" }, false);
       expect(xml).toContain("dyad-dom-snapshot");
       expect(xml).toContain("my-app");
     });
@@ -1057,9 +1078,8 @@ describe("domSnapshotTool", () => {
         ctx,
       );
 
-      expect(mockLaunch).toHaveBeenCalled();
       expect(mockGoto).toHaveBeenCalledWith("https://example.com", {
-        waitUntil: "networkidle",
+        waitUntil: "domcontentloaded",
         timeout: 30_000,
       });
       expect(result).toContain("DOM Snapshot captured successfully");
@@ -1067,11 +1087,31 @@ describe("domSnapshotTool", () => {
       expect(result).toContain("Nodes: 3");
     });
 
-    it("throws when no URL is provided", async () => {
-      const ctx = createMockContext();
-      await expect(domSnapshotTool.execute({}, ctx)).rejects.toThrow(
-        "No URL provided",
-      );
+    it("uses the running app's preview URL when no URL is provided", async () => {
+      const fetchStub = vi.fn().mockResolvedValue({ status: 200 });
+      vi.stubGlobal("fetch", fetchStub);
+      try {
+        mockPageEvaluate.mockResolvedValueOnce({
+          tree: { tag: "html", children: [] },
+          nodeCount: 1,
+          finalUrl: "http://localhost:42101",
+        });
+
+        const ctx = createMockContext();
+        const result = await domSnapshotTool.execute({}, ctx);
+
+        expect(fetchStub).toHaveBeenCalledWith(
+          "http://localhost:42101",
+          expect.anything(),
+        );
+        expect(mockGoto).toHaveBeenCalledWith(
+          "http://localhost:42101",
+          expect.objectContaining({ waitUntil: "domcontentloaded" }),
+        );
+        expect(result).toContain("DOM Snapshot captured successfully");
+      } finally {
+        vi.unstubAllGlobals();
+      }
     });
 
     it("rejects invalid URL", async () => {
@@ -1163,10 +1203,7 @@ describe("domSnapshotTool", () => {
       });
 
       const ctx = createMockContext();
-      await domSnapshotTool.execute(
-        { url: "https://example.com" },
-        ctx,
-      );
+      await domSnapshotTool.execute({ url: "https://example.com" }, ctx);
 
       expect(mockPageEvaluate).toHaveBeenCalledWith(
         expect.any(Function),
@@ -1174,7 +1211,7 @@ describe("domSnapshotTool", () => {
       );
     });
 
-    it("closes browser in finally block on success", async () => {
+    it("keeps the shared browser session after success", async () => {
       mockPageEvaluate.mockResolvedValueOnce({
         tree: { tag: "html", children: [] },
         nodeCount: 1,
@@ -1182,15 +1219,13 @@ describe("domSnapshotTool", () => {
       });
 
       const ctx = createMockContext();
-      await domSnapshotTool.execute(
-        { url: "https://example.com" },
-        ctx,
-      );
+      await domSnapshotTool.execute({ url: "https://example.com" }, ctx);
 
-      expect(mockBrowserClose).toHaveBeenCalledOnce();
+      // Shared session persists — browser is NOT closed per invocation.
+      expect(mockBrowserClose).not.toHaveBeenCalled();
     });
 
-    it("closes browser in finally block on error", async () => {
+    it("keeps the shared browser session after error", async () => {
       mockPageEvaluate.mockRejectedValueOnce(new Error("Evaluate failed"));
       const ctx = createMockContext();
 
@@ -1198,13 +1233,11 @@ describe("domSnapshotTool", () => {
         domSnapshotTool.execute({ url: "https://example.com" }, ctx),
       ).rejects.toThrow();
 
-      expect(mockBrowserClose).toHaveBeenCalledOnce();
+      expect(mockBrowserClose).not.toHaveBeenCalled();
     });
 
     it("wraps navigation errors as DyadError External", async () => {
-      mockGoto.mockRejectedValueOnce(
-        new Error("net::ERR_NAME_NOT_RESOLVED"),
-      );
+      mockGoto.mockRejectedValueOnce(new Error("net::ERR_NAME_NOT_RESOLVED"));
       const ctx = createMockContext();
 
       await expect(
@@ -1220,15 +1253,165 @@ describe("domSnapshotTool", () => {
       });
 
       const ctx = createMockContext();
-      await domSnapshotTool.execute(
-        { url: "https://example.com" },
-        ctx,
-      );
+      await domSnapshotTool.execute({ url: "https://example.com" }, ctx);
 
       expect(ctx.onXmlStream).toHaveBeenCalled();
       expect(ctx.onXmlComplete).toHaveBeenCalledWith(
         expect.stringContaining("dyad-dom-snapshot"),
       );
     });
+  });
+});
+
+// ============================================================================
+// Regression tests — fixes from the omni-audit (shared-session era)
+// ============================================================================
+
+describe("browser_control regressions", () => {
+  beforeEach(resetMocks);
+
+  it("batch coerces string-serialized steps and executes them", async () => {
+    const ctx = createMockContext();
+    mockPageDollar.mockResolvedValue({
+      click: mockElementClick,
+      fill: mockElementFill,
+      textContent: mockElementTextContent,
+      screenshot: mockElementScreenshot,
+    });
+
+    const result = await browserControlTool.execute(
+      {
+        action: "batch",
+        steps: JSON.stringify([
+          { action: "click", params: { selector: "button.submit" } },
+          { action: "get_text", params: { selector: ".result" } },
+        ]),
+      } as any,
+      ctx,
+    );
+
+    // Both steps executed (previously the loop indexed the raw string,
+    // so string steps ran against characters instead of actions).
+    expect(result).toContain("[1/2] click");
+    expect(result).toContain("[2/2] get_text");
+    expect(mockElementClick).toHaveBeenCalledOnce();
+  });
+
+  it("batch navigate step defaults to the preview URL", async () => {
+    const fetchStub = vi.fn().mockResolvedValue({ status: 200 });
+    vi.stubGlobal("fetch", fetchStub);
+    try {
+      const ctx = createMockContext();
+
+      const result = await browserControlTool.execute(
+        {
+          action: "batch",
+          steps: [{ action: "navigate", params: {} }],
+        } as any,
+        ctx,
+      );
+
+      expect(mockGoto).toHaveBeenCalledWith(
+        "http://localhost:42101",
+        expect.objectContaining({ waitUntil: "domcontentloaded" }),
+      );
+      expect(result).toContain("[1/1] navigate");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("click by ref stamps the element and clicks it", async () => {
+    const ctx = createMockContext();
+    mockPageEvaluate.mockResolvedValue(undefined);
+    mockPageDollar.mockResolvedValue({
+      click: mockElementClick,
+      fill: mockElementFill,
+      textContent: mockElementTextContent,
+      screenshot: mockElementScreenshot,
+    });
+
+    const result = await browserControlTool.execute(
+      { action: "click", ref: 3, wait_ms: 0 },
+      ctx,
+    );
+
+    expect(mockPageEvaluate).toHaveBeenCalled(); // stamping pass
+    expect(mockPageDollar).toHaveBeenCalledWith('[data-dyad-ref="3"]');
+    expect(mockElementClick).toHaveBeenCalledOnce();
+    expect(result).toContain('data-dyad-ref="3"');
+  });
+
+  it("click without selector or ref is a validation error", async () => {
+    const ctx = createMockContext();
+    await expect(
+      browserControlTool.execute({ action: "click" } as any, ctx),
+    ).rejects.toThrow("selector");
+  });
+
+  it("navigate omits double navigation (goto called once)", async () => {
+    const ctx = createMockContext();
+    await browserControlTool.execute(
+      { action: "navigate", url: "https://example.com" },
+      ctx,
+    );
+    expect(mockGoto).toHaveBeenCalledTimes(1);
+  });
+
+  it("take_screenshot rejects selector + full_page combination", async () => {
+    const ctx = createMockContext();
+    await expect(
+      takeScreenshotTool.execute(
+        { url: "https://example.com", selector: ".hero", full_page: true },
+        ctx,
+      ),
+    ).rejects.toThrow("Cannot combine");
+  });
+
+  it("take_screenshot prunes old screenshots after saving", async () => {
+    mockFsReaddir.mockResolvedValue([
+      "screenshot-1000-aaaa.png",
+      "screenshot-1001-bbbb.png",
+      "screenshot-1002-cccc.png",
+    ]);
+    const ctx = createMockContext();
+    await takeScreenshotTool.execute({ url: "https://example.com" }, ctx);
+
+    expect(mockFsReaddir).toHaveBeenCalled();
+  });
+
+  it("visual tools refuse to run when the dev server is down", async () => {
+    // Probe fails fast (connection refused) and no app process is tracked.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("fetch failed")),
+    );
+    try {
+      const ctx = createMockContext();
+      await expect(domSnapshotTool.execute({}, ctx)).rejects.toThrow(
+        /dev server is NOT running|preview proxy .* unreachable/,
+      );
+      // The page was never navigated — the check is a true pre-flight.
+      expect(mockGoto).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("visual tools proceed when the dev server is up", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ status: 200 }));
+    try {
+      mockPageEvaluate.mockResolvedValueOnce({
+        tree: { tag: "html", children: [] },
+        nodeCount: 1,
+        finalUrl: "http://localhost:42101",
+      });
+
+      const ctx = createMockContext();
+      const result = await domSnapshotTool.execute({}, ctx);
+      expect(result).toContain("DOM Snapshot captured successfully");
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

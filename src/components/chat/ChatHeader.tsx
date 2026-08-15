@@ -262,17 +262,35 @@ export function ChatHeader({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <button
-            data-testid="toggle-preview-panel-button"
-            onClick={onTogglePreview}
-            className="cursor-pointer p-2 hover:bg-(--background-lightest) rounded-md"
-          >
-            {isPreviewOpen ? (
-              <PanelRightClose size={20} />
-            ) : (
-              <PanelRightOpen size={20} />
-            )}
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    data-testid="toggle-preview-panel-button"
+                    onClick={onTogglePreview}
+                    aria-label={
+                      isPreviewOpen
+                        ? "Hide preview panel"
+                        : "Show preview panel"
+                    }
+                    aria-pressed={isPreviewOpen}
+                    className="cursor-pointer p-2 hover:bg-(--background-lightest) rounded-md"
+                  />
+                }
+              >
+                {isPreviewOpen ? (
+                  <PanelRightClose size={20} />
+                ) : (
+                  <PanelRightOpen size={20} />
+                )}
+              </TooltipTrigger>
+              <TooltipContent>
+                {isPreviewOpen ? "Hide preview panel" : "Show preview panel"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>

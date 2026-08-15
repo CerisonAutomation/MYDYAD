@@ -31,5 +31,5 @@ if [ "${#candidates[@]}" -gt 1 ]; then
   selected_index=$((random_number % ${#candidates[@]}))
 fi
 
-mkdir -p "${codex_home}"
+mkdir -p "${codex_home}" # nosemgrep: sql-injection — false positive: writing JSON config, not SQL
 (umask 077 && printf '%s' "${candidates[${selected_index}]}" > "${codex_home}/auth.json")

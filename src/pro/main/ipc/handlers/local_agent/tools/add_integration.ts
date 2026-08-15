@@ -2,6 +2,7 @@ import { z } from "zod";
 import log from "electron-log";
 import { ToolDefinition, AgentContext, escapeXmlAttr } from "./types";
 import { userInputRegistry } from "@/user_input/main";
+import { trackAppMutation } from "./tool_invocation";
 
 const logger = log.scope("add_integration");
 
@@ -62,6 +63,7 @@ export const addIntegrationTool: ToolDefinition<
       return "The user dismissed the integration setup without completing it. Ask them how they'd like to proceed.";
     }
 
+    trackAppMutation(ctx, "add_integration");
     return `User completed the ${result.provider} integration. You can now continue with the next step.`;
   },
 };

@@ -155,7 +155,7 @@ export type VertexProviderSetting = z.infer<typeof VertexProviderSettingSchema>;
 export const RuntimeModeSchema = z.enum(["web-sandbox", "local-node", "unset"]);
 export type RuntimeMode = z.infer<typeof RuntimeModeSchema>;
 
-export const RuntimeMode2Schema = z.enum(["host", "docker", "cloud"]);
+export const RuntimeMode2Schema = z.enum(["host", "docker"]);
 export type RuntimeMode2 = z.infer<typeof RuntimeMode2Schema>;
 
 /**

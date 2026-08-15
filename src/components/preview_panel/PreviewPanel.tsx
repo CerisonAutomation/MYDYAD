@@ -97,7 +97,17 @@ const ConsoleHeader = ({
   const { t } = useTranslation("home");
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      aria-label={isOpen ? "Hide system messages" : "Show system messages"}
+      aria-expanded={isOpen}
       className="flex items-start gap-2 px-4 py-1.5 border-t border-border cursor-pointer hover:bg-[var(--background-darkest)] transition-colors"
     >
       <Logs size={16} className="mt-0.5" />

@@ -2,7 +2,7 @@ import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useAutoCollapse } from "./useAutoCollapse";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 
 import { ipc } from "@/ipc/types";
 
@@ -19,7 +19,7 @@ import { getNpmPackagePageUrl } from "./npmPackageUrl";
 
 interface DyadAddDependencyProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   packages?: string;
 }
 

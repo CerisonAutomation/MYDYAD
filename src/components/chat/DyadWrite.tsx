@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { Pencil, Edit, X } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { useAutoCollapse } from "./useAutoCollapse";
 import { FileEditor } from "../preview_panel/FileEditor";
 import { useAtomValue } from "jotai";
@@ -19,7 +19,7 @@ import {
 
 interface DyadWriteProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   path?: string;
   description?: string;
 }

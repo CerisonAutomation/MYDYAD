@@ -12,6 +12,7 @@
 import log from "electron-log";
 import type { CodebaseFile } from "@/utils/codebase";
 import type { SmartContextMode } from "@/lib/schemas";
+import { quickFuzzySearch } from "./fuse_search";
 
 const logger = log.scope("local_smart_context");
 
@@ -53,50 +54,54 @@ function estimateTokens(text: string): number {
 // ─── Relevance Scoring ──────────────────────────────────────────────────────
 
 /**
- * Score file relevance to the user's goal using keyword matching and heuristics.
- * This is a simplified version of what the Dyad Engine does server-side.
+ * Score file relevance to the user's goal using Fuse.js fuzzy search.
+ * Combines fuzzy text matching with structural heuristics.
  */
 function scoreRelevance(file: CodebaseFile, goal: string): number {
-  const goalLower = goal.toLowerCase();
-  const pathLower = file.path.toLowerCase();
-  const contentLower = file.content.toLowerCase();
-
-  let score = 0;
-
-  // Path-based scoring
-  if (goalLower.includes("component") && pathLower.includes("component"))
-    score += 0.3;
-  if (goalLower.includes("hook") && pathLower.includes("hook")) score += 0.3;
-  if (
-    goalLower.includes("api") &&
-    (pathLower.includes("api") || pathLower.includes("route"))
-  )
-    score += 0.3;
-  if (goalLower.includes("test") && pathLower.includes("test")) score += 0.3;
-  if (
-    goalLower.includes("style") &&
-    (pathLower.includes("css") || pathLower.includes("style"))
-  )
-    score += 0.3;
-  if (goalLower.includes("type") && pathLower.includes("type")) score += 0.2;
-  if (goalLower.includes("util") && pathLower.includes("util")) score += 0.2;
-
-  // Content-based scoring (keyword matching)
-  const goalWords = goalLower.split(/\s+/).filter((w) => w.length > 2);
-  for (const word of goalWords) {
-    if (contentLower.includes(word)) score += 0.1;
-    if (pathLower.includes(word)) score += 0.15;
-  }
-
-  // Export/import scoring (important files export more)
+  // Fuse.js fuzzy scoring (Dendron pattern: shouldSort, distance 15)
   const exportCount = (file.content.match(/export\s/g) || []).length;
   const importCount = (file.content.match(/import\s/g) || []).length;
-  score += Math.min(exportCount / 10, 0.2);
-  score += Math.min(importCount / 20, 0.1);
-
-  // Size scoring (prefer focused files)
   const lineCount = file.content.split("\n").length;
-  if (lineCount > 100 && lineCount < 500) score += 0.1;
+
+  const results = quickFuzzySearch(
+    [
+      {
+        path: file.path,
+        content: file.content.substring(0, 2000), // cap content for performance
+        exportCount,
+        importCount,
+        lineCount,
+      },
+    ],
+    goal,
+    {
+      keys: [
+        { name: "content", weight: 0.5 },
+        { name: "path", weight: 0.4 },
+        { name: "exportCount", weight: 0.05 },
+        { name: "importCount", weight: 0.05 },
+      ],
+      threshold: 0.35,
+      distance: 150,
+      includeScore: true,
+      minMatchCharLength: 2,
+      ignoreLocation: true,
+      shouldSort: true,
+    },
+    1,
+  );
+
+  const fuseScore = results.length > 0 ? results[0].score : 0;
+
+  // Blend Fuse.js with structural heuristics
+  let score = fuseScore * 0.7;
+
+  // Export/import scoring (important files export more)
+  score += Math.min(exportCount / 10, 0.15);
+  score += Math.min(importCount / 20, 0.08);
+
+  // Size scoring (prefer focused files: 100-500 lines sweet spot)
+  if (lineCount > 50 && lineCount < 300) score += 0.07;
 
   return Math.min(score, 1.0);
 }

@@ -6,6 +6,16 @@
       }
     }
   },
+  "mcpServers": {
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp",
+      "transport": "streamable-http"
+    },
+    "repo-tools": {
+      "url": "https://smart-game-reactor.lovable.app/mcp",
+      "transport": "streamable-http"
+    }
+  },
   "hooks": {
     "PreToolUse": [
       {

@@ -11,6 +11,7 @@ import { resolveTargetAppPath } from "./resolve_app_context";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 import { walkDirectory } from "./file_utils";
+import { quickFuzzySearch } from "@/ipc/utils/fuse_search";
 
 const logger = log.scope("code_context");
 
@@ -59,37 +60,22 @@ interface SearchResult {
   type: "function" | "class" | "variable" | "comment" | "import";
 }
 
-// Simple BM25-like scoring for local semantic search
+// Fuse.js fuzzy scoring — replaces hand-rolled BM25
 function calculateScore(query: string, content: string): number {
-  const queryTerms = query.toLowerCase().split(/\s+/);
-  const contentLower = content.toLowerCase();
-  let score = 0;
-
-  for (const term of queryTerms) {
-    // Exact match
-    if (contentLower.includes(term)) {
-      score += 10;
-      // Bonus for term in first 100 chars (title/heading)
-      if (contentLower.indexOf(term) < 100) {
-        score += 5;
-      }
-    }
-
-    // Partial match
-    const words = contentLower.split(/\s+/);
-    for (const word of words) {
-      if (word.includes(term) || term.includes(word)) {
-        score += 3;
-      }
-    }
-  }
-
-  // Penalize very long files (prefer focused code)
-  const lineCount = content.split("\n").length;
-  if (lineCount > 100) score -= 2;
-  if (lineCount > 500) score -= 5;
-
-  return score;
+  const results = quickFuzzySearch(
+    [{ text: content }],
+    query,
+    {
+      keys: ["text"],
+      threshold: 0.4,
+      distance: 200,
+      includeScore: true,
+      minMatchCharLength: 2,
+      ignoreLocation: true,
+    },
+    1,
+  );
+  return results.length > 0 ? results[0].score * 20 : 0;
 }
 
 function extractCodeBlock(

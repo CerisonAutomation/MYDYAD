@@ -33,7 +33,11 @@ async function detectFormatter(appPath: string): Promise<FormatterType> {
     { file: ".prettierrc", type: "prettier" },
     { file: ".prettierrc.js", type: "prettier" },
     { file: ".prettierrc.json", type: "prettier" },
+    { file: ".prettierrc.yaml", type: "prettier" },
+    { file: ".prettierrc.yml", type: "prettier" },
     { file: "prettier.config.js", type: "prettier" },
+    { file: "prettier.config.mjs", type: "prettier" },
+    { file: "prettier.config.cjs", type: "prettier" },
     { file: "biome.json", type: "biome" },
     { file: "biome.jsonc", type: "biome" },
   ];
@@ -48,6 +52,37 @@ async function detectFormatter(appPath: string): Promise<FormatterType> {
     }
   }
 
+  // Check package.json for prettier config key
+  try {
+    const pkgRaw = await fs.readFile(
+      path.join(appPath, "package.json"),
+      "utf-8",
+    );
+    const pkg = JSON.parse(pkgRaw);
+    if (pkg.prettier) {
+      logger.log("Detected formatter: prettier (package.json key)");
+      return "prettier";
+    }
+  } catch {
+    // ignore
+  }
+
+  // Check node_modules/.bin for installed formatter binaries
+  const binChecks: Array<{ bin: string; type: FormatterType }> = [
+    { bin: "oxfmt", type: "oxfmt" },
+    { bin: "prettier", type: "prettier" },
+    { bin: "biome", type: "biome" },
+  ];
+  for (const check of binChecks) {
+    try {
+      await fs.access(path.join(appPath, "node_modules", ".bin", check.bin));
+      logger.log(`Detected formatter binary: ${check.type}`);
+      return check.type;
+    } catch {
+      // not installed
+    }
+  }
+
   // No formatter config found
   return "none";
 }
@@ -56,10 +91,16 @@ async function detectLinter(appPath: string): Promise<LinterType> {
   const checks: Array<{ file: string; type: LinterType }> = [
     { file: ".oxlintrc", type: "oxlint" },
     { file: "oxlint.config.js", type: "oxlint" },
+    { file: "oxlint.config.mjs", type: "oxlint" },
     { file: ".eslintrc", type: "eslint" },
     { file: ".eslintrc.js", type: "eslint" },
     { file: ".eslintrc.json", type: "eslint" },
+    { file: ".eslintrc.yaml", type: "eslint" },
+    { file: ".eslintrc.yml", type: "eslint" },
     { file: "eslint.config.js", type: "eslint" },
+    { file: "eslint.config.mjs", type: "eslint" },
+    { file: "eslint.config.cjs", type: "eslint" },
+    { file: "eslint.config.ts", type: "eslint" },
     { file: "biome.json", type: "biome" },
     { file: "biome.jsonc", type: "biome" },
   ];
@@ -71,6 +112,22 @@ async function detectLinter(appPath: string): Promise<LinterType> {
       return check.type;
     } catch {
       // Not found, continue
+    }
+  }
+
+  // Check node_modules/.bin for installed linter binaries
+  const binChecks: Array<{ bin: string; type: LinterType }> = [
+    { bin: "oxlint", type: "oxlint" },
+    { bin: "eslint", type: "eslint" },
+    { bin: "biome", type: "biome" },
+  ];
+  for (const check of binChecks) {
+    try {
+      await fs.access(path.join(appPath, "node_modules", ".bin", check.bin));
+      logger.log(`Detected linter binary: ${check.type}`);
+      return check.type;
+    } catch {
+      // not installed
     }
   }
 

@@ -1,5 +1,5 @@
-import { ipcMain } from "electron";
 import { z } from "zod";
+import { registerTrustedIpcHandler } from "./trusted_handle";
 
 export const UserInfoResponseSchema = z.object({
   userId: z.string().optional(),
@@ -19,20 +19,20 @@ export function parseBillingActionUrl(value: string): URL | null {
 }
 
 export function registerProHandlers() {
-  ipcMain.handle("get_subscription_status", async () => null);
-  ipcMain.handle("open_billing_action", async () => {});
-  ipcMain.handle("get_dyad_pro_status", async () => ({
+  registerTrustedIpcHandler("get_subscription_status", async () => null);
+  registerTrustedIpcHandler("open_billing_action", async () => {});
+  registerTrustedIpcHandler("get_dyad_pro_status", async () => ({
     enabled: true,
     plan: "pro",
   }));
-  ipcMain.handle("get_user_info", async () => ({
+  registerTrustedIpcHandler("get_user_info", async () => ({
     userId: "local",
     email: "local@dyad.local",
     plan: "pro",
     status: "active",
   }));
   // Stub budget handler for local mode
-  ipcMain.handle("get-user-budget", async () => ({
+  registerTrustedIpcHandler("get-user-budget", async () => ({
     budget: 999999,
     used: 0,
     remaining: 999999,

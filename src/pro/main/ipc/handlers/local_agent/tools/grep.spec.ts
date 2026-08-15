@@ -18,23 +18,18 @@ vi.mock("electron-log", () => ({
 }));
 
 // Mock only the ripgrep path resolver to point to the real binary in node_modules
-vi.mock("@/ipc/utils/ripgrep_utils", () => ({
-  getRgExecutablePath: () => {
-    const isWindows = os.platform() === "win32";
-    const executableName = isWindows ? "rg.exe" : "rg";
-    // Point to the actual ripgrep binary in node_modules
-    return path.join(
-      process.cwd(),
-      "node_modules",
-      "@vscode",
-      "ripgrep",
-      "bin",
-      executableName,
-    );
-  },
-  MAX_FILE_SEARCH_SIZE: 1024 * 1024,
-  RIPGREP_EXCLUDED_GLOBS: ["!node_modules/**", "!.git/**", "!.next/**"],
-}));
+vi.mock("@/ipc/utils/ripgrep_utils", () => {
+  // Resolve the platform-specific binary the same way the real implementation
+  // does (v1.18+ ships rg in @vscode/ripgrep-<platform>-<arch>).
+  const { createRequire } = require("node:module");
+  const req = createRequire(process.cwd() + "/package.json");
+  const { rgPath } = req("@vscode/ripgrep");
+  return {
+    getRgExecutablePath: () => rgPath,
+    MAX_FILE_SEARCH_SIZE: 1024 * 1024,
+    RIPGREP_EXCLUDED_GLOBS: ["!node_modules/**", "!.git/**", "!.next/**"],
+  };
+});
 
 describe("grepTool", () => {
   let testDir: string;

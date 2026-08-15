@@ -70,7 +70,7 @@ export async function getLanguageModelProviders(): Promise<
         envVarName:
           PROVIDER_TO_ENV_VAR[providerId as keyof typeof PROVIDER_TO_ENV_VAR] ??
           undefined,
-        type: "cloud",
+        type: "custom",
       });
     }
   }
@@ -152,7 +152,7 @@ export async function getLanguageModels({
     // Continue with empty custom models array
   }
 
-  // If it's a cloud provider, also get the hardcoded models
+  // If it's a custom provider, also get the hardcoded models
   let hardcodedModels: LanguageModel[] = [];
   if (provider.type === "cloud") {
     const builtinCatalog = await getBuiltinLanguageModelCatalog();
@@ -182,7 +182,7 @@ export async function getLanguageModels({
       }));
     } else {
       console.warn(
-        `Provider "${providerId}" is cloud type but not found in builtin catalog or MODEL_OPTIONS.`,
+        `Provider "${providerId}" is custom type but not found in builtin catalog or MODEL_OPTIONS.`,
       );
     }
   }

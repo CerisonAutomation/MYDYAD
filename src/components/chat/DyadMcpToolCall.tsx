@@ -11,10 +11,10 @@ import {
   DyadCardContent,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 
 interface DyadMcpToolCallProps {
-  node?: any;
+  node?: DyadTagNode;
   children?: React.ReactNode;
   /** Raw result string once the paired result arrives; undefined while pending. */
   resultContent?: string;

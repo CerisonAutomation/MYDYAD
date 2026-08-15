@@ -428,6 +428,7 @@ export function getUserInputReadModel({
         try {
           tasks.dispose();
         } finally {
+          revisions.clear();
           if (activeTasks === tasks) activeTasks = undefined;
           stop = undefined;
         }

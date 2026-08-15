@@ -203,7 +203,11 @@ function assertHistoryExplorerAvailable(
   _ctx: AgentContext,
 ): void {
   // Toolset exclusion is not an execution-time security boundary — re-check.
-  if (!settings.providerSettings?.auto?.apiKey) {
+  // Check if any provider has an API key configured
+  const hasAnyApiKey = Object.values(settings.providerSettings || {}).some(
+    (provider) => provider?.apiKey?.value,
+  );
+  if (!hasAnyApiKey) {
     throw new DyadError(
       "explore_chat_history requires an auto provider API key",
       DyadErrorKind.Precondition,

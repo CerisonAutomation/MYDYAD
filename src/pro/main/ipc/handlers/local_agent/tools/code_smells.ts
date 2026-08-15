@@ -67,6 +67,11 @@ interface SmellReport {
 const MAGIC_NUMBER_SAFE = new Set([
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64, 100, 256, 360, 500,
   1000, 1024, 2048, 4096, 8192, 10000, 60000, 100000,
+  // HTTP status codes
+  200, 201, 202, 204, 206, 301, 302, 304, 307, 308, 400, 401, 403, 404, 405,
+  408, 409, 410, 422, 429, 500, 501, 502, 503, 504,
+  // Common web constants (HSTS, cache, etc.)
+  86400, 604800, 2592000, 31536000, 63072000,
 ]);
 
 // Directories to exclude from test-file detection
@@ -74,6 +79,64 @@ const TEST_PATTERNS = /\.(test|spec|__tests__|__mocks__)\./;
 
 function isTestFile(filePath: string): boolean {
   return TEST_PATTERNS.test(filePath);
+}
+
+// ── Helper: count braces while skipping string/template literals ─────
+
+function countBracesSkippingStrings(line: string): {
+  open: number;
+  close: number;
+} {
+  let open = 0;
+  let close = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let escape = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escape = true;
+      continue;
+    }
+
+    if (inSingle) {
+      if (ch === "'") inSingle = false;
+      continue;
+    }
+    if (inDouble) {
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (inTemplate) {
+      if (ch === "`") inTemplate = false;
+      continue;
+    }
+
+    if (ch === "'") {
+      inSingle = true;
+      continue;
+    }
+    if (ch === '"') {
+      inDouble = true;
+      continue;
+    }
+    if (ch === "`") {
+      inTemplate = true;
+      continue;
+    }
+
+    if (ch === "{") open++;
+    if (ch === "}") close++;
+  }
+
+  return { open, close };
 }
 
 // ── Structural Detectors ─────────────────────────────────────────────
@@ -88,17 +151,20 @@ function detectLongMethod(lines: string[], filePath: string): CodeSmell[] {
     const line = lines[i];
     // Detect function/method start
     const funcMatch = line.match(
-      /(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?(?:\([^)]*\)|\w+)\s*=>|(?:public|private|protected|static|async)\s+(\w+)\s*\()/,
+      /(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?(?:\([^)]*\)|\w+)\s*=>|(?:public|private|protected|static|async)\s+(\w+)\s*\(|^\s{2,}(\w+)\s*\()/,
     );
     if (funcMatch && braceDepth === 0) {
       funcStart = i;
-      funcName = funcMatch[1] || funcMatch[2] || funcMatch[3] || "anonymous";
+      funcName =
+        funcMatch[1] ||
+        funcMatch[2] ||
+        funcMatch[3] ||
+        funcMatch[4] ||
+        "anonymous";
     }
-    // Track brace depth
-    for (const ch of line) {
-      if (ch === "{") braceDepth++;
-      if (ch === "}") braceDepth--;
-    }
+    // Track brace depth (skip braces inside string/template literals)
+    const { open, close } = countBracesSkippingStrings(line);
+    braceDepth += open - close;
     // Function ended
     if (braceDepth === 0 && funcStart >= 0) {
       const length = i - funcStart + 1;
@@ -155,10 +221,8 @@ function detectGodClass(lines: string[], _filePath: string): CodeSmell[] {
         methodCount++;
       }
     }
-    for (const ch of line) {
-      if (ch === "{") braceDepth++;
-      if (ch === "}") braceDepth--;
-    }
+    const { open, close } = countBracesSkippingStrings(line);
+    braceDepth += open - close;
     if (braceDepth === 0 && classStart >= 0) {
       const classLines = i - classStart + 1;
       if (methodCount > 20 || classLines > 500) {
@@ -194,10 +258,8 @@ function detectDeepNesting(lines: string[]): CodeSmell[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    for (const ch of line) {
-      if (ch === "{") depth++;
-      if (ch === "}") depth--;
-    }
+    const { open, close } = countBracesSkippingStrings(line);
+    depth += open - close;
     if (depth > maxDepth) {
       maxDepth = depth;
       maxDepthLine = i + 1;
@@ -350,16 +412,27 @@ function detectMissingErrorHandling(lines: string[]): CodeSmell[] {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (/^\s*await\s+/.test(line) || /\bawait\s+/.test(line)) {
-      // Check if this await is inside a try block (scan backwards up to 20 lines)
+      // Check if this await is inside a try block (scan backwards, tracking brace depth
+      // to avoid false positives from nested functions)
       let inTry = false;
-      for (let j = i - 1; j >= Math.max(0, i - 20); j--) {
+      let depth = 0;
+      for (let j = i - 1; j >= Math.max(0, i - 40); j--) {
+        const { open, close } = countBracesSkippingStrings(lines[j]);
+        depth += open - close;
+
         if (/\btry\s*\{/.test(lines[j])) {
-          inTry = true;
-          break;
+          // Only consider this try block if we haven't entered a nested scope
+          if (depth <= 0) {
+            inTry = true;
+            break;
+          }
         }
+        // If we hit a catch/finally or go above initial depth, stop
         if (/\bcatch\s*\(/.test(lines[j]) || /\bfinally\s*\{/.test(lines[j])) {
           break;
         }
+        // If depth goes negative, we've left the enclosing scope
+        if (depth < 0) break;
       }
       if (!inTry) {
         smells.push({
@@ -454,15 +527,21 @@ function detectUnusedImports(lines: string[], _filePath: string): CodeSmell[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    // Match: import { foo, bar } from "..."  or  import foo from "..."
+    // Skip pure type-only imports (they don't appear in runtime code)
+    if (/^\s*import\s+type\s+/.test(line)) continue;
+
+    // Match: import { foo, type Bar, baz } from "..."
     const namedMatch = line.match(/import\s*\{([^}]+)\}\s*from/);
     if (namedMatch) {
       const names = namedMatch[1].split(",").map((n) => {
-        const parts = n.trim().split(/\s+as\s+/);
+        const trimmed = n.trim();
+        // Skip type-only named imports: "type Foo"
+        if (/^type\s+/.test(trimmed)) return "";
+        const parts = trimmed.split(/\s+as\s+/);
         return parts[parts.length - 1].trim(); // use alias if present
       });
       for (const name of names) {
-        if (name && name !== "type") {
+        if (name) {
           imports.push({
             name,
             line: i + 1,
@@ -471,13 +550,30 @@ function detectUnusedImports(lines: string[], _filePath: string): CodeSmell[] {
         }
       }
     }
-    const defaultMatch = line.match(/import\s+(?:type\s+)?(\w+)\s+from/);
+    const defaultMatch = line.match(/import\s+(\w+)\s+from/);
     if (defaultMatch) {
       imports.push({
         name: defaultMatch[1],
         line: i + 1,
         column: line.indexOf(defaultMatch[1]),
       });
+    }
+  }
+
+  // Collect all re-exported names (they are used by downstream consumers)
+  const reExportedNames = new Set<string>();
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // export { foo, bar } from "./..."
+    const reExportMatch = line.match(/export\s*\{([^}]+)\}\s*from\s*['"]/);
+    if (reExportMatch) {
+      for (const name of reExportMatch[1].split(",")) {
+        const trimmed = name
+          .trim()
+          .split(/\s+as\s+/)[0]
+          .trim();
+        if (trimmed) reExportedNames.add(trimmed);
+      }
     }
   }
 
@@ -488,6 +584,8 @@ function detectUnusedImports(lines: string[], _filePath: string): CodeSmell[] {
   const codeContent = codeLines.join("\n");
 
   for (const imp of imports) {
+    // Re-exported names are considered used
+    if (reExportedNames.has(imp.name)) continue;
     // Check if the import name appears in the code (not in import statements)
     const regex = new RegExp(`\\b${imp.name}\\b`);
     if (!regex.test(codeContent)) {
@@ -733,7 +831,7 @@ export const codeSmellsTool: ToolDefinition<z.infer<typeof codeSmellsSchema>> =
             const content = await Promise.race([
               fs.readFile(file, "utf-8"),
               sleep(READ_TIMEOUT_MS).then(() => {
-                throw new Error("Read timeout");
+                throw new DyadError("Read timeout", DyadErrorKind.Validation);
               }),
             ]);
             const relativePath = path.relative(targetAppPath, file);

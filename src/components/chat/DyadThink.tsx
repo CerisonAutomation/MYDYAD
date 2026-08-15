@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
-import { VanillaMarkdownParser } from "./DyadMarkdownParser";
-import { CustomTagState } from "./stateTypes";
+import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { DyadTokenSavings } from "./DyadTokenSavings";
 
 interface DyadThinkProps {
-  node?: any;
+  node?: DyadTagNode;
   children?: React.ReactNode;
 }
 

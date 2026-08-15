@@ -59,7 +59,14 @@ interface OllamaModel {
 
 export async function fetchOllamaModels(): Promise<{ models: LocalModel[] }> {
   try {
-    const response = await fetch(`${getOllamaApiUrl()}/api/tags`);
+    const ollamaUrl = getOllamaApiUrl();
+    // SSRF protection: validate URL doesn't target private/internal IPs
+    const { assertNotPrivateIp } =
+      await import("@/pro/main/ipc/handlers/local_agent/tools/network_utils");
+    assertNotPrivateIp(ollamaUrl);
+    const response = await fetch(`${ollamaUrl}/api/tags`, {
+      signal: AbortSignal.timeout(10_000),
+    });
     if (!response.ok) {
       throw new DyadError(
         `Failed to fetch model: ${response.statusText}`,

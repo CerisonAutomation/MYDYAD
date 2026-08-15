@@ -12,6 +12,7 @@ import {
   ModelMessage,
   type ToolExecutionOptions,
 } from "ai";
+import fs from "node:fs/promises";
 import log from "electron-log";
 
 import { db } from "@/db";
@@ -115,6 +116,10 @@ import { addIntegrationTool } from "./tools/add_integration";
 import { writePlanTool } from "./tools/write_plan";
 import { exitPlanTool } from "./tools/exit_plan";
 import { writeAppBlueprintTool } from "./tools/write_app_blueprint";
+import { IMAGE_READ_MARKER, isImageFilePath } from "./tools/read_file";
+import { resolveAttachmentLogicalPath } from "@/ipc/utils/media_path_utils";
+import { safeJoin } from "@/ipc/utils/path_utils";
+import { resolveTargetAppPath } from "./tools/resolve_app_context";
 import { appendCancelledResponseNotice } from "@/shared/chatCancellation";
 import {
   isModelRefusal,
@@ -184,20 +189,57 @@ const RETRYABLE_STREAM_ERROR_PATTERNS = [
 interface ToolStreamingEntry {
   toolName: string;
   argsAccumulated: string;
+  lastTouchedAt: number;
 }
 const toolStreamingEntries = new Map<string, ToolStreamingEntry>();
+
+// Periodic sweep to clean up orphan entries from interrupted streams.
+// Entries older than STREAMING_ENTRY_MAX_AGE_MS are deleted (age-based),
+// so a single long-lived map can never grow unbounded.
+const STREAMING_ENTRY_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+const STREAMING_ENTRY_MAX_SIZE = 500;
+let lastStreamingEntrySweepTime = Date.now();
+
+function sweepStaleStreamingEntries(): void {
+  const now = Date.now();
+  if (now - lastStreamingEntrySweepTime < 60 * 1000) {
+    return;
+  }
+  lastStreamingEntrySweepTime = now;
+  const cutoff = now - STREAMING_ENTRY_MAX_AGE_MS;
+  for (const [key, entry] of toolStreamingEntries) {
+    if (entry.lastTouchedAt < cutoff) {
+      toolStreamingEntries.delete(key);
+    }
+  }
+  // Hard cap: if the map is still pathological (e.g. a caller never cleans
+  // up), evict oldest entries rather than growing without bound.
+  if (toolStreamingEntries.size > STREAMING_ENTRY_MAX_SIZE) {
+    const excess = toolStreamingEntries.size - STREAMING_ENTRY_MAX_SIZE;
+    const keys = toolStreamingEntries.keys();
+    for (let i = 0; i < excess; i++) {
+      const key = keys.next().value;
+      if (key !== undefined) toolStreamingEntries.delete(key);
+    }
+  }
+}
 
 function getOrCreateStreamingEntry(
   id: string,
   toolName?: string,
 ): ToolStreamingEntry | undefined {
+  sweepStaleStreamingEntries();
+  const now = Date.now();
   let entry = toolStreamingEntries.get(id);
   if (!entry && toolName) {
     entry = {
       toolName,
       argsAccumulated: "",
+      lastTouchedAt: now,
     };
     toolStreamingEntries.set(id, entry);
+  } else if (entry) {
+    entry.lastTouchedAt = now;
   }
   return entry;
 }
@@ -980,6 +1022,10 @@ export async function handleLocalAgentStream(
     let hitStepLimit = false;
     let modelRefused = false;
 
+    // Hard limit on message history to prevent unbounded memory growth in
+    // long agent sessions. When exceeded, the oldest messages are trimmed.
+    const MAX_MESSAGE_HISTORY_LENGTH = 500;
+
     // If there are persisted todos from a previous turn, inject a synthetic
     // user message so the LLM is aware of them. Inserted BEFORE the user's
     // current message so the user's actual request is the last thing the LLM
@@ -1262,6 +1308,26 @@ export async function handleLocalAgentStream(
                 }
               }
 
+              // Images read via read_file (screenshots etc.) become visible to
+              // the model: convert `[Image: <path>]` markers in tool results
+              // into real image parts injected before the next step.
+              const imageMarkers = extractImageMarkersFromStep(step);
+              if (imageMarkers.length > 0) {
+                const imageParts = await loadImagesFromMarkers(
+                  imageMarkers,
+                  ctx,
+                );
+                if (imageParts.length > 0) {
+                  pendingUserMessages.push([
+                    {
+                      type: "text",
+                      text: `[System] ${imageParts.length} image(s) were read in the previous step and are attached below for visual inspection.`,
+                    },
+                    ...imageParts,
+                  ]);
+                }
+              }
+
               if (
                 settings.enableContextCompaction === false ||
                 compactedMidTurn ||
@@ -1269,7 +1335,6 @@ export async function handleLocalAgentStream(
               ) {
                 return;
               }
-
               const toolErrors = (step.content ?? []).filter(
                 (part) => part.type === "tool-error",
               );
@@ -1711,6 +1776,13 @@ export async function handleLocalAgentStream(
           ...currentMessageHistory,
           ...messagesToAccumulate,
         ];
+        // Trim oldest messages if history exceeds hard limit to prevent
+        // unbounded memory growth in long agent sessions.
+        if (currentMessageHistory.length > MAX_MESSAGE_HISTORY_LENGTH) {
+          const excess =
+            currentMessageHistory.length - MAX_MESSAGE_HISTORY_LENGTH;
+          currentMessageHistory = currentMessageHistory.slice(excess);
+        }
       }
 
       // Check if the model ended with text only (no tool calls in the final step).
@@ -1745,6 +1817,11 @@ export async function handleLocalAgentStream(
         content: [{ type: "text", text: reminderText }],
       };
       currentMessageHistory = [...currentMessageHistory, reminderMessage];
+      if (currentMessageHistory.length > MAX_MESSAGE_HISTORY_LENGTH) {
+        const excess =
+          currentMessageHistory.length - MAX_MESSAGE_HISTORY_LENGTH;
+        currentMessageHistory = currentMessageHistory.slice(excess);
+      }
       // Note: Do NOT push reminderMessage to accumulatedAiMessages.
       // It is a synthetic message that should not be persisted to aiMessagesJson,
       // as it would pollute future conversation history with stale todo state.
@@ -2231,6 +2308,104 @@ function sendResponseChunk(
   }
 }
 
+// ============================================================================
+// Screenshot / image visibility for the model
+// ============================================================================
+
+/** Max images injected per step to bound context growth. */
+const MAX_IMAGE_INJECTIONS_PER_STEP = 4;
+
+/** Cap for images injected as viewable parts (matches read_file's cap). */
+const MAX_IMAGE_INJECT_BYTES = 15 * 1024 * 1024;
+
+/**
+ * Collect `[Image: <path>]` markers from tool results in a finished step.
+ * read_file emits these markers for image files (screenshots etc.) instead of
+ * failing on binary content; we convert them into real image parts below.
+ */
+export function extractImageMarkersFromStep(step: {
+  toolResults?: Array<{ output?: unknown }>;
+}): string[] {
+  const markers: string[] = [];
+  for (const tr of step.toolResults ?? []) {
+    if (typeof tr.output !== "string") continue;
+    const re = /\[Image:\s*([^\]]+)\]/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(tr.output)) !== null) {
+      markers.push(m[1].trim());
+    }
+  }
+  return markers;
+}
+
+/**
+ * Resolve `[Image: ...]` marker text (optionally ` (in app: X)`-suffixed) to
+ * an absolute file path, then load it as a base64 data URL image part.
+ * Returns [] for missing files, non-images, or oversized files — the marker
+ * text alone (returned by read_file) is still useful context.
+ */
+export async function loadImagesFromMarkers(
+  markers: string[],
+  ctx: AgentContext,
+): Promise<Array<{ type: "image-url"; url: string }>> {
+  const seen = new Set<string>();
+  const parts: Array<{ type: "image-url"; url: string }> = [];
+
+  for (const marker of markers.slice(0, MAX_IMAGE_INJECTIONS_PER_STEP * 2)) {
+    let rawPath = marker;
+    let appName: string | undefined;
+    const inApp = marker.match(/\(in app:\s*([^)]+)\)$/);
+    if (inApp) {
+      rawPath = marker.slice(0, inApp.index).trim();
+      appName = inApp[1].trim();
+    }
+
+    try {
+      const targetAppPath = appName
+        ? resolveTargetAppPath(ctx, appName)
+        : ctx.appPath;
+      let fullFilePath: string;
+      if (rawPath.startsWith("attachments:")) {
+        const attachment = await resolveAttachmentLogicalPath(
+          targetAppPath,
+          rawPath,
+        );
+        if (!attachment) continue;
+        fullFilePath = attachment.filePath;
+      } else {
+        fullFilePath = safeJoin(targetAppPath, rawPath);
+      }
+
+      const realPath = await fs.realpath(fullFilePath).catch(() => null);
+      if (!realPath || !isImageFilePath(realPath)) continue;
+      const stat = await fs.stat(realPath).catch(() => null);
+      if (!stat || stat.isDirectory() || stat.size > MAX_IMAGE_INJECT_BYTES) {
+        continue;
+      }
+      if (seen.has(realPath)) continue;
+      seen.add(realPath);
+
+      const buffer = await fs.readFile(realPath);
+      const ext = realPath.split(".").pop()?.toLowerCase() ?? "png";
+      const mime =
+        ext === "jpg"
+          ? "image/jpeg"
+          : ext === "svg"
+            ? "image/svg+xml"
+            : `image/${ext}`;
+      parts.push({
+        type: "image-url",
+        url: `data:${mime};base64,${buffer.toString("base64")}`,
+      });
+      if (parts.length >= MAX_IMAGE_INJECTIONS_PER_STEP) break;
+    } catch {
+      // Marker without a resolvable file — keep the text result, skip image.
+    }
+  }
+
+  return parts;
+}
+
 function getPlanningQuestionnaireErrorFromStep(step: {
   content?: unknown;
 }): string | null {
@@ -2334,7 +2509,7 @@ async function getMcpTools(
     const servers = await db
       .select()
       .from(mcpServers)
-      .where(eq(mcpServers.enabled, true as any));
+      .where(eq(mcpServers.enabled, 1 as unknown as boolean));
 
     for (const s of servers) {
       // One bad server (e.g. unconnected OAuth) must not strip tools

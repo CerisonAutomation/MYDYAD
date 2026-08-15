@@ -120,7 +120,9 @@ async function detectRuntime(forceRefresh = false): Promise<ContainerRuntime> {
 
   cachedRuntime = "none";
   runtimeCheckTime = now;
-  logger.warn("No container runtime or Node.js found");
+  logger.warn(
+    "No container runtime or Node.js found. Install Colima: brew install colima docker",
+  );
   return "none";
 }
 
@@ -172,7 +174,7 @@ async function ensureColimaRunning(config: LocalSandboxConfig): Promise<void> {
   } catch (error) {
     logger.error("Failed to start Colima:", error);
     throw new Error(
-      `Failed to start Colima: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to start Colima: ${error instanceof Error ? error.message : String(error)}\n\nInstall Colima: brew install colima docker\nStart Colima: colima start --cpu 4 --memory 8 --disk 20 --vm-type vz --mount-type virtiofs`,
     );
   }
 }

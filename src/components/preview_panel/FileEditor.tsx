@@ -4,7 +4,7 @@ import type { editor as MonacoEditor } from "monaco-editor";
 import { useLoadAppFile } from "@/hooks/useLoadAppFile";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronRight, Circle, Save } from "lucide-react";
-import "@/components/chat/monaco";
+import { beforeMonacoMount } from "@/components/chat/monaco";
 import { ipc } from "@/ipc/types";
 import { showError, showSuccess, showWarning } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
@@ -432,6 +432,7 @@ export const FileEditor = ({
           defaultLanguage={getLanguage(filePath)}
           value={value}
           theme={editorTheme}
+          beforeMount={beforeMonacoMount}
           onChange={handleEditorChange}
           onMount={handleEditorDidMount}
           options={{

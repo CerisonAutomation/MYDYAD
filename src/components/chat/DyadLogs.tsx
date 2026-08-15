@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAutoCollapse } from "./useAutoCollapse";
 import { FileText } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import {
   DyadCard,
   DyadCardHeader,
@@ -16,7 +16,7 @@ import {
 
 interface DyadLogsProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
 }
 
 export const DyadLogs: React.FC<DyadLogsProps> = ({ children, node }) => {

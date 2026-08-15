@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState, type ReactNode } from "react";
 import { Globe } from "lucide-react";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { useAutoCollapse } from "./useAutoCollapse";
 import {
   DyadCard,
@@ -14,7 +14,7 @@ import {
 
 interface DyadWebSearchProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
 }
 
 export const DyadWebSearch: React.FC<DyadWebSearchProps> = ({

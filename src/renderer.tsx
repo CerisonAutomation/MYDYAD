@@ -79,10 +79,40 @@ import {
   registerEarlyRendererEvents,
 } from "./app_wiring/early_renderer_events";
 import { clearRecorderForAppAtom } from "./atoms/recorderAtoms";
+import {
+  captureErrorScreenshot,
+  getLastErrorScreenshot,
+} from "./utils/error_screenshot";
 
 // @ts-ignore
-console.log("Running in mode:", import.meta.env.MODE);
 registerEarlyRendererEvents();
+
+// ── Global Error Screenshot Capture ──────────────────────────────────────────
+// When an unhandled error or promise rejection occurs, capture a preview
+// screenshot BEFORE PostHog reports the exception. The screenshot is stored
+// so the PostHog before_send hook can attach it to the $exception event.
+
+// Debounce: only capture one screenshot per 3 seconds to avoid flooding
+let lastGlobalCaptureTime = 0;
+const GLOBAL_CAPTURE_DEBOUNCE_MS = 3000;
+
+function onGlobalError(event: ErrorEvent) {
+  const now = Date.now();
+  if (now - lastGlobalCaptureTime < GLOBAL_CAPTURE_DEBOUNCE_MS) return;
+  lastGlobalCaptureTime = now;
+  // Fire-and-forget: capture screenshot for next PostHog exception event
+  void captureErrorScreenshot();
+}
+
+function onUnhandledRejection(event: PromiseRejectionEvent) {
+  const now = Date.now();
+  if (now - lastGlobalCaptureTime < GLOBAL_CAPTURE_DEBOUNCE_MS) return;
+  lastGlobalCaptureTime = now;
+  void captureErrorScreenshot();
+}
+
+window.addEventListener("error", onGlobalError);
+window.addEventListener("unhandledrejection", onUnhandledRejection);
 
 interface MyMeta extends Record<string, unknown> {
   showErrorToast: boolean;
@@ -121,6 +151,10 @@ const queryClient = new QueryClient({
   }),
 });
 
+// PostHog init: the SDK's init() is synchronous for local state setup but
+// fires network requests (decide endpoint) immediately. We keep it eager
+// because the client reference is needed by the before_send callback and
+// PostHogProvider. The network requests are non-blocking async I/O.
 const posthogClient = posthog.init(
   "phc_5Vxx0XT8Ug3eWROhP6mm4D6D2DgIIKT232q4AKxC2ab",
   {
@@ -170,6 +204,17 @@ const posthogClient = posthog.init(
         "sending event",
         event,
       );
+
+      // Attach auto-captured error screenshot to exception events (free, via capturePage)
+      if (event?.event === "$exception" || event?.properties?.$exception_type) {
+        const screenshot = getLastErrorScreenshot();
+        if (screenshot?.dataUrl) {
+          event.properties = event.properties || {};
+          event.properties.error_screenshot = screenshot.dataUrl;
+          event.properties.error_screenshot_timestamp = screenshot.timestamp;
+        }
+      }
+
       return event;
     },
     persistence: "localStorage",

@@ -1,6 +1,7 @@
 import type React from "react";
 import type { ReactNode } from "react";
 import { Trash2 } from "lucide-react";
+import type { DyadTagNode } from "./stateTypes";
 import {
   DyadCard,
   DyadCardHeader,
@@ -12,7 +13,7 @@ import { CustomTagState } from "./stateTypes";
 
 interface DyadDeleteProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   path?: string;
 }
 

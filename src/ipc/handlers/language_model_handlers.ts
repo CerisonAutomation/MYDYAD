@@ -147,7 +147,7 @@ export function registerLanguageModelHandlers() {
         displayName,
         apiName,
         builtinProviderId: provider.type === "cloud" ? providerId : undefined,
-        customProviderId: provider.type === "custom" ? providerId : undefined,
+        customProviderId: provider.type === "cloud" ? providerId : undefined,
         description: description || null,
         max_output_tokens: maxOutputTokens || null,
         context_window: contextWindow || null,

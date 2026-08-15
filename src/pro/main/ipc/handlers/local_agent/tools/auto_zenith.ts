@@ -16,6 +16,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const autoZenithSchema = z.object({
   operation: z
@@ -389,7 +390,9 @@ Mode Selection:
 
       case "reflect": {
         // Perform actual git log analysis
-        const { execSync } = await import("node:child_process");
+        const { exec: asyncExec } = await import("node:child_process");
+        const { promisify } = await import("node:util");
+        const execAsync = promisify(asyncExec);
         let gitLog: string[] = [];
         let recentCommits: Array<{
           hash: string;
@@ -397,7 +400,7 @@ Mode Selection:
           subject: string;
         }> = [];
         try {
-          const logOutput = execSync(
+          const { stdout: logOutput } = await execAsync(
             'git log --oneline --format="%h|%ai|%s" -10',
             { cwd: ctx.appPath, encoding: "utf-8", timeout: 5000 },
           );
@@ -416,11 +419,12 @@ Mode Selection:
 
         let branchInfo = "unknown";
         try {
-          branchInfo = execSync("git branch --show-current", {
+          const { stdout } = await execAsync("git branch --show-current", {
             cwd: ctx.appPath,
             encoding: "utf-8",
             timeout: 3000,
-          }).trim();
+          });
+          branchInfo = stdout.trim();
         } catch {
           // ignore
         }
@@ -579,7 +583,10 @@ Mode Selection:
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

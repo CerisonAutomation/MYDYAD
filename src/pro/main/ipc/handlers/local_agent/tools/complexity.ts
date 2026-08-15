@@ -96,6 +96,62 @@ function calculateCognitiveComplexity(code: string): number {
   return complexity;
 }
 
+function countBracesSkippingStrings(line: string): {
+  open: number;
+  close: number;
+} {
+  let open = 0;
+  let close = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let escape = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escape = true;
+      continue;
+    }
+
+    if (inSingle) {
+      if (ch === "'") inSingle = false;
+      continue;
+    }
+    if (inDouble) {
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (inTemplate) {
+      if (ch === "`") inTemplate = false;
+      continue;
+    }
+
+    if (ch === "'") {
+      inSingle = true;
+      continue;
+    }
+    if (ch === '"') {
+      inDouble = true;
+      continue;
+    }
+    if (ch === "`") {
+      inTemplate = true;
+      continue;
+    }
+
+    if (ch === "{") open++;
+    if (ch === "}") close++;
+  }
+
+  return { open, close };
+}
+
 function extractFunctions(
   content: string,
 ): Array<{ name: string; line: number; code: string }> {
@@ -112,10 +168,8 @@ function extractFunctions(
       let code = "";
       for (let j = i; j < lines.length; j++) {
         code += lines[j] + "\n";
-        for (const char of lines[j]) {
-          if (char === "{") braceCount++;
-          if (char === "}") braceCount--;
-        }
+        const { open, close } = countBracesSkippingStrings(lines[j]);
+        braceCount += open - close;
         if (braceCount === 0 && code.trim()) {
           functions.push({ name, line: i + 1, code });
           break;
@@ -204,7 +258,13 @@ export const complexityTool: ToolDefinition<z.infer<typeof complexitySchema>> =
             directory: args.file,
           });
           const filePath = path.join(targetAppPath, safeRelative);
-          const content = await fs.readFile(filePath, "utf-8");
+          const { setTimeout: sleep } = await import("node:timers/promises");
+          const content = await Promise.race([
+            fs.readFile(filePath, "utf-8"),
+            sleep(5000).then(() => {
+              throw new DyadError("Read timeout", DyadErrorKind.Validation);
+            }),
+          ]);
           reports = [analyzeFile(args.file, content)];
         } else {
           const files = await walkDirectory(targetAppPath, {

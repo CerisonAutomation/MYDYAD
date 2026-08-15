@@ -9,12 +9,20 @@ export const PlanHandoffKeySchema = z
   .strict();
 export type PlanHandoffKey = z.infer<typeof PlanHandoffKeySchema>;
 
+const MAX_KEY_CACHE_SIZE = 256;
 const keyCache = new Map<number, PlanHandoffKey>();
 export function planHandoffKey(sourceChatId: number): PlanHandoffKey {
   let key = keyCache.get(sourceChatId);
   if (!key) {
     key = Object.freeze({ sourceChatId });
     keyCache.set(sourceChatId, key);
+    // LRU eviction: remove oldest entries when cache exceeds max size
+    if (keyCache.size > MAX_KEY_CACHE_SIZE) {
+      const oldest = keyCache.keys().next().value;
+      if (oldest !== undefined) {
+        keyCache.delete(oldest);
+      }
+    }
   }
   return key;
 }

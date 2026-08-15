@@ -647,7 +647,7 @@
     // to wait for tagged elements to appear.
     //
     // see: https://github.com/dyad-sh/dyad/issues/2231
-    const INIT_TIMEOUT_MS = 60_000; // Wait up to 60 seconds for tagged elements
+    const INIT_TIMEOUT_MS = 10_000; // Wait up to 10 seconds for tagged elements, then initialize anyway
     let observer = null;
     let timeoutId = null;
 
@@ -727,12 +727,17 @@
           observer.disconnect();
           observer = null;
         }
-        // Only warn if we never found tagged elements
-        if (!document.body.querySelector("[data-dyad-id]")) {
-          console.warn(
-            "Dyad component selector not initialized because no DOM elements were tagged",
-          );
-        }
+        // Initialize anyway after timeout - allow selector to work without tagged elements
+        // The selector can still work with CSS selectors even without data-dyad-id
+        window.parent.postMessage(
+          {
+            type: "dyad-component-selector-initialized",
+          },
+          "*",
+        );
+        console.debug(
+          "Dyad component selector initialized (no tagged elements found)",
+        );
       }, INIT_TIMEOUT_MS);
     }, 0);
   }

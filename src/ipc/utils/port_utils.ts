@@ -23,10 +23,9 @@ export function findAvailablePort(
         Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
       const server = net.createServer();
 
-      server.once("error", (err: any) => {
+      server.once("error", (err: NodeJS.ErrnoException) => {
         if (err.code === "EADDRINUSE") {
           // Port is in use, try another one
-          console.log(`Port ${port} is in use, trying another...`);
           server.close(() => tryPort());
         } else {
           // Other error

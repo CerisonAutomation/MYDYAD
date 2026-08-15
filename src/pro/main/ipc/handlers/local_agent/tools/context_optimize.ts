@@ -11,6 +11,7 @@ import { resolveTargetAppPath } from "./resolve_app_context";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 import { walkDirectory } from "./file_utils";
+import { quickFuzzySearch } from "@/ipc/utils/fuse_search";
 
 const logger = log.scope("context_optimize");
 
@@ -66,24 +67,29 @@ function calculateRelevance(
   content: string,
   goal: string,
 ): number {
-  let score = 0;
-  const goalLower = goal.toLowerCase();
-  const pathLower = filePath.toLowerCase();
-  const contentLower = content.toLowerCase();
+  // Fuse.js fuzzy scoring (LobeHub pattern: threshold 0.35, ignoreLocation)
+  const results = quickFuzzySearch(
+    [{ filePath, content, goal }],
+    goal,
+    {
+      keys: [
+        { name: "content", weight: 0.5 },
+        { name: "filePath", weight: 0.4 },
+        { name: "goal", weight: 0.1 },
+      ],
+      threshold: 0.35,
+      distance: 150,
+      includeScore: true,
+      minMatchCharLength: 2,
+      ignoreLocation: true,
+      shouldSort: true,
+    },
+    1,
+  );
+  const fuseScore = results.length > 0 ? results[0].score : 0;
 
-  // Path relevance
-  if (goalLower.includes("test") && pathLower.includes("test")) score += 0.3;
-  if (goalLower.includes("api") && pathLower.includes("api")) score += 0.3;
-  if (goalLower.includes("auth") && pathLower.includes("auth")) score += 0.3;
-  if (goalLower.includes("component") && pathLower.includes("component"))
-    score += 0.3;
-  if (goalLower.includes("util") && pathLower.includes("util")) score += 0.2;
-
-  // Content relevance (keyword matching)
-  const keywords = goalLower.split(/\s+/).filter((w) => w.length > 3);
-  for (const keyword of keywords) {
-    if (contentLower.includes(keyword)) score += 0.1;
-  }
+  // Blend Fuse.js score with heuristics
+  let score = fuseScore * 0.7;
 
   // File size penalty (prefer smaller, focused files)
   const tokens = content.length / CHARS_PER_TOKEN;

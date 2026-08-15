@@ -483,8 +483,9 @@ export class TransactionalDispatcher<
     }
     try {
       this.options.reportError(error);
-    } catch {
+    } catch (reportError) {
       // Error reporting must never become another queue failure.
+      console.error("[dispatcher] reportError failed:", reportError);
     }
   }
 

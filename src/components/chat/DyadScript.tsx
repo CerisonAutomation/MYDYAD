@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ipc } from "@/ipc/types";
 import { CodeHighlight } from "./CodeHighlight";
+import type { DyadTagNode } from "./stateTypes";
 import type { CustomTagState } from "./stateTypes";
 import { useAutoCollapse } from "./useAutoCollapse";
 import {
@@ -15,7 +16,7 @@ import {
 } from "./DyadCardPrimitives";
 
 interface DyadScriptProps {
-  node?: any;
+  node?: DyadTagNode;
   children?: React.ReactNode;
 }
 

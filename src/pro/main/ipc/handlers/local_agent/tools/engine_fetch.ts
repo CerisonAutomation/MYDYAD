@@ -42,7 +42,10 @@ export async function engineFetch(
   }
 
   const settings = readSettings();
-  const apiKey = settings.providerSettings?.auto?.apiKey?.value;
+  // Get API key from any configured provider
+  const apiKey = Object.values(settings.providerSettings || {}).find(
+    (provider) => provider?.apiKey?.value,
+  )?.apiKey?.value;
 
   if (!apiKey) {
     throw new DyadError("API key is required", DyadErrorKind.Auth);

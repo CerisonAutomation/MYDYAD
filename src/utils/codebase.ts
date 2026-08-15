@@ -143,9 +143,13 @@ export async function readFileWithCache(
     const currentMtime = stats.mtimeMs;
 
     // If file is in cache and hasn't been modified, use cached content
+    // LRU: delete and re-insert to move this entry to the end (most recently used)
     if (fileContentCache.has(filePath)) {
       const cache = fileContentCache.get(filePath)!;
       if (cache.mtime === currentMtime) {
+        // Move to end for LRU ordering
+        fileContentCache.delete(filePath);
+        fileContentCache.set(filePath, cache);
         return cache.content;
       }
     }
@@ -158,15 +162,15 @@ export async function readFileWithCache(
       mtime: currentMtime,
     });
 
-    // Manage cache size by clearing oldest entries when it gets too large
+    // LRU eviction: remove oldest entries when cache exceeds max size
     if (fileContentCache.size > MAX_FILE_CACHE_SIZE) {
-      // Get the oldest 25% of entries to remove
       const entriesToDelete = Math.ceil(MAX_FILE_CACHE_SIZE * 0.25);
-      const keys = Array.from(fileContentCache.keys());
-
-      // Remove oldest entries (first in, first out)
+      const keys = fileContentCache.keys();
       for (let i = 0; i < entriesToDelete; i++) {
-        fileContentCache.delete(keys[i]);
+        const key = keys.next().value;
+        if (key !== undefined) {
+          fileContentCache.delete(key);
+        }
       }
     }
 

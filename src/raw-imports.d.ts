@@ -11,3 +11,21 @@ declare module "*.txt?raw" {
 }
 
 declare module "*.css";
+
+// Global Window extensions for Electron IPC and E2E test helpers
+interface Window {
+  electron?: {
+    ipcRenderer: {
+      invoke(channel: string, ...args: unknown[]): Promise<unknown>;
+      on(channel: string, listener: (...args: unknown[]) => void): void;
+      once(channel: string, listener: (...args: unknown[]) => void): void;
+      send(channel: string, ...args: unknown[]): void;
+      removeListener(
+        channel: string,
+        listener: (...args: unknown[]) => void,
+      ): void;
+    };
+  };
+  __DYAD_E2E__?: boolean;
+  __DYAD_TERMINAL__?: boolean;
+}

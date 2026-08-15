@@ -7,6 +7,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 // ============================================================================
 // Types
@@ -87,7 +88,10 @@ export function validateFilePath(
   const resolved = path.resolve(targetAppPath, filePath);
   const resolvedRoot = path.resolve(targetAppPath);
   if (!resolved.startsWith(resolvedRoot)) {
-    throw new Error("File path escapes the target app directory");
+    throw new DyadError(
+      "File path escapes the target app directory",
+      DyadErrorKind.Validation,
+    );
   }
   return resolved;
 }

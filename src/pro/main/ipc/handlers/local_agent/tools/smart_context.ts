@@ -42,6 +42,66 @@ const DESCRIPTION = `Select the most relevant files for a specific goal using in
 
 Modes: balanced (~20 files), conservative (~10 files), deep (~30 files)`;
 
+/**
+ * Scan an app directory for code files so smart_context works even when the
+ * caller did not pre-populate ctx.codebaseFiles. Mirrors the project's
+ * exclusion rules (node_modules, build output, dotfiles).
+ */
+async function scanCodebaseFiles(appPath: string): Promise<CodebaseFile[]> {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const EXCLUDED = new Set([
+    "node_modules",
+    ".git",
+    ".next",
+    ".dyad",
+    "dist",
+    "build",
+    "out",
+    ".turbo",
+    "coverage",
+    ".expo",
+  ]);
+  const MAX_FILE_BYTES = 200_000;
+  const files: CodebaseFile[] = [];
+
+  const walk = async (dir: string): Promise<void> => {
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith(".") && entry.name !== ".env") continue;
+      if (EXCLUDED.has(entry.name)) continue;
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(fullPath);
+        continue;
+      }
+      if (
+        !/\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|css|scss|html|json|md)$/.test(
+          entry.name,
+        )
+      )
+        continue;
+      try {
+        const stat = await fs.stat(fullPath);
+        if (stat.size > MAX_FILE_BYTES) continue;
+        const content = await fs.readFile(fullPath, "utf-8");
+        if (content.includes("\u0000")) continue; // skip binary
+        files.push({ path: path.relative(appPath, fullPath), content });
+      } catch {
+        /* skip unreadable */
+      }
+    }
+  };
+
+  await walk(appPath);
+  return files;
+}
+
 export const smartContextTool: ToolDefinition<
   z.infer<typeof smartContextSchema>
 > = {
@@ -69,8 +129,12 @@ export const smartContextTool: ToolDefinition<
     );
 
     try {
-      // Get codebase files from context
-      const files: CodebaseFile[] = (ctx as any).codebaseFiles || [];
+      // Get codebase files from context (fall back to a live scan when the
+      // caller did not pre-populate ctx.codebaseFiles).
+      let files: CodebaseFile[] = (ctx as any).codebaseFiles || [];
+      if (files.length === 0) {
+        files = await scanCodebaseFiles(ctx.appPath);
+      }
 
       const result = selectSmartContext({
         goal: args.goal,

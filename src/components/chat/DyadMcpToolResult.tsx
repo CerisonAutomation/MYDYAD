@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useAutoCollapse } from "./useAutoCollapse";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { CheckCircle } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
 import {
@@ -12,7 +12,7 @@ import {
 } from "./DyadCardPrimitives";
 
 interface DyadMcpToolResultProps {
-  node?: any;
+  node?: DyadTagNode;
   children?: React.ReactNode;
 }
 

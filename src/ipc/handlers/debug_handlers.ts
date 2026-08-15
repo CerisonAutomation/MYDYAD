@@ -251,7 +251,7 @@ function stripImagesFromAiMessagesJson(json: AiMessagesJsonV6 | null): unknown {
   if (!json || !json.messages) return json;
 
   // Work on raw JSON to avoid AI SDK type constraints when modifying content
-  const raw = JSON.parse(JSON.stringify(json));
+  const raw: any = structuredClone(json);
   for (const msg of raw.messages) {
     if (!Array.isArray(msg.content)) continue;
     for (let i = 0; i < msg.content.length; i++) {
@@ -537,5 +537,33 @@ export function registerDebugHandlers() {
     }
     // Write the image to the clipboard
     clipboard.writeImage(image);
+  });
+
+  // Auto-screenshot for error reporting — captures the main window and returns
+  // a base64 PNG data URL that can be attached to error telemetry events.
+  // Uses a small resize to keep the payload under 500 KB for PostHog.
+  createTypedHandler(systemContracts.captureErrorScreenshot, async () => {
+    const win =
+      BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+    if (!win) {
+      return { dataUrl: "", timestamp: Date.now() };
+    }
+
+    try {
+      const image = await win.capturePage();
+      if (!image || image.isEmpty()) {
+        return { dataUrl: "", timestamp: Date.now() };
+      }
+
+      // Resize to max 800px wide to keep base64 payload small (~200-400 KB)
+      const resized = image.resize({ width: 800 });
+      const dataUrl = resized.toDataURL();
+
+      return { dataUrl, timestamp: Date.now() };
+    } catch (err) {
+      // Never let screenshot failure block error reporting
+      log.warn("captureErrorScreenshot failed:", err);
+      return { dataUrl: "", timestamp: Date.now() };
+    }
   });
 }

@@ -4,7 +4,6 @@ import { z } from "zod";
 import log from "electron-log";
 import { ToolDefinition, AgentContext, escapeXmlAttr } from "./types";
 import { lstatIfExists, prepareDeletePath } from "@/ipc/utils/path_utils";
-import { statSync } from "node:fs";
 import { gitRemove } from "@/ipc/utils/git_utils";
 import { deleteSupabaseFunction } from "../../../../../../supabase_admin/supabase_management_client";
 import {

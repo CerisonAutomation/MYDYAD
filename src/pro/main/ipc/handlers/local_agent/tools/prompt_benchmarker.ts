@@ -17,6 +17,7 @@ import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
 import { escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const promptBenchmarkerSchema = z.object({
   operation: z.enum([
@@ -584,7 +585,10 @@ Output: Detailed benchmark report with statistical analysis`,
 
       case "ab_test": {
         if (!args.variant_a || !args.variant_b) {
-          throw new Error("variant_a and variant_b are required for ab_test");
+          throw new DyadError(
+            "variant_a and variant_b are required for ab_test",
+            DyadErrorKind.Validation,
+          );
         }
 
         ctx.onXmlStream(
@@ -621,7 +625,10 @@ Output: Detailed benchmark report with statistical analysis`,
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

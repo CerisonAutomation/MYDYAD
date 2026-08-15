@@ -108,7 +108,9 @@ export function initializeDatabase(): BetterSQLite3Database<typeof schema> & {
   }
 
   // Run a checkpoint on startup to clear any WAL bloat from a previous
-  // unclean shutdown. TRUNCATE mode reclaims disk space immediately.
+  // unclean shutdown. PASSIVE mode never blocks readers/writers — it
+  // checkpoint frames that are already committed and leaves the rest for
+  // later. This avoids stalling the main thread during startup.
   try {
     const walSize = fs.statSync(`${dbPath}-wal`).size;
     if (walSize > 1024 * 1024) {
@@ -116,7 +118,7 @@ export function initializeDatabase(): BetterSQLite3Database<typeof schema> & {
       logger.log(
         `WAL file is ${(walSize / 1024 / 1024).toFixed(1)}MB, running checkpoint...`,
       );
-      sqlite.pragma("wal_checkpoint(TRUNCATE)");
+      sqlite.pragma("wal_checkpoint(PASSIVE)");
       logger.log("WAL checkpoint complete");
     }
   } catch (error) {

@@ -12,6 +12,7 @@ import {
 import { localImageGeneration } from "./local_image_generation";
 import { DYAD_MEDIA_DIR_NAME } from "@/ipc/utils/media_path_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { assertNotPrivateIp } from "./network_utils";
 
 const logger = log.scope("generate_image");
 
@@ -66,7 +67,11 @@ async function saveGeneratedImage(
     await fs.writeFile(filePath, buffer);
   } else if (imageData.url.startsWith("http")) {
     // Download from URL (Pollinations.ai)
-    const response = await fetch(imageData.url);
+    // Validate URL doesn't target private IPs (SSRF protection)
+    assertNotPrivateIp(imageData.url);
+    const response = await fetch(imageData.url, {
+      signal: AbortSignal.timeout(30_000),
+    });
     if (!response.ok) {
       throw new DyadError(
         `Failed to download generated image: ${response.status}`,

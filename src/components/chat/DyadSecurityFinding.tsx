@@ -11,7 +11,7 @@ import {
   SeverityBadge,
   type SecurityLevel,
 } from "@/components/security/severity";
-import { VanillaMarkdownParser } from "./DyadMarkdownParser";
+import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 
 const VALID_LEVELS: readonly SecurityLevel[] = [
   "critical",

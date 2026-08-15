@@ -50,12 +50,20 @@ interface ThinkingState {
   branches: Record<string, ThoughtData[]>;
 }
 
+const MAX_THINKING_STATES = 100;
 const thinkingStates = new Map<string, ThinkingState>();
 
 function getState(ctx: AgentContext): ThinkingState {
   const key = `${ctx.appId}-${ctx.chatId}`;
   if (!thinkingStates.has(key)) {
     thinkingStates.set(key, { thoughtHistory: [], branches: {} });
+    // LRU eviction: remove oldest entries when cache exceeds max size
+    if (thinkingStates.size > MAX_THINKING_STATES) {
+      const oldest = thinkingStates.keys().next().value;
+      if (oldest !== undefined) {
+        thinkingStates.delete(oldest);
+      }
+    }
   }
   return thinkingStates.get(key)!;
 }

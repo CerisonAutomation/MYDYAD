@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getUserDataPath } from "../paths/paths";
+import { getUserDataPath } from "../paths/user_data_path";
 import {
   LastKnownPerformanceSchema,
   SecretSchema,

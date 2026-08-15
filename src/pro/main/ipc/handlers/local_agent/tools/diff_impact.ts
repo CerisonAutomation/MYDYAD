@@ -29,9 +29,11 @@ async function runGit(root: string, args: string[]): Promise<string> {
   }
 }
 
-/** Validate that a ref string looks like a safe git ref (branch, tag, or SHA). */
-function isValidGitRef(ref: string): boolean {
-  return /^[a-zA-Z0-9._/\-@]+$/.test(ref);
+/** Validate that a ref string looks like a safe git ref (branch, tag, or SHA).
+ *  Allows git rev syntax: ~ (HEAD~1), ^ (HEAD^), ! (rev!).
+ */
+export function isValidGitRef(ref: string): boolean {
+  return /^[a-zA-Z0-9._/\-@~^!]+$/.test(ref) && ref.length <= 100;
 }
 
 const diffImpactSchema = z.object({
@@ -96,6 +98,23 @@ async function analyzeDiff(
     }
   }
 
+  // Count added/deleted lines per file (best-effort; empty when numstat fails).
+  const numstatOutput = await runGit(root, [
+    "diff",
+    "--numstat",
+    `${baseRef}...${headRef}`,
+  ]);
+  const changeByPath = new Map<string, number>();
+  for (const line of numstatOutput.split("\n").filter(Boolean)) {
+    const [added, deleted, filePath] = line.split("\t");
+    if (filePath && /^\d+$/.test(added) && /^\d+$/.test(deleted)) {
+      changeByPath.set(filePath, Number(added) + Number(deleted));
+    }
+  }
+  for (const file of directChanges) {
+    file.changes = changeByPath.get(file.path) ?? 0;
+  }
+
   // Find affected files through import analysis
   const affectedFiles: string[] = [];
   const testFiles: string[] = [];
@@ -116,16 +135,23 @@ async function analyzeDiff(
     affectedFiles.push(...importingFiles);
 
     // Find corresponding test files
-    const _testPattern = file.path.replace(/\.(ts|tsx|js|jsx)$/, ".test.$1");
-    const _specPattern = file.path.replace(/\.(ts|tsx|js|jsx)$/, ".spec.$1");
-    if (
-      importingFiles.some((f) => f.includes(".test.") || f.includes(".spec."))
-    ) {
-      testFiles.push(
-        ...importingFiles.filter(
-          (f) => f.includes(".test.") || f.includes("."),
-        ),
-      );
+    const testPattern = file.path.replace(/\.(ts|tsx|js|jsx)$/, ".test.$1");
+    const specPattern = file.path.replace(/\.(ts|tsx|js|jsx)$/, ".spec.$1");
+    // A test file is one that references the changed module by name and is
+    // itself a test/spec file (or lives under __tests__).
+    const isTestFile = (f: string) =>
+      /(\.test\.|\.spec\.|\b__tests__\b)/.test(f);
+    if (importingFiles.some(isTestFile)) {
+      testFiles.push(...importingFiles.filter(isTestFile));
+    } else if (testPattern || specPattern) {
+      // Direct sibling test files are the strongest signal — check both
+      // conventional names in the repo via git ls-files.
+      const sibling = await runGit(root, [
+        "ls-files",
+        testPattern,
+        specPattern,
+      ]);
+      testFiles.push(...sibling.split("\n").filter(Boolean));
     }
   }
 
@@ -197,7 +223,7 @@ export const diffImpactTool: ToolDefinition<z.infer<typeof diffImpactSchema>> =
       // Validate ref strings to prevent git argument injection
       if (!isValidGitRef(baseRef) || !isValidGitRef(headRef)) {
         throw new DyadError(
-          "Invalid ref: only alphanumeric, dots, slashes, hyphens, underscores, and @ are allowed",
+          "Invalid ref: only alphanumeric, dots, slashes, hyphens, underscores, @, ~, ^, and ! are allowed",
           DyadErrorKind.Validation,
         );
       }
@@ -216,7 +242,7 @@ export const diffImpactTool: ToolDefinition<z.infer<typeof diffImpactSchema>> =
 
         resultText += `📁 Direct Changes (${result.directChanges.length}):\n`;
         result.directChanges.forEach((f) => {
-          resultText += `  - [${f.status}] ${f.path}\n`;
+          resultText += `  - [${f.status}] ${f.path} (${f.changes} line(s) changed)\n`;
         });
 
         resultText += `\n🔗 Affected Files (${result.affectedFiles.length}):\n`;

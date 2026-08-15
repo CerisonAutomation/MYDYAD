@@ -5,7 +5,7 @@ import { useAutoCollapse } from "./useAutoCollapse";
 import { AlertTriangle, Database } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import {
   DyadCard,
   DyadCardHeader,
@@ -21,7 +21,7 @@ import {
 
 interface DyadExecuteSqlProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   description?: string;
 }
 

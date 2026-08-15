@@ -69,7 +69,7 @@ describe("stopAppByInfo", () => {
     const appInfo: RunningAppInfo = {
       process: null,
       processId: 1,
-      mode: "cloud",
+      mode: "host",
       cloudSandboxId: "sandbox-1",
       lastViewedAt: Date.now(),
       cloudLogAbortController,
@@ -99,7 +99,7 @@ describe("stopAppByInfo", () => {
     const appInfo: RunningAppInfo = {
       process: null,
       processId: 1,
-      mode: "cloud",
+      mode: "host",
       cloudSandboxId: "sandbox-1",
       lastViewedAt: Date.now(),
       cloudLogAbortController,
@@ -235,7 +235,7 @@ describe("getRunningAppProcessPids", () => {
     runningApps.set(3, {
       process: null,
       processId: 3,
-      mode: "cloud",
+      mode: "host",
       lastViewedAt: Date.now(),
     });
 

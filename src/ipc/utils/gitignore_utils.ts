@@ -5,6 +5,7 @@ import path from "node:path";
 
 const logger = log.scope("gitignore_utils");
 
+const MAX_MATCHER_CACHE_SIZE = 128;
 const matcherCache = new Map<string, { mtimeMs: number; matcher: Ignore }>();
 
 async function loadMatcher(gitIgnorePath: string): Promise<Ignore | null> {
@@ -17,6 +18,13 @@ async function loadMatcher(gitIgnorePath: string): Promise<Ignore | null> {
 
     const matcher = ignore().add(await fs.readFile(gitIgnorePath, "utf-8"));
     matcherCache.set(gitIgnorePath, { mtimeMs: stats.mtimeMs, matcher });
+    // LRU eviction: remove oldest entries when cache exceeds max size
+    if (matcherCache.size > MAX_MATCHER_CACHE_SIZE) {
+      const oldest = matcherCache.keys().next().value;
+      if (oldest !== undefined) {
+        matcherCache.delete(oldest);
+      }
+    }
     return matcher;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {

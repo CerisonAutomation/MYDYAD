@@ -856,6 +856,8 @@ export function registerChatStreamHandlers() {
     chatStreamAdmissionBlockCounts.clear();
     admissionPendingStreams.clear();
     pendingActorStreamCancellations.clear();
+    cancelledActorInvocations.clear();
+    executionObservers.clear();
     resolveAllAdmissionWaiters(streamAdmissionWaiters);
     resolveAllAdmissionWaiters(chatStreamAdmissionWaiters);
   });
@@ -2101,9 +2103,12 @@ This conversation includes one or more image attachments. When the user uploads 
                 logger.log("Total tokens used: unknown");
               }
             },
-            onError: (error: any) => {
-              let errorMessage = (error as any)?.error?.message;
-              const responseBody = error?.error?.responseBody;
+            onError: (error: unknown) => {
+              const errorObj = error as {
+                error?: { message?: string; responseBody?: string };
+              };
+              let errorMessage = errorObj?.error?.message;
+              const responseBody = errorObj?.error?.responseBody;
               if (errorMessage && responseBody) {
                 errorMessage += "\n\nDetails: " + responseBody;
               }

@@ -4,13 +4,21 @@ import { LightbulbIcon } from "lucide-react";
 import { ErrorComponentProps } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 import { ipc } from "@/ipc/types";
+import { logger } from "@/utils/structured_logger";
 
 export function ErrorBoundary({ error }: ErrorComponentProps) {
   const [isLoading, setIsLoading] = useState(false);
   const posthog = usePostHog();
 
   useEffect(() => {
-    console.error("An error occurred in the route:", error);
+    // Log with structured logger
+    logger.error("Route error occurred", {
+      error,
+      component: "ErrorBoundary",
+      route: window.location.pathname,
+    });
+
+    // Also capture in PostHog for analytics
     posthog.captureException(error);
   }, [error]);
 
@@ -64,7 +72,9 @@ ${debugInfo.logs.slice(-3_500) || "No logs available"}
       // Open the pre-filled GitHub issue page
       await ipc.instructions.openExternalUrl(githubIssueUrl);
     } catch (err) {
-      console.error("Failed to prepare bug report:", err);
+      logger.error("Failed to prepare bug report", {
+        error: err instanceof Error ? err : String(err),
+      });
       // Fallback to opening the regular GitHub issue page
       ipc.instructions.openExternalUrl(
         "https://github.com/dyad-sh/dyad/issues/new",

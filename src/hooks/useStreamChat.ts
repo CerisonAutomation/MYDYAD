@@ -16,8 +16,20 @@ import {
 import { convertFileAttachmentsToChatAttachments } from "@/lib/chatAttachmentConversion";
 import { chatAttachmentToFileAttachment } from "@/lib/attachment_conversion";
 
+let _fallbackCounter = 0;
+
 export function getRandomNumberId() {
-  return Math.floor(Math.random() * 1_000_000_000_000_000);
+  // Cryptographically random 15-digit id (crypto.randomUUID in renderer;
+  // deterministic counter fallback where the Web Crypto API is unavailable).
+  const uuid = (globalThis as any).crypto?.randomUUID?.() ?? null;
+  if (uuid) {
+    const digits = uuid.replace(/[^0-9]/g, "");
+    if (digits.length >= 15) return Number(digits.slice(0, 15));
+  }
+  _fallbackCounter = (_fallbackCounter + 1) % 1_000_000;
+  return Number(
+    `${Date.now()}${String(_fallbackCounter).padStart(6, "0")}`.slice(0, 15),
+  );
 }
 
 /**

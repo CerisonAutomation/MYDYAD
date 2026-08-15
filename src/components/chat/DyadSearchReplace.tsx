@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { Search, ArrowLeftRight } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { useAutoCollapse } from "./useAutoCollapse";
 import { parseSearchReplaceBlocks } from "@/pro/shared/search_replace_parser";
 import {
@@ -19,7 +19,7 @@ import {
 
 interface DyadSearchReplaceProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
   path?: string;
   description?: string;
 }

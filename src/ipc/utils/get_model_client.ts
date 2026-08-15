@@ -90,17 +90,17 @@ export async function getModelClient(
   const isDyadProEnabledForRequest = false; // Dyad engine disabled
 
   // --- Handle specific provider ---
-  // Match provider: prefer custom providers (DB-stored keys) over builtins.
-  // When a custom provider has the same name as a builtin, the custom one
-  // carries the actual API key and must take priority.
+  // Match provider: prefer BUILTIN providers over custom DB entries.
+  // Builtins have proper switch-case handling (e.g. opencode, openai, anthropic).
+  // Custom DB entries (custom::*) are fallback for user-added endpoints.
   const providerConfig =
+    allProviders.find((p) => p.id === model.provider) ??
     allProviders.find((p) => p.id === `custom::${model.provider}`) ??
     allProviders.find(
       (p) =>
         p.name.toLowerCase() === model.provider.toLowerCase() &&
         p.type === "custom",
-    ) ??
-    allProviders.find((p) => p.id === model.provider);
+    );
 
   if (!providerConfig) {
     throw new DyadError(
@@ -593,6 +593,12 @@ function getRegularModelClient(
       };
     }
     case "opencode": {
+      if (!apiKey) {
+        throw new DyadError(
+          `Missing API key for OpenCode provider. Set OPENCODE_API_KEY in your .env file or add it in Settings → Model Providers.`,
+          DyadErrorKind.NotFound,
+        );
+      }
       const provider = createOpenAICompatible({
         name: "opencode",
         baseURL: "https://opencode.ai/zen/go/v1",

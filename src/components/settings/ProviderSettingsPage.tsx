@@ -110,8 +110,7 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
     }
   }, [providerData?.id]);
 
-  const supportsCustomModels =
-    providerData?.type === "custom" || providerData?.type === "cloud";
+  const supportsCustomModels = providerData?.type === "cloud";
 
   const isDyad = provider === "auto";
 

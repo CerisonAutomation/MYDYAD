@@ -9,15 +9,25 @@ import { normalizePath } from "../../../shared/normalizePath";
 const EXCLUDED_DIRS = ["node_modules", ".git", ".next"];
 
 /**
- * Recursively gets all files in a directory, excluding node_modules and .git
+ * Recursively gets all files in a directory, excluding node_modules and .git.
  * @param dir The directory to scan
  * @param baseDir The base directory for calculating relative paths
+ * @param opts Optional limits to prevent unbounded traversal
  * @returns Array of file paths relative to the base directory
  */
 export async function getFilesRecursively(
   dir: string,
   baseDir: string,
+  opts?: { maxDepth?: number; maxFiles?: number },
+  _depth = 0,
 ): Promise<string[]> {
+  const maxDepth = opts?.maxDepth ?? 30;
+  const maxFiles = opts?.maxFiles ?? 10_000;
+
+  if (_depth > maxDepth) {
+    return [];
+  }
+
   let dirents;
   try {
     dirents = await fsPromises.readdir(dir, { withFileTypes: true });
@@ -29,12 +39,18 @@ export async function getFilesRecursively(
   const files: string[] = [];
 
   for (const dirent of dirents) {
+    if (files.length >= maxFiles) {
+      break;
+    }
+
     const res = path.join(dir, dirent.name);
     if (dirent.isDirectory()) {
       // For directories, concat the results of recursive call
       // Exclude specified directories
       if (!EXCLUDED_DIRS.includes(dirent.name)) {
-        files.push(...(await getFilesRecursively(res, baseDir)));
+        files.push(
+          ...(await getFilesRecursively(res, baseDir, opts, _depth + 1)),
+        );
       }
     } else {
       // For files, add the relative path
@@ -50,23 +66,34 @@ export async function copyDirectoryRecursive(
   destination: string,
 ) {
   await fsPromises.mkdir(destination, { recursive: true });
-  const entries = await fsPromises.readdir(source, { withFileTypes: true });
-  // Why do we sort? This ensures stable ordering of files across platforms
-  // which is helpful for tests (and has no practical downsides).
-  entries.sort();
 
-  for (const entry of entries) {
-    const srcPath = path.join(source, entry.name);
-    const destPath = path.join(destination, entry.name);
+  try {
+    const entries = await fsPromises.readdir(source, { withFileTypes: true });
+    // Why do we sort? This ensures stable ordering of files across platforms
+    // which is helpful for tests (and has no practical downsides).
+    entries.sort();
 
-    if (entry.isDirectory()) {
-      // Exclude node_modules directories
-      if (entry.name !== "node_modules") {
-        await copyDirectoryRecursive(srcPath, destPath);
+    for (const entry of entries) {
+      const srcPath = path.join(source, entry.name);
+      const destPath = path.join(destination, entry.name);
+
+      if (entry.isDirectory()) {
+        // Exclude node_modules directories
+        if (entry.name !== "node_modules") {
+          await copyDirectoryRecursive(srcPath, destPath);
+        }
+      } else {
+        await fsPromises.copyFile(srcPath, destPath);
       }
-    } else {
-      await fsPromises.copyFile(srcPath, destPath);
     }
+  } catch (error) {
+    // Clean up the partially-copied destination on failure
+    try {
+      await fsPromises.rm(destination, { recursive: true, force: true });
+    } catch {
+      // Best effort cleanup — if rm fails, the partial directory remains
+    }
+    throw error;
   }
 }
 

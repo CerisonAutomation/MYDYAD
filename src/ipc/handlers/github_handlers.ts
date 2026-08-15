@@ -32,6 +32,12 @@ import { eq } from "drizzle-orm";
 import { GithubUser } from "../../lib/schemas";
 import log from "electron-log";
 import { IS_TEST_BUILD } from "../utils/test_utils";
+import {
+  getGithubUser,
+  getGitHubApiBase,
+  getGitHubTestServerBase,
+  isGitHubTestBuild,
+} from "../services/github_user_service";
 import path from "node:path";
 import { createTypedHandler } from "./base";
 import { githubContracts } from "../types/github";
@@ -73,13 +79,7 @@ export function normalizeGitHubRepoName(repoName: string): string {
 // TODO: Fetch this securely, e.g., from environment variables or a config file
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "Ov23liWV2HdC0RBLecWx";
 
-function isGitHubTestBuild() {
-  return IS_TEST_BUILD || process.env.E2E_TEST_BUILD === "true";
-}
 
-function getGitHubTestServerBase() {
-  return `http://localhost:${process.env.FAKE_LLM_PORT || "3500"}`;
-}
 
 function getGitHubDeviceCodeUrl() {
   return isGitHubTestBuild()
@@ -93,11 +93,6 @@ function getGitHubAccessTokenUrl() {
     : "https://github.com/login/oauth/access_token";
 }
 
-function getGitHubApiBase() {
-  return isGitHubTestBuild()
-    ? `${getGitHubTestServerBase()}/github/api`
-    : "https://api.github.com";
-}
 
 function getGitHubGitBase() {
   return isGitHubTestBuild()
@@ -124,40 +119,6 @@ const deviceFlows = new Map<string, DeviceFlowRecord>();
 let githubFlowsShuttingDown = false;
 
 // --- Helper Functions ---
-
-/**
- * Fetches the GitHub username of the currently authenticated user (using the stored access token).
- * @returns {Promise<string|null>} The GitHub username, or null if not authenticated or on error.
- */
-export async function getGithubUser(): Promise<GithubUser | null> {
-  const settings = readSettings();
-  const email = settings.githubUser?.email;
-  if (email) return { email };
-  try {
-    const accessToken = settings.githubAccessToken?.value;
-    if (!accessToken) return null;
-    const res = await fetch(`${getGitHubApiBase()}/user/emails`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!res.ok) return null;
-    const emails = (await res.json()) as Array<{
-      primary?: boolean;
-      email?: string;
-    }>;
-    const email = emails.find((e: any) => e.primary)?.email;
-    if (!email) return null;
-
-    writeSettings({
-      githubUser: {
-        email,
-      },
-    });
-    return { email };
-  } catch (err) {
-    logger.error("[GitHub Handler] Failed to get GitHub username:", err);
-    return null;
-  }
-}
 
 export async function prepareLocalBranch({
   appId,

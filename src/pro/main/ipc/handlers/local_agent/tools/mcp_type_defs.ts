@@ -1,5 +1,6 @@
 import type { IpcMainInvokeEvent } from "electron";
 import { randomUUID } from "node:crypto";
+import log from "electron-log";
 import { asSchema } from "@ai-sdk/provider-utils";
 import type { JSONSchema7 } from "@ai-sdk/provider";
 import type { MCPClient } from "@ai-sdk/mcp";
@@ -16,6 +17,8 @@ import { AgentContext, escapeXmlAttr, escapeXmlContent } from "./types";
 import { jsonSchemaToTs } from "./json_schema_to_ts";
 import { buildMcpAutoApprove } from "../mcp_auto_consent";
 import { sanitizeMcpToolResult } from "@/ipc/utils/mcp_result_sanitizer";
+
+const logger = log.scope("mcp_type_defs");
 
 const MCP_RESULT_TYPE = `type McpResult = {
   content: Array<
@@ -54,11 +57,15 @@ function toJsIdentifier(name: string): string {
 export async function collectMcpToolDefs(): Promise<McpToolDef[]> {
   let servers: { id: number; name: string | null }[] = [];
   try {
+    // Drizzle SQLite boolean columns use integer 0/1; cast is required by Drizzle's eq() type
     servers = (await db
       .select()
       .from(mcpServers)
-      .where(eq(mcpServers.enabled, true as any))) as typeof servers;
-  } catch {
+      .where(
+        eq(mcpServers.enabled, 1 as unknown as boolean),
+      )) as typeof servers;
+  } catch (error) {
+    logger.error("Failed to query MCP servers from database:", error);
     return [];
   }
 
@@ -79,7 +86,11 @@ export async function collectMcpToolDefs(): Promise<McpToolDef[]> {
     try {
       const client = await mcpManager.getClient(s.id);
       toolSet = await client.tools();
-    } catch {
+    } catch (error) {
+      logger.warn(
+        `Failed to get tools from MCP server "${s.name}" (id=${s.id}):`,
+        error,
+      );
       continue;
     }
     const serverNameSanitized = sanitizeMcpName(s.name || "");

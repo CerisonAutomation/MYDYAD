@@ -391,6 +391,16 @@ export const systemContracts = {
     output: z.void(),
   }),
 
+  // Auto-screenshot for error reporting (returns base64 data URL)
+  captureErrorScreenshot: defineContract({
+    channel: "capture-error-screenshot",
+    input: z.void(),
+    output: z.object({
+      dataUrl: z.string(),
+      timestamp: z.number(),
+    }),
+  }),
+
   // Restart
   restartDyad: defineContract({
     channel: "restart-dyad",

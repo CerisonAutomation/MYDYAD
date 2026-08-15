@@ -16,6 +16,7 @@ import fs from "fs/promises";
 import path from "path";
 import type { AgentContext, ToolDefinition } from "./types";
 import { escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const promptOptimizerSchema = z.object({
   operation: z.enum([
@@ -510,7 +511,10 @@ Output: Optimized program with metrics, code, and save path`,
     switch (args.operation) {
       case "create_signature": {
         if (!args.signature_name || !args.instructions) {
-          throw new Error("signature_name and instructions are required");
+          throw new DyadError(
+            "signature_name and instructions are required",
+            DyadErrorKind.Validation,
+          );
         }
 
         ctx.onXmlStream(
@@ -784,7 +788,10 @@ Output: Optimized program with metrics, code, and save path`,
 
       case "load": {
         if (!args.load_path) {
-          throw new Error("load_path is required for load operation");
+          throw new DyadError(
+            "load_path is required for load operation",
+            DyadErrorKind.Validation,
+          );
         }
 
         ctx.onXmlStream(
@@ -799,7 +806,10 @@ Output: Optimized program with metrics, code, and save path`,
       }
 
       default:
-        throw new Error(`Unknown operation: ${args.operation}`);
+        throw new DyadError(
+          `Unknown operation: ${args.operation}`,
+          DyadErrorKind.Validation,
+        );
     }
 
     const elapsed = Date.now() - startTime;

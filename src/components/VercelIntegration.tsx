@@ -20,8 +20,12 @@ export function VercelIntegration() {
       } else {
         showError(t("integrations.vercel.failedDisconnect"));
       }
-    } catch (err: any) {
-      showError(err.message || t("integrations.vercel.errorDisconnect"));
+    } catch (err) {
+      showError(
+        err instanceof Error
+          ? err.message
+          : t("integrations.vercel.errorDisconnect"),
+      );
     } finally {
       setIsDisconnecting(false);
     }

@@ -24,13 +24,18 @@ export interface LMStudioModel {
   quantization: string;
   compatibility_type: string;
   arch: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export async function fetchLMStudioModels(): Promise<{ models: LocalModel[] }> {
-  const modelsResponse: Response = await fetch(
-    `${getLmStudioBaseUrl()}/api/v0/models`,
-  );
+  const lmStudioUrl = getLmStudioBaseUrl();
+  // SSRF protection: validate URL doesn't target private/internal IPs
+  const { assertNotPrivateIp } =
+    await import("@/pro/main/ipc/handlers/local_agent/tools/network_utils");
+  assertNotPrivateIp(lmStudioUrl);
+  const modelsResponse: Response = await fetch(`${lmStudioUrl}/api/v0/models`, {
+    signal: AbortSignal.timeout(10_000),
+  });
   if (!modelsResponse.ok) {
     throw new DyadError(
       "Failed to fetch models from LM Studio",

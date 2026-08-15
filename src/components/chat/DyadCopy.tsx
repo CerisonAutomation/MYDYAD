@@ -9,11 +9,11 @@ import {
   DyadDescription,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
-import { CustomTagState } from "./stateTypes";
+import { CustomTagState, type DyadTagNode } from "./stateTypes";
 
 interface DyadCopyProps {
   children?: ReactNode;
-  node?: any;
+  node?: DyadTagNode;
 }
 
 export const DyadCopy: React.FC<DyadCopyProps> = ({ children, node }) => {
