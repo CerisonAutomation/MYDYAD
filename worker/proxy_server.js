@@ -536,8 +536,6 @@ const server = http.createServer((clientReq, clientRes) => {
     // Without this, upstream CSPs (e.g. Next.js) block inline scripts, external
     // resources, and iframe loading in the Dyad preview.
     delete upRes.headers["content-security-policy"];
-      }
-    }
 
     if (!inject) {
       rewriteSetCookieHeaders(upRes.headers);
