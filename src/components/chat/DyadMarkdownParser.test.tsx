@@ -10,6 +10,51 @@ import type {
 } from "@/lib/streamingMessageParser";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 
+// The unit project has no setupFiles, so react-i18next is unmocked here and
+// DyadGit would render raw i18n keys. Load the real en strings and resolve
+// keys the same way the integration setup (hybrid.setup.ts) does.
+vi.mock("react-i18next", async () => {
+  const chat = (await import("@/i18n/locales/en/chat.json")).default as Record<
+    string,
+    unknown
+  >;
+  const readPath = (source: unknown, path: string): unknown =>
+    path.split(".").reduce<unknown>(
+      (current, segment) =>
+        current && typeof current === "object"
+          ? (current as Record<string, unknown>)[segment]
+          : undefined,
+      source,
+    );
+  const interpolate = (
+    value: string,
+    options: Record<string, unknown>,
+  ): string =>
+    value.replace(/\{\{\s*([^}\s]+)\s*\}\}/g, (_match, name: string) =>
+      options[name] == null ? "" : String(options[name]),
+    );
+  const t = (key: string, options?: Record<string, unknown>) => {
+    const [ns, k] = key.includes(":") ? key.split(":") : ["chat", key];
+    const resource = ns === "chat" ? chat : undefined;
+    const opts = options ?? {};
+    // i18next plural resolution: count===1 -> *_one, otherwise *_other.
+    const candidates =
+      opts.count != null
+        ? [`${k}_${opts.count === 1 ? "one" : "other"}`, k]
+        : [k];
+    for (const candidate of candidates) {
+      const value = readPath(resource, candidate);
+      if (typeof value === "string") return interpolate(value, opts);
+    }
+    return key;
+  };
+  return {
+    useTranslation: () => ({ t, i18n: { language: "en" } }),
+    Trans: ({ children }: { children?: unknown }) => children ?? null,
+    initReactI18next: { type: "3rdParty", init: () => {} },
+  };
+});
+
 const mockStreamState = vi.hoisted(() => ({
   current: { type: "idle" } as { type: string },
 }));

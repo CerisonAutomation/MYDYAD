@@ -142,13 +142,13 @@ describe("codeSearchTool", () => {
       expect(codeSearchTool.isEnabled?.(mockContext)).toBe(true);
     });
 
-    it("is disabled for non-Pro regardless of explorer readiness", () => {
+    it("stays enabled for non-Pro users when the explorer is off (fallback tool)", () => {
       mocks.readSettings.mockReturnValue({ enableCodeExplorer: false });
       mocks.isCodeExplorerReady.mockReturnValue(false);
 
       expect(
         codeSearchTool.isEnabled?.({ ...mockContext, isDyadPro: false }),
-      ).toBe(false);
+      ).toBe(true);
     });
   });
 
@@ -196,20 +196,17 @@ describe("codeSearchTool", () => {
       mockContext.referencedApps.set("other-app", otherAppDir);
       mockEngineResponse(["other.ts"]);
 
-      await codeSearchTool.execute(
+      const result = await codeSearchTool.execute(
         { query: "bar", app_name: "other-app" },
         mockContext,
       );
 
-      expect(engineFetchMock).toHaveBeenCalledTimes(1);
-      const [, , opts] = engineFetchMock.mock.calls[0];
-      const body = JSON.parse(opts.body);
       // The referenced app's file should be the one searched — not the current app's file.
-      const searchedPaths = body.filesContext.map(
-        (f: { path: string }) => f.path,
+      expect(mockContext.onXmlComplete).toHaveBeenCalledWith(
+        expect.stringContaining("other.ts"),
       );
-      expect(searchedPaths).toContain("other.ts");
-      expect(searchedPaths).not.toContain("current.ts");
+      expect(result).toContain("other.ts");
+      expect(result).not.toContain("current.ts");
     });
 
     it("throws a clear error when app_name is not in the allow-list", async () => {

@@ -156,6 +156,13 @@ async function execGit(
   path: string,
   options?: IGitStringExecutionOptions,
 ): Promise<IGitStringResult> {
+  // Guard against dugite's Infinity default: a huge git output (e.g. log/diff
+  // on a large repo) must produce a catchable maxBuffer error, never an
+  // unhandled RangeError from Node's internal exithandler.
+  const safeOptions: IGitStringExecutionOptions = {
+    ...options,
+    maxBuffer: options?.maxBuffer ?? DEFAULT_GIT_EXEC_MAX_BUFFER_BYTES,
+  };
   const sanitizedEnv = getWindowsSanitizedEnv();
 
   // Only create execOptions if we need to modify the environment
@@ -165,10 +172,10 @@ async function execGit(
     // Find the PATH key used in the sanitized env
     const pathKey = getPathEnvKey(sanitizedEnv);
     const execOptions: IGitStringExecutionOptions = {
-      ...options,
+      ...safeOptions,
       env: {
         ...sanitizedEnv,
-        ...options?.env,
+        ...safeOptions?.env,
         // Ensure sanitized PATH always takes precedence to prevent WSL contamination
         [pathKey]: sanitizedEnv[pathKey],
       },
@@ -184,20 +191,20 @@ async function execGit(
   const shimDir = ensureLibcurlShimOnLinux();
   if (shimDir) {
     const existingLdPath =
-      options?.env?.LD_LIBRARY_PATH ?? process.env.LD_LIBRARY_PATH;
+      safeOptions?.env?.LD_LIBRARY_PATH ?? process.env.LD_LIBRARY_PATH;
     const ldLibraryPath = [shimDir, existingLdPath].filter(Boolean).join(":");
     return exec(args, path, {
-      ...options,
+      ...safeOptions,
       env: {
         ...process.env,
-        ...options?.env,
+        ...safeOptions?.env,
         LD_LIBRARY_PATH: ldLibraryPath,
       },
     });
   }
 
   // On non-Windows without a shim, pass options through unchanged
-  return exec(args, path, options);
+  return exec(args, path, safeOptions);
 }
 import type {
   GitBaseParams,
@@ -1656,6 +1663,14 @@ const AGENT_GIT_SOURCE_FILE_LIMIT_BYTES = 20 * 1024 * 1024;
 const AGENT_GIT_MAX_DIFF_PATHS = 500;
 const AGENT_GIT_MAX_STATUS_PATHS = 500;
 const AGENT_GIT_STATUS_PATH_BUDGET_BYTES = AGENT_GIT_RESULT_LIMIT_BYTES - 4096;
+// dugite's exec() defaults maxBuffer to Infinity, which lets a single git
+// command accumulate unbounded output. Past V8's max string length
+// (~512 MiB) Node's execFile exithandler throws "RangeError: Invalid string
+// length" (an unhandled main-process crash) instead of a catchable error.
+// Cap the default at 128 MiB: ~4x below the V8 limit, generous for real git
+// output (logs/diffs/status on large repos), and same order as the agent-git
+// truncation budget. Callers that need more can pass maxBuffer explicitly.
+const DEFAULT_GIT_EXEC_MAX_BUFFER_BYTES = 128 * 1024 * 1024;
 // Keeps diff pathspec argv well under the ~32 KiB Windows command-line limit.
 const AGENT_GIT_DIFF_PATH_ARGV_BUDGET_BYTES = 24 * 1024;
 const AGENT_GIT_TRUNCATION_NOTICE =

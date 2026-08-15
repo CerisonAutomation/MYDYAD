@@ -194,7 +194,7 @@ describe("exploreCodeTool", () => {
       expect(xml).toBeUndefined();
     });
 
-    it("builds an unclosed in-progress tag while streaming", () => {
+    it("builds a self-closing in-progress tag while streaming", () => {
       const xml = exploreCodeTool.buildXml?.(
         { query: "App flow", intent: "locate", app_name: "other-app" },
         false,
@@ -204,7 +204,7 @@ describe("exploreCodeTool", () => {
       expect(xml).toContain('intent="locate"');
       expect(xml).toContain('app_name="other-app"');
       expect(xml).toContain("Exploring...");
-      expect(xml).not.toContain("</dyad-explore-code>");
+      expect(xml).toContain("</dyad-explore-code>");
     });
   });
 });

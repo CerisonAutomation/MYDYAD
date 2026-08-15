@@ -60,6 +60,7 @@ describe("searchMcpToolsTool.isEnabled", () => {
     expect(
       searchMcpToolsTool.isEnabled?.({
         isMcpToolSearchAvailable: true,
+        mcpToolDefs: [{ name: "repo_scan" }],
       } as unknown as AgentContext),
     ).toBe(true);
   });

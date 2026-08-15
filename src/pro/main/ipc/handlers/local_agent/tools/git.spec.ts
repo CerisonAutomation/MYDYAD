@@ -142,6 +142,7 @@ describe("local-agent Git tool definitions", () => {
   it("applies the app-blueprint gate before restoring", async () => {
     const ctx = {
       chatId: 1,
+      appPath: "/tmp",
       requireConsent: vi.fn(),
       onXmlComplete: vi.fn(),
     } as unknown as AgentContext;

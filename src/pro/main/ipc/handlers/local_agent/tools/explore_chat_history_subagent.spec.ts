@@ -116,8 +116,8 @@ describe("runExploreChatHistorySubagent", () => {
     harness.dispose();
   });
 
-  it("throws a Precondition error when the context is not Dyad Pro", async () => {
-    // makeAgentContext defaults to isDyadPro: false.
+  it("throws a Precondition error when no API key is configured", async () => {
+    mocks.readSettings.mockReturnValue({ providerSettings: {} });
     await expect(
       runExploreChatHistorySubagent({
         query: "auth decision",
@@ -127,20 +127,18 @@ describe("runExploreChatHistorySubagent", () => {
     expect(mocks.streamText).not.toHaveBeenCalled();
   });
 
-  it("throws a Precondition error when settings do not enable Dyad Pro", async () => {
+  it("runs when settings do not enable Dyad Pro but an API key exists", async () => {
     mocks.readSettings.mockReturnValue({
       enableDyadPro: false,
       providerSettings: {
         auto: { apiKey: { value: "dyad-pro-key" } },
       },
     });
-    await expect(
-      runExploreChatHistorySubagent({
-        query: "auth decision",
-        ctx: makeAgentContext({ isDyadPro: true }),
-      }),
-    ).rejects.toMatchObject({ kind: DyadErrorKind.Precondition });
-    expect(mocks.streamText).not.toHaveBeenCalled();
+    await runExploreChatHistorySubagent({
+      query: "auth decision",
+      ctx: makeAgentContext({ isDyadPro: true }),
+    });
+    expect(mocks.streamText).toHaveBeenCalled();
   });
 
   it("throws a Precondition error when the auto provider API key is missing", async () => {

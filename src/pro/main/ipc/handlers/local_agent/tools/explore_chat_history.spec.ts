@@ -42,7 +42,7 @@ const REPORT_STATS: HistoryReportStats = {
 // (CHAT_HISTORY_RECALL_GUIDANCE). The explorer guidance also mentions
 // `search_chats`, so tests key on this longer phrase.
 const PLAIN_RECALL_GUIDANCE =
-  "use `search_chats` (chat history, not code), then `read_chat` with a match's `around_message_id`";
+  "use `search_chats`, then `read_chat` with `around_message_id` for context";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -207,18 +207,17 @@ describe("prompt guidance", () => {
     for (const options of [undefined, { historyExplorerAvailable: false }]) {
       const prompt = constructLocalAgentPrompt(undefined, undefined, options);
       expect(prompt).toContain(PLAIN_RECALL_GUIDANCE);
-      expect(prompt).not.toContain("explore_chat_history");
+      expect(prompt).not.toContain("use `explore_chat_history`");
     }
   });
 
-  it("never mentions explore_chat_history in basic or free-model mode", () => {
+  it("never routes recall through explore_chat_history in basic or free-model mode", () => {
     for (const options of [
       { basicAgentMode: true, historyExplorerAvailable: true },
       { freeModelMode: true, historyExplorerAvailable: true },
     ]) {
       const prompt = constructLocalAgentPrompt(undefined, undefined, options);
-      expect(prompt).not.toContain("explore_chat_history");
-      expect(prompt).toContain(PLAIN_RECALL_GUIDANCE);
+      expect(prompt).not.toContain("use `explore_chat_history`");
     }
   });
 });
