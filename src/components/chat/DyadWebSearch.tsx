@@ -43,7 +43,7 @@ export const DyadWebSearch: React.FC<DyadWebSearchProps> = ({
           </span>
         )}
         {inProgress && (
-          <DyadStateIndicator state="pending" pendingLabel="Searching..." />
+          <DyadStateIndicator state="pending" pendingLabel="Searching web..." />
         )}
         <div className="ml-auto">
           <DyadExpandIcon isExpanded={isExpanded} />

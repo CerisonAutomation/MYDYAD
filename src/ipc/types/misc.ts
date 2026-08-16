@@ -445,6 +445,26 @@ export const AppOutputSchema = z.object({
 export type AppOutput = z.infer<typeof AppOutputSchema>;
 
 // =============================================================================
+// Health Contracts
+// =============================================================================
+
+export const healthContracts = {
+  check: defineContract({
+    channel: "health:check",
+    input: z.object({}),
+    output: z.object({
+      status: z.enum(["healthy", "degraded", "critical"]),
+      checks: z.object({
+        database: z.enum(["ok", "error"]),
+        memory: z.enum(["ok", "warning", "critical"]),
+        eventLoop: z.enum(["ok", "lagging"]),
+      }),
+      timestamp: z.number(),
+    }),
+  }),
+} as const;
+
+// =============================================================================
 // Misc Contracts
 // =============================================================================
 
@@ -574,3 +594,4 @@ export const miscEvents = {
 
 export const miscClient = createClient(miscContracts);
 export const miscEventClient = createEventClient(miscEvents);
+export const healthClient = createClient(healthContracts);

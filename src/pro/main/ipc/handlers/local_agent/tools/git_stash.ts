@@ -15,8 +15,10 @@ const logger = log.scope("git_stash");
 
 const gitStashSchema = z.object({
   operation: z
-    .enum(["push", "pop", "list"])
-    .describe("Stash operation: push saves changes, pop restores, list shows"),
+    .enum(["push", "pop", "list", "drop"])
+    .describe(
+      "Stash operation: push saves changes, pop restores, list shows, drop discards the most recent stash",
+    ),
   message: z.string().optional().describe("Optional message for stash push"),
 });
 
@@ -26,6 +28,7 @@ Operations:
 - push: Save uncommitted changes to a new stash
 - pop: Apply and remove the most recent stash
 - list: Show all stashed changes
+- drop: Discard the most recent stash without applying it
 
 Use for: Temporarily saving work, switching context, then restoring later.`;
 
@@ -41,6 +44,7 @@ export const gitStashTool: ToolDefinition<z.infer<typeof gitStashSchema>> = {
   getConsentPreview: (args) => {
     if (args.operation === "push") return "Stash current changes";
     if (args.operation === "pop") return "Pop most recent stash";
+    if (args.operation === "drop") return "Discard most recent stash";
     return "List all stashes";
   },
 
@@ -79,6 +83,12 @@ export const gitStashTool: ToolDefinition<z.infer<typeof gitStashSchema>> = {
         });
         result = stdout.trim() || "No stashes found.";
         logger.log("Stash list:", result);
+      } else if (args.operation === "drop") {
+        const { stdout } = await execFileAsync("git", ["stash", "drop"], {
+          cwd: appPath,
+        });
+        result = stdout.trim() || "Stash dropped.";
+        logger.log("Stash drop:", result);
       } else {
         throw new DyadError(
           `Unknown stash operation: ${args.operation}`,

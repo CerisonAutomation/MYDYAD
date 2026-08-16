@@ -247,15 +247,58 @@ export async function getBrowser(): Promise<Browser> {
   // Launch fresh browser
   logger.log("Launching new browser instance");
   const playwright = await import("playwright");
-  const browser = await playwright.chromium.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-    ],
-  });
+
+  let browser;
+  try {
+    // Try Playwright's bundled Chromium first
+    browser = await playwright.chromium.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
+    });
+  } catch (playwrightError) {
+    // Fallback to system Chrome if Playwright's Chromium is not installed
+    logger.warn(
+      "Playwright Chromium not available, falling back to system Chrome:",
+      (playwrightError as Error).message?.slice(0, 100),
+    );
+    const systemChromePaths = [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/Applications/Chromium.app/Contents/MacOS/Chromium",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium-browser",
+    ];
+    let chromePath: string | undefined;
+    for (const p of systemChromePaths) {
+      try {
+        const fs = await import("node:fs/promises");
+        await fs.access(p);
+        chromePath = p;
+        break;
+      } catch {
+        // not found
+      }
+    }
+    if (!chromePath) {
+      throw new Error(
+        "No browser available. Install Playwright Chromium: npx playwright install chromium",
+      );
+    }
+    browser = await playwright.chromium.launch({
+      headless: true,
+      executablePath: chromePath,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
+    });
+  }
 
   sharedBrowser = browser;
   sharedContext = await browser.newContext({
@@ -346,6 +389,13 @@ export async function closeBrowser(): Promise<void> {
  */
 export function shutdownBrowser(): void {
   void closeBrowser().catch(() => {});
+  // Clear Fuse.js search cache to free memory
+  try {
+    const { clearFuseCache } = require("@/ipc/utils/fuse_search");
+    clearFuseCache();
+  } catch {
+    // fuse_search may not be loaded yet — safe to ignore
+  }
 }
 
 /**

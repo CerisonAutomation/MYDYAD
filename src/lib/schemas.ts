@@ -312,6 +312,9 @@ export const SmartContextModeSchema = z.enum([
 ]);
 export type SmartContextMode = z.infer<typeof SmartContextModeSchema>;
 
+export const DefaultFrameworkSchema = z.enum(["vite", "nextjs"]);
+export type DefaultFramework = z.infer<typeof DefaultFrameworkSchema>;
+
 export const AgentToolConsentSchema = z.enum(["ask", "always", "never"]);
 export type AgentToolConsent = z.infer<typeof AgentToolConsentSchema>;
 
@@ -457,6 +460,7 @@ const BaseUserSettingsFields = {
   skipNotificationBanner: z.boolean().optional(),
   enableSelectAppFromHomeChatInput: z.boolean().optional(),
   previewIdleTimeoutPolicy: z.enum(["default", "never"]).optional(),
+  defaultFramework: DefaultFrameworkSchema.optional(),
 };
 
 /**

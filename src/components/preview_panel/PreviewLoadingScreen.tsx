@@ -17,6 +17,7 @@ import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
 import { useAppExit, useAppRunState } from "@/hooks/useAppRun";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { cn } from "@/lib/utils";
+import { showInfo } from "@/lib/toast";
 import { useConsoleEntries } from "@/preview_console/hooks";
 
 const STARTUP_LOG_MESSAGES = new Set([
@@ -63,8 +64,17 @@ function displayLevel(entry: ConsoleEntry): ConsoleEntry["level"] {
   return entry.level;
 }
 
-const PREVIEW_STARTUP_FIX_INTRO = (errorCount: number) =>
-  `The app failed to start. We ran into ${errorCount} error(s) either while installing node modules or running the dev script. Please review package.json to identify and fix the issue(s). Focus on critical errors and do not try to fix non-critical errors like deprecation warnings.`;
+const PREVIEW_STARTUP_FIX_INTRO = (
+  errorCount: number,
+  filePaths?: string[],
+) => {
+  let intro = `The app failed to start. We ran into ${errorCount} error(s) either while installing node modules or running the dev script. Please review package.json to identify and fix the issue(s). Focus on critical errors and do not try to fix non-critical errors like deprecation warnings.`;
+  if (filePaths && filePaths.length > 0) {
+    intro += `\n\nFiles involved:\n${filePaths.map((p) => `- ${p}`).join("\n")}`;
+  }
+  intro += `\n\nPlease analyze the errors above and fix them. Provide the specific changes needed.`;
+  return intro;
+};
 
 export function getPreviewLoadingSessionStartedAt({
   consoleEntries,
@@ -167,6 +177,7 @@ export function PreviewLoadingScreen({
 
   const [isErrorsExpanded, setIsErrorsExpanded] = useState(false);
   const [visibleStartedAt, setVisibleStartedAt] = useState(Date.now());
+  const [autoFixTriggered, setAutoFixTriggered] = useState(false);
   const wasVisibleRef = useRef<boolean>(isVisible);
   const logListRef = useRef<HTMLDivElement>(null);
   // Tail-follow: keep pinning to the bottom as new logs stream in, but only
@@ -198,6 +209,7 @@ export function PreviewLoadingScreen({
 
   useEffect(() => {
     setIsErrorsExpanded(false);
+    setAutoFixTriggered(false);
     isAtBottomRef.current = true;
   }, [sessionStartedAt]);
 
@@ -258,11 +270,35 @@ export function PreviewLoadingScreen({
     );
   };
 
-  const handleFixAllErrors = () => {
+  const handleFixAllErrors = (showToast = false) => {
     if (!selectedChatId || errorMessages.length === 0) return;
     const includedErrorMessages = errorMessages.slice(0, MAX_ERRORS_FOR_AI_FIX);
     const count = includedErrorMessages.length;
-    const intro = PREVIEW_STARTUP_FIX_INTRO(count);
+
+    // Extract file paths from error messages for diagnostic context
+    const filePaths: string[] = [];
+    for (const msg of includedErrorMessages) {
+      // Match common file path patterns in error messages
+      const pathMatches = msg.match(
+        /(?:^|\s)(?:[\w./\\-]+(?:\.[\w]+))+(?::\d+:\d+)?/g,
+      );
+      if (pathMatches) {
+        for (const match of pathMatches) {
+          const trimmed = match.trim();
+          // Filter to likely file paths (contains / or \ and ends with common extensions)
+          if (
+            (trimmed.includes("/") || trimmed.includes("\\")) &&
+            /\.[\w]+$/.test(trimmed) &&
+            !trimmed.startsWith("http")
+          ) {
+            filePaths.push(trimmed.split(":")[0]); // Remove line numbers
+          }
+        }
+      }
+    }
+    const uniqueFilePaths = [...new Set(filePaths)].slice(0, 10); // Limit to 10 unique paths
+
+    const intro = PREVIEW_STARTUP_FIX_INTRO(count, uniqueFilePaths);
     const omittedCount = errorMessages.length - includedErrorMessages.length;
     const body = `Error log excerpts (JSON):\n${JSON.stringify(
       includedErrorMessages.map((msg, i) => ({
@@ -272,10 +308,13 @@ export function PreviewLoadingScreen({
       null,
       2,
     )}${omittedCount > 0 ? `\n\n${omittedCount} additional error(s) omitted.` : ""}`;
+
+    if (showToast) {
+      showInfo("AI is analyzing errors and generating a fix...");
+    }
+
     streamMessage({ prompt: `${intro}\n\n${body}`, chatId: selectedChatId });
   };
-
-  if (!isVisible) return null;
 
   const showErrorBanner = shouldShowPreviewErrorBanner({
     errorMessages,
@@ -284,6 +323,33 @@ export function PreviewLoadingScreen({
     currentAppId: selectedAppId,
   });
   const errorCount = errorMessages.length;
+
+  // Auto-fix: when errors are detected and we have a chat, automatically
+  // trigger the AI fix (once per error session)
+  useEffect(() => {
+    if (
+      showErrorBanner &&
+      errorCount > 0 &&
+      selectedChatId &&
+      !isStreaming &&
+      !autoFixTriggered
+    ) {
+      setAutoFixTriggered(true);
+      // Small delay to allow the UI to render the error banner first
+      const timer = setTimeout(() => {
+        handleFixAllErrors(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    showErrorBanner,
+    errorCount,
+    selectedChatId,
+    isStreaming,
+    autoFixTriggered,
+  ]);
+
+  if (!isVisible) return null;
 
   return (
     <div
@@ -395,7 +461,7 @@ export function PreviewLoadingScreen({
               </button>
               <button
                 type="button"
-                onClick={handleFixAllErrors}
+                onClick={() => handleFixAllErrors(true)}
                 disabled={isStreaming || !selectedChatId}
                 className="cursor-pointer flex items-center gap-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 data-testid="preview-loading-fix-errors-button"

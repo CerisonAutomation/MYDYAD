@@ -48,6 +48,7 @@ export const SETTING_IDS = {
   enableMultiWindow: "setting-enable-multi-window",
   enableSelectAppFromHomeChatInput:
     "setting-enable-select-app-from-home-chat-input",
+  defaultFramework: "setting-default-framework",
   reset: "setting-reset",
 } as const;
 
@@ -134,6 +135,14 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
     label: "Default Chat Mode",
     description: "Choose the default mode for new chats",
     keywords: ["chat", "mode", "build", "agent", "mcp", "default"],
+    sectionId: SECTION_IDS.workflow,
+    sectionLabel: "Workflow",
+  },
+  {
+    id: SETTING_IDS.defaultFramework,
+    label: "Default Framework",
+    description: "Choose the default framework for new apps",
+    keywords: ["framework", "vite", "nextjs", "next", "default", "template"],
     sectionId: SECTION_IDS.workflow,
     sectionLabel: "Workflow",
   },

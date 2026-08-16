@@ -10,6 +10,19 @@ import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("createFromTemplate");
 
+function frameworkToTemplateId(
+  framework: string | undefined,
+): string | undefined {
+  switch (framework) {
+    case "vite":
+      return "react";
+    case "nextjs":
+      return "next";
+    default:
+      return undefined;
+  }
+}
+
 export async function createFromTemplate({
   fullAppPath,
   templateId: requestedTemplateId,
@@ -18,7 +31,10 @@ export async function createFromTemplate({
   templateId?: string;
 }) {
   const settings = readSettings();
-  const templateId = requestedTemplateId ?? settings.selectedTemplateId;
+  const templateId =
+    requestedTemplateId ??
+    frameworkToTemplateId(settings.defaultFramework) ??
+    settings.selectedTemplateId;
 
   if (templateId === "react") {
     const sourceScaffoldPath = path.join(__dirname, "..", "..", "scaffold");

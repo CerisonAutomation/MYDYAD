@@ -33,10 +33,12 @@ import { AgentToolsSettings } from "@/components/settings/AgentToolsSettings";
 import { ZoomSelector } from "@/components/ZoomSelector";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { DefaultChatModeSelector } from "@/components/DefaultChatModeSelector";
+import { DefaultFrameworkSelector } from "@/components/DefaultFrameworkSelector";
 import { DefaultModelSelector } from "@/components/DefaultModelSelector";
 import { ContextCompactionSwitch } from "@/components/ContextCompactionSwitch";
 import { BlockUnsafeNpmPackagesSwitch } from "@/components/BlockUnsafeNpmPackagesSwitch";
 import { CloudSandboxExperimentSwitch } from "@/components/CloudSandboxExperimentSwitch";
+import { PerformanceDashboard } from "@/components/settings/PerformanceDashboard";
 import { MultiWindowExperimentSwitch } from "@/components/MultiWindowExperimentSwitch";
 import { AutoApproveSqlSwitch } from "@/components/AutoApproveSqlSwitch";
 import { AutoApproveMcpSwitch } from "@/components/AutoApproveMcpSwitch";
@@ -195,6 +197,7 @@ export default function SettingsPage() {
             title="Advanced"
             description="We recommend keeping the defaults unless something isn't working."
           >
+            <PerformanceDashboard />
             <div
               id={SETTING_IDS.enableSandboxScriptExecution}
               className="space-y-1.5"
@@ -474,6 +477,10 @@ export function WorkflowSettings() {
     >
       <div id={SETTING_IDS.defaultChatMode}>
         <DefaultChatModeSelector />
+      </div>
+
+      <div id={SETTING_IDS.defaultFramework}>
+        <DefaultFrameworkSelector />
       </div>
 
       <div id={SETTING_IDS.autoApprove} className="space-y-1.5">

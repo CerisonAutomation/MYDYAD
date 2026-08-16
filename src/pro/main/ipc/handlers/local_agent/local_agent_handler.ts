@@ -180,6 +180,46 @@ const RETRYABLE_STREAM_ERROR_PATTERNS = [
 ];
 
 // ============================================================================
+// Tool Error Auto-Retry for Transient Failures
+// ============================================================================
+
+const MAX_TOOL_RETRY_ATTEMPTS = 2;
+const TOOL_RETRY_BASE_DELAY_MS = 500;
+
+// Patterns indicating transient tool failures that should be retried
+const TRANSIENT_TOOL_ERROR_PATTERNS = [
+  "ETIMEDOUT",
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "EBUSY",
+  "EACCES",
+  "EPERM",
+  "EBADF",
+  "ENFILE",
+  "EMFILE",
+  "ENOSPC",
+  "network timeout",
+  "socket hang up",
+  "request timeout",
+  "connection refused",
+  "file locked",
+  "resource busy",
+  "temporary failure",
+];
+
+function isTransientToolError(error: unknown): boolean {
+  const errorMessage = getErrorMessage(error).toLowerCase();
+  return TRANSIENT_TOOL_ERROR_PATTERNS.some((pattern) =>
+    errorMessage.includes(pattern.toLowerCase()),
+  );
+}
+
+function getToolRetryDelay(attempt: number): number {
+  // Exponential backoff: 500ms, 1000ms, 2000ms, etc.
+  return TOOL_RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+}
+
+// ============================================================================
 // Tool Streaming State Management
 // ============================================================================
 
@@ -967,6 +1007,49 @@ export async function handleLocalAgentStream(
       }
     }
     const allTools: ToolSet = { ...agentTools, ...mcpToolsForRegistration };
+
+    // Wrap tool execution with retry logic for transient failures
+    // (network timeouts, file locks, etc.)
+    for (const [toolName, tool] of Object.entries(allTools)) {
+      if (
+        tool &&
+        typeof tool === "object" &&
+        typeof tool.execute === "function"
+      ) {
+        const originalExecute = tool.execute;
+        tool.execute = async (args: unknown, execCtx: any) => {
+          let lastError: unknown;
+          for (let attempt = 0; attempt <= MAX_TOOL_RETRY_ATTEMPTS; attempt++) {
+            try {
+              return await originalExecute(args, execCtx);
+            } catch (error) {
+              lastError = error;
+              if (
+                attempt < MAX_TOOL_RETRY_ATTEMPTS &&
+                isTransientToolError(error) &&
+                !abortController.signal.aborted
+              ) {
+                const retryDelay = getToolRetryDelay(attempt);
+                logger.warn(
+                  `Tool "${toolName}" failed with transient error (attempt ${attempt + 1}/${MAX_TOOL_RETRY_ATTEMPTS + 1}): ${getErrorMessage(error)}. Retrying in ${retryDelay}ms...`,
+                );
+                sendTelemetryEvent("local_agent:tool_transient_retry", {
+                  chatId: req.chatId,
+                  toolName,
+                  attempt: attempt + 1,
+                  maxAttempts: MAX_TOOL_RETRY_ATTEMPTS + 1,
+                  error: getErrorMessage(error),
+                });
+                await delay(retryDelay);
+                continue;
+              }
+              throw error;
+            }
+          }
+          throw lastError;
+        };
+      }
+    }
     const registeredToolNames = new Set(Object.keys(allTools));
 
     // Prepare message history with graceful fallback

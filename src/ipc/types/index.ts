@@ -58,7 +58,7 @@ export { contextContracts } from "./context";
 export { upgradeContracts } from "./upgrade";
 export { visualEditingContracts } from "./visual-editing";
 export { securityContracts } from "./security";
-export { miscContracts, miscEvents } from "./misc";
+export { miscContracts, miscEvents, healthContracts } from "./misc";
 export { freeAgentQuotaContracts } from "./free_agent_quota";
 export { freeModelQuotaContracts } from "./free_model_quota";
 export { audioContracts } from "./audio";
@@ -113,7 +113,7 @@ export { contextClient } from "./context";
 export { upgradeClient } from "./upgrade";
 export { visualEditingClient } from "./visual-editing";
 export { securityClient } from "./security";
-export { miscClient, miscEventClient } from "./misc";
+export { miscClient, miscEventClient, healthClient } from "./misc";
 export { freeAgentQuotaClient } from "./free_agent_quota";
 export { freeModelQuotaClient } from "./free_model_quota";
 export { audioClient } from "./audio";
@@ -492,7 +492,7 @@ import { contextClient } from "./context";
 import { upgradeClient } from "./upgrade";
 import { visualEditingClient } from "./visual-editing";
 import { securityClient } from "./security";
-import { miscClient, miscEventClient } from "./misc";
+import { miscClient, miscEventClient, healthClient } from "./misc";
 import { freeAgentQuotaClient } from "./free_agent_quota";
 import { freeModelQuotaClient } from "./free_model_quota";
 import { audioClient } from "./audio";
@@ -572,6 +572,7 @@ export const ipc = {
   visualEditing: visualEditingClient,
   security: securityClient,
   misc: miscClient,
+  health: healthClient,
   freeAgentQuota: freeAgentQuotaClient,
   freeModelQuota: freeModelQuotaClient,
   audio: audioClient,

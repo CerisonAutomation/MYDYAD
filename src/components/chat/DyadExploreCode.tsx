@@ -83,7 +83,14 @@ export const DyadExploreCode: React.FC<DyadExploreCodeProps> = ({
           </span>
         )}
         {inProgress && (
-          <DyadStateIndicator state="pending" pendingLabel="Exploring..." />
+          <DyadStateIndicator
+            state="pending"
+            pendingLabel={
+              files
+                ? `Searching ${files} file${files === "1" ? "" : "s"}...`
+                : "Exploring codebase..."
+            }
+          />
         )}
         {aborted && (
           <DyadStateIndicator state="aborted" abortedLabel="Did not finish" />

@@ -10,6 +10,8 @@ import {
 import { getActiveStreamCount } from "../ipc/handlers/chat_stream_handlers";
 import { runningApps } from "../ipc/utils/process_manager";
 import { typescriptUtilityProcessScheduler } from "../ipc/processors/typescript_utility_process_scheduler";
+import { runHealthCheck } from "../ipc/handlers/health_check_handlers";
+import { db } from "../db";
 
 const logger = log.scope("performance-monitor");
 
@@ -22,6 +24,10 @@ let lastCpuUsage: NodeJS.CpuUsage | null = null;
 let lastTimestamp: number | null = null;
 let lastSystemCpuInfo: os.CpuInfo[] | null = null;
 let lastSystemTimestamp: number | null = null;
+
+// Auto-healing state
+let consecutiveCriticalCount = 0;
+const CRITICAL_THRESHOLD_FOR_RESTART = 3;
 
 // Session memory highs. peakRssMB comes from the kernel and is exact; the
 // others are maxima over sampled values and can miss short spikes.
@@ -299,8 +305,71 @@ function capturePerformanceMetrics() {
         ...(peakTimestamp !== null && { peakTimestamp }),
       },
     });
+
+    // Run health check and auto-heal if needed
+    performHealthCheck().catch((err) => {
+      logger.error("Health check failed", err);
+    });
   } catch (error) {
     logger.error("Error capturing performance metrics:", error);
+  }
+}
+
+/**
+ * Perform health check and trigger auto-healing if needed.
+ * - degraded: run WAL checkpoint, clear non-essential caches, log warning
+ * - critical: same as degraded, plus track consecutive count
+ * - critical for 3 consecutive checks: trigger app restart
+ */
+async function performHealthCheck(): Promise<void> {
+  try {
+    const result = await runHealthCheck();
+
+    if (result.status === "critical") {
+      consecutiveCriticalCount++;
+      logger.warn(
+        `Health check: CRITICAL (consecutive: ${consecutiveCriticalCount}/${CRITICAL_THRESHOLD_FOR_RESTART})`,
+        result.checks,
+      );
+
+      // Auto-heal: run WAL checkpoint
+      try {
+        db.$client.pragma("wal_checkpoint(PASSIVE)");
+        logger.info("Auto-heal: WAL checkpoint completed");
+      } catch (err) {
+        logger.error("Auto-heal: WAL checkpoint failed", err);
+      }
+
+      // Trigger app restart after 3 consecutive critical checks
+      if (consecutiveCriticalCount >= CRITICAL_THRESHOLD_FOR_RESTART) {
+        logger.error(
+          `Health check: ${consecutiveCriticalCount} consecutive critical checks — triggering app restart`,
+        );
+        app.relaunch();
+        app.exit(0);
+      }
+    } else if (result.status === "degraded") {
+      consecutiveCriticalCount = 0;
+      logger.warn("Health check: DEGRADED", result.checks);
+
+      // Auto-heal: run WAL checkpoint
+      try {
+        db.$client.pragma("wal_checkpoint(PASSIVE)");
+        logger.info("Auto-heal: WAL checkpoint completed");
+      } catch (err) {
+        logger.error("Auto-heal: WAL checkpoint failed", err);
+      }
+
+      // Force garbage collection if available
+      if (global.gc) {
+        global.gc();
+        logger.info("Auto-heal: forced garbage collection");
+      }
+    } else {
+      consecutiveCriticalCount = 0;
+    }
+  } catch (err) {
+    logger.error("Health check failed", err);
   }
 }
 

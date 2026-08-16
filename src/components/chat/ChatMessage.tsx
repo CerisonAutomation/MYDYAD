@@ -50,6 +50,7 @@ import {
   extractAttachments,
   stripAttachmentInfo,
   extractToolCallSummary,
+  formatToolCallSummary,
 } from "./chat-message-utils";
 import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
 
@@ -302,29 +303,9 @@ const ChatMessage = memo(
                         {toolCallSummary && !isStreaming && (
                           <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium">
-                              {Array.from(toolCallSummary.values()).reduce(
-                                (a, b) => a + b,
-                                0,
-                              )}{" "}
-                              tool
-                              {Array.from(toolCallSummary.values()).reduce(
-                                (a, b) => a + b,
-                                0,
-                              ) !== 1
-                                ? "s"
-                                : ""}
+                              <span aria-hidden="true">{"\uD83D\uDD27"}</span>
+                              {formatToolCallSummary(toolCallSummary)}
                             </span>
-                            {Array.from(toolCallSummary.entries()).map(
-                              ([name, count]) => (
-                                <span
-                                  key={name}
-                                  className="inline-flex items-center gap-0.5 rounded-md bg-muted px-1.5 py-0.5"
-                                >
-                                  {name}
-                                  {count > 1 ? `\u00d7${count}` : ""}
-                                </span>
-                              ),
-                            )}
                           </div>
                         )}
                         <DyadMarkdownParser

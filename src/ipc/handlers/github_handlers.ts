@@ -499,6 +499,7 @@ async function handleListGithubRepos(): Promise<
     const response = await fetch(
       `${getGitHubApiBase()}/user/repos?per_page=100&sort=updated`,
       {
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github+json",
@@ -550,6 +551,7 @@ async function handleGetRepoBranches(
     const response = await fetch(
       `${getGitHubApiBase()}/repos/${owner}/${repo}/branches`,
       {
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github+json",
@@ -774,6 +776,7 @@ export async function handleConnectToExistingRepo(
     const repoResponse = await fetch(
       `${getGitHubApiBase()}/repos/${owner}/${repo}`,
       {
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github+json",
@@ -1009,6 +1012,7 @@ async function handleListCollaborators(
     const response = await fetch(
       `${getGitHubApiBase()}/repos/${app.githubOrg}/${app.githubRepo}/collaborators`,
       {
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github+json",
@@ -1093,6 +1097,7 @@ async function handleInviteCollaborator(
       `${getGitHubApiBase()}/repos/${app.githubOrg}/${app.githubRepo}/collaborators/${encodeURIComponent(trimmedUsername)}`,
       {
         method: "PUT",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github+json",
@@ -1143,6 +1148,7 @@ async function handleRemoveCollaborator(
       `${getGitHubApiBase()}/repos/${app.githubOrg}/${app.githubRepo}/collaborators/${encodeURIComponent(username)}`,
       {
         method: "DELETE",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/vnd.github+json",
@@ -1232,6 +1238,7 @@ async function handleCloneRepoFromUrl(
       const repoResponse = await fetch(
         `${getGitHubApiBase()}/repos/${owner}/${repoName}`,
         {
+          signal: AbortSignal.timeout(30_000),
           headers: {
             Authorization: `Bearer ${accessToken}`,
             Accept: "application/vnd.github+json",

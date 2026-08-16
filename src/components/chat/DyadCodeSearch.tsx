@@ -47,7 +47,10 @@ export const DyadCodeSearch: React.FC<DyadCodeSearchProps> = ({
           </span>
         )}
         {inProgress && (
-          <DyadStateIndicator state="pending" pendingLabel="Searching..." />
+          <DyadStateIndicator
+            state="pending"
+            pendingLabel="Scanning codebase..."
+          />
         )}
         <div className="ml-auto">
           <DyadExpandIcon isExpanded={isExpanded} />

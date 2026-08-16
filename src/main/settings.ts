@@ -84,6 +84,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   previewIdleTimeoutPolicy: "default",
   nodeRuntimePreference: "system",
   disablePreviewNodeAutoInstall: false,
+  defaultFramework: "vite",
 };
 
 const CRASH_SENTINEL_FILE = "session.lock";

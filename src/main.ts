@@ -1197,6 +1197,8 @@ const createWindow = ({
   // the next successful renderer load. We deliberately do nothing here besides
   // writing the record: triggering reloads/dialogs is out of scope for the
   // telemetry hook.
+  let rendererCrashRestartCount = 0;
+  const MAX_RENDERER_CRASH_RESTARTS = 3;
   browserWindow.webContents.on("render-process-gone", (_event, details) => {
     if (isAppQuitting) {
       return;
@@ -1220,17 +1222,52 @@ const createWindow = ({
       performance: readSettings().lastKnownPerformance,
     });
 
+    rendererCrashRestartCount++;
+
     // ── Never-blank recovery: reload the renderer after a crash ──
+    // Limit restart attempts to prevent infinite crash loops
     const crashTarget = browserWindow.webContents.getURL();
     if (
       crashTarget &&
       !crashTarget.startsWith("data:") &&
       !browserWindow.isDestroyed()
     ) {
+      if (rendererCrashRestartCount > MAX_RENDERER_CRASH_RESTARTS) {
+        logger.warn(
+          `Renderer crash restart limit (${MAX_RENDERER_CRASH_RESTARTS}) reached. Showing recovery page.`,
+        );
+        // Show a recovery page instead of attempting another restart
+        const recoveryHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Dyad - Recovery</title>
+<style>
+  html,body{margin:0;height:100%;background:#0d0d12;color:#e8e8ea;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+  .card{text-align:center;max-width:460px;padding:40px}
+  .logo{font-size:44px;margin-bottom:12px}
+  h1{font-size:20px;font-weight:600;margin:0 0 8px}
+  p{font-size:14px;color:#9a9aa5;margin:0 0 20px;line-height:1.5}
+  button{background:#575ecf;color:#fff;border:0;border-radius:8px;padding:10px 22px;font-size:14px;cursor:pointer}
+  button:hover{background:#656de0}
+</style></head><body><div class="card">
+  <div class="logo">⚠️</div>
+  <h1>Recovering from crash...</h1>
+  <p>The renderer process crashed multiple times. This may indicate a critical issue. Please try restarting Dyad.</p>
+  <button onclick="location.reload()">Retry</button>
+</div></body></html>`;
+        browserWindow
+          .loadURL(
+            "data:text/html;charset=utf-8," + encodeURIComponent(recoveryHtml),
+          )
+          .catch(() => {});
+        return;
+      }
+
+      const delayMs = 1500 * rendererCrashRestartCount; // Exponential-ish backoff
+      logger.info(
+        `Scheduling renderer restart #${rendererCrashRestartCount}/${MAX_RENDERER_CRASH_RESTARTS} after ${delayMs}ms`,
+      );
       setTimeout(() => {
         if (!browserWindow.isDestroyed()) {
           debugLog(
-            "recovery: reloading renderer after crash (" + details.reason + ")",
+            `recovery: reloading renderer after crash #${rendererCrashRestartCount} (${details.reason})`,
           );
           browserWindow.loadURL(crashTarget).catch(() => {
             debugLog(
@@ -1238,7 +1275,7 @@ const createWindow = ({
             );
           });
         }
-      }, 1500);
+      }, delayMs);
     }
   });
 
@@ -1621,10 +1658,24 @@ app.on("open-url", (event, url) => {
 
 function startAppWhenReady() {
   debugLog("startAppWhenReady called");
-  // Disable GPU to prevent GPU process crashes (exit code 15)
-  // This must be called before app.whenReady()
+  // Disable GPU to prevent GPU process crashes (exit code 15) on macOS.
+  // The GPU process crashes with exit code 15 and 99% CPU on certain
+  // macOS configurations even with --disable-gpu alone.
+  //
+  // Strategy: layer multiple disable mechanisms so no GPU subprocess is ever
+  // spawned, regardless of what Chromium decides internally:
+  // 1. disableHardwareAcceleration() — Electron API, required before whenReady()
+  // 2. --disable-gpu — belt-and-suspenders; mirrors the API
+  // 3. --disable-gpu-compositing — disables compositor GPU path
+  // 4. --disable-gpu-sandbox — prevents sandbox setup failures
+  // 5. --in-process-gpu — merges GPU INTO browser process (key fix)
+  // 6. --disable-software-rasterizer — prevents SwiftShader CPU fallback
+  app.disableHardwareAcceleration();
   app.commandLine.appendSwitch("disable-gpu");
   app.commandLine.appendSwitch("disable-gpu-compositing");
+  app.commandLine.appendSwitch("disable-gpu-sandbox");
+  app.commandLine.appendSwitch("in-process-gpu");
+  app.commandLine.appendSwitch("disable-software-rasterizer");
   app
     .whenReady()
     .then(onReady)
@@ -1824,6 +1875,26 @@ async function handleDeepLinkReturn(url: string) {
 // Skip clean-exit and killed: routine teardown stops these workers with
 // kill(), and reporting that would flood telemetry with non-crashes.
 app.on("child-process-gone", (_event, details) => {
+  // Log GPU process deaths for observability. With --in-process-gpu, the GPU
+  // process should not exist, so any GPU-type death means the flag didn't
+  // take effect. Log it for diagnostics.
+  if (details.type === "GPU" && !isAppQuitting) {
+    if (details.reason !== "clean-exit" && details.reason !== "killed") {
+      logger.error(
+        "GPU process gone:",
+        details.reason,
+        "exitCode=",
+        details.exitCode,
+      );
+      sendTelemetryEvent("gpu_process:crash_detected", {
+        error: true,
+        reason: details.reason,
+        exit_code: details.exitCode,
+        process_name: details.name,
+      });
+    }
+    return;
+  }
   if (details.type !== "Utility" || isAppQuitting) {
     return;
   }

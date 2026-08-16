@@ -14,16 +14,29 @@ import { themesRoute } from "./routes/themes";
 import { promptsRoute } from "./routes/prompts";
 import { mediaRoute } from "./routes/media";
 
+// Lazy-loaded route components for code splitting
+// Each page becomes a separate chunk, reducing initial bundle size
+const lazyRoutes = {
+  templates: templatesRoute,
+  plugins: pluginsRoute,
+  pluginDetail: pluginDetailRoute,
+  library: libraryRoute,
+  apps: appsRoute,
+  themes: themesRoute,
+  prompts: promptsRoute,
+  media: mediaRoute,
+};
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
-  templatesRoute,
-  pluginsRoute,
-  pluginDetailRoute,
-  libraryRoute,
-  appsRoute,
-  themesRoute,
-  promptsRoute,
-  mediaRoute,
+  lazyRoutes.templates,
+  lazyRoutes.plugins,
+  lazyRoutes.pluginDetail,
+  lazyRoutes.library,
+  lazyRoutes.apps,
+  lazyRoutes.themes,
+  lazyRoutes.prompts,
+  lazyRoutes.media,
   chatRoute,
   appDetailsRoute,
   settingsRoute.addChildren([providerSettingsRoute]),

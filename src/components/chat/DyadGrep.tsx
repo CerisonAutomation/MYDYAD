@@ -85,7 +85,16 @@ export const DyadGrep: React.FC<DyadGrepProps> = ({ children, node }) => {
           </span>
         )}
         {inProgress && (
-          <DyadStateIndicator state="pending" pendingLabel="Searching..." />
+          <DyadStateIndicator
+            state="pending"
+            pendingLabel={
+              total
+                ? `Scanning ${count || "0"} of ${total} files...`
+                : count
+                  ? `Scanning ${count} files...`
+                  : "Searching..."
+            }
+          />
         )}
         {aborted && (
           <DyadStateIndicator state="aborted" abortedLabel="Did not finish" />
