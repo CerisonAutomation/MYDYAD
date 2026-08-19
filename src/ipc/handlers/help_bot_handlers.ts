@@ -1,23 +1,23 @@
+import { type Tool, streamText } from "ai";
 import { app } from "electron";
-import { streamText, Tool } from "ai";
 import { readSettings } from "../../main/settings";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import {
+  type OpenAIResponsesProviderOptions,
+  createOpenAI,
+  openai,
+} from "@ai-sdk/openai";
 import log from "electron-log";
+import { resolveBuiltinModelAlias } from "../shared/remote_language_model_catalog";
+import { helpContracts } from "../types/help";
 import { safeSend } from "../utils/safe_sender";
 import {
   cancelOrphanedBaseStream,
   fastTextOutput,
 } from "../utils/stream_text_utils";
-import {
-  createOpenAI,
-  openai,
-  OpenAIResponsesProviderOptions,
-} from "@ai-sdk/openai";
-import { createTypedHandler } from "./base";
-import { helpContracts } from "../types/help";
 import { getTestFetchOption } from "../utils/test_fetch_override";
-import { resolveBuiltinModelAlias } from "../shared/remote_language_model_catalog";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("help-bot");
 
@@ -110,7 +110,7 @@ export function registerHelpBotHandlers() {
         messages: updatedHistory as any,
         maxRetries: 1,
         onError: (error) => {
-          let errorMessage = (error as any)?.error?.message;
+          const errorMessage = (error as any)?.error?.message;
           logger.error("help bot stream error", errorMessage);
           safeSend(event.sender, "help:chat:response:error", {
             sessionId,

@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-// We might need a Supabase icon here, but for now, let's use a generic one or text.
-// import { Supabase } from "lucide-react"; // Placeholder
-import { DatabaseZap, Trash2 } from "lucide-react"; // Using DatabaseZap as a placeholder
+import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSettings } from "@/hooks/useSettings";
 import { useSupabase } from "@/hooks/useSupabase";
-import { showSuccess, showError } from "@/lib/toast";
 import { isSupabaseConnected } from "@/lib/schemas";
+import { showError, showSuccess } from "@/lib/toast";
+// We might need a Supabase icon here, but for now, let's use a generic one or text.
+// import { Supabase } from "lucide-react"; // Placeholder
+import { DatabaseZap, Trash2 } from "lucide-react"; // Using DatabaseZap as a placeholder
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export function SupabaseIntegration() {
   const { t } = useTranslation(["home", "common"]);

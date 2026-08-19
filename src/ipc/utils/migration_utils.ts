@@ -1,23 +1,23 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 import {
-  getConnectionUri,
+  type DatabaseConnectionOptions,
+  NotImplementedMigrationError,
+  PgSchemaDiffError,
+  type SchemaDiffStatement,
+  UnsupportedPostgresVersionError,
+  generateSchemaDiff,
+} from "ts-pg-schema-diff";
+import {
   executeNeonSql,
+  getConnectionUri,
 } from "../../neon_admin/neon_context";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { IS_TEST_BUILD } from "../utils/test_utils";
-import { getAppWithNeonBranch, getProductionBranchId } from "./neon_utils";
 import type {
   DestructiveStatement,
   DestructiveStatementReason,
 } from "../types/migration";
-import {
-  generateSchemaDiff,
-  NotImplementedMigrationError,
-  PgSchemaDiffError,
-  UnsupportedPostgresVersionError,
-  type DatabaseConnectionOptions,
-  type SchemaDiffStatement,
-} from "ts-pg-schema-diff";
+import { IS_TEST_BUILD } from "../utils/test_utils";
+import { getAppWithNeonBranch, getProductionBranchId } from "./neon_utils";
 
 export const logger = log.scope("migration_handlers");
 
@@ -330,7 +330,7 @@ export async function prepareMigrationContext({
         DyadErrorKind.Precondition,
       );
     }
-    tableCount = parseInt(parsed?.[0]?.cnt ?? "0", 10);
+    tableCount = Number.parseInt(parsed?.[0]?.cnt ?? "0", 10);
   }
   if (!tableCount || tableCount === 0) {
     throw new DyadError(

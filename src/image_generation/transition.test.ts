@@ -1,3 +1,4 @@
+import type { RequestId } from "@/distributed_machines/request_identity";
 import { describe, expect, it } from "vitest";
 import type {
   ImageGenerationActorState,
@@ -6,7 +7,6 @@ import type {
   ImageGenerationJobDetails,
 } from "./state";
 import { transition } from "./transition";
-import type { RequestId } from "@/distributed_machines/request_identity";
 
 const job: ImageGenerationJobDetails = {
   id: "job-1",

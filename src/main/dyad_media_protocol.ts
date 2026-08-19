@@ -8,9 +8,9 @@ import {
   DYAD_SCREENSHOT_SUBDIR,
 } from "../ipc/utils/media_path_utils";
 import {
-  createMediaThumbnailService,
-  MediaThumbnailError,
   type CreateThumbnailFromPath,
+  MediaThumbnailError,
+  createMediaThumbnailService,
 } from "../ipc/utils/media_thumbnail";
 
 type DyadMediaProtocolDependencies = {

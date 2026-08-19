@@ -1,6 +1,6 @@
-import { useSettings } from "@/hooks/useSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useSettings } from "@/hooks/useSettings";
 
 export function TestingForNewAppsSwitch() {
   const { settings, updateSettings } = useSettings();

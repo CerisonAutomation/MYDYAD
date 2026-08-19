@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import {
   assertAllCommandsProducible,
   assertAllStatesReachable,
   commandsOf,
   ignoreReasonOf,
 } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import type {
   PreviewCommand,
   PreviewEvent,
@@ -19,8 +19,8 @@ import {
 } from "./state";
 import {
   BRANCH_UNAVAILABLE_MESSAGE,
-  transition,
   type TransitionResult,
+  transition,
 } from "./transition";
 
 const APP_ID = 7;

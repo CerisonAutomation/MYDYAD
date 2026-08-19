@@ -10,8 +10,8 @@
  * - repo-intel's hotspot detection for identifying critical files
  */
 
-import log from "electron-log";
 import type { CodebaseFile } from "@/utils/codebase";
+import log from "electron-log";
 
 const logger = log.scope("local_lazy_edits");
 

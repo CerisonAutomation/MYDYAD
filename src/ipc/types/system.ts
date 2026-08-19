@@ -1,9 +1,9 @@
 import { z } from "zod";
 import {
-  defineContract,
-  defineEvent,
   createClient,
   createEventClient,
+  defineContract,
+  defineEvent,
 } from "../contracts/core";
 
 // =============================================================================

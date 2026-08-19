@@ -1,24 +1,24 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { utilityProcess, type UtilityProcess } from "electron";
+import { type UtilityProcess, utilityProcess } from "electron";
 
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
+import { getTypeScriptCachePath } from "@/paths/paths";
+import log from "electron-log";
 import type {
   CodeExplorerHostResponse,
   CodeExplorerResult,
   CodeExplorerWorkerInput,
 } from "../../../shared/code_explorer_types";
-import log from "electron-log";
-import { getTypeScriptCachePath } from "@/paths/paths";
-import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
-import {
-  type ResidentProcessRegistration,
-  typescriptUtilityProcessScheduler,
-} from "./typescript_utility_process_scheduler";
 import {
   getTypeScriptCompilerPath,
   resolveTypeScriptPackageJsonPathSync,
 } from "../../../shared/node_module_resolution";
+import {
+  type ResidentProcessRegistration,
+  typescriptUtilityProcessScheduler,
+} from "./typescript_utility_process_scheduler";
 
 const logger = log.scope("code-explorer");
 const DEFAULT_CONFIGS = ["tsconfig.app.json", "tsconfig.json"];

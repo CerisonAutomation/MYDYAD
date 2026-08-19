@@ -1,44 +1,11 @@
 import {
-  useCallback,
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { useStore } from "jotai";
-import { useTranslation } from "react-i18next";
-import { usePostHog } from "posthog-js/react";
-import { ipc } from "@/ipc/types";
-import { generateCuteAppName } from "@/lib/utils";
-import { NEON_TEMPLATE_IDS } from "@/shared/templates";
-import { neonTemplateHook } from "@/client_logic/template_hook";
-import { useSettings } from "@/hooks/useSettings";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { invalidateAppQuery } from "@/hooks/useLoadApp";
-import { useSelectChat } from "@/hooks/useSelectChat";
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
-import { useOpenPreviewIfSetupRequired } from "@/hooks/useOpenPreviewIfSetupRequired";
-import { queryKeys } from "@/lib/queryKeys";
-import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
-import { showError } from "@/lib/toast";
-import {
   attachmentsAtom,
   homeChatInputValueAtom,
   homeSelectedAppAtom,
 } from "@/atoms/chatAtoms";
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
-import type { Clock, IdSource } from "@/state_machines/clock";
-import { createTraceObserver } from "@/state_machines/trace";
-import {
-  useControllerSnapshot,
-  useManagerLifecycle,
-  useManagerPagehideDisposal,
-} from "@/state_machines/react";
+import { neonTemplateHook } from "@/client_logic/template_hook";
+import { SetupBanner } from "@/components/SetupBanner";
 import {
   Dialog,
   DialogContent,
@@ -46,20 +13,53 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SetupBanner } from "@/components/SetupBanner";
+import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
+import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { invalidateAppQuery } from "@/hooks/useLoadApp";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useOpenPreviewIfSetupRequired } from "@/hooks/useOpenPreviewIfSetupRequired";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { useSettings } from "@/hooks/useSettings";
+import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import type { UserSettings } from "@/lib/schemas";
+import { showError } from "@/lib/toast";
+import { generateCuteAppName } from "@/lib/utils";
+import { NEON_TEMPLATE_IDS } from "@/shared/templates";
+import type { Clock, IdSource } from "@/state_machines/clock";
 import {
+  useControllerSnapshot,
+  useManagerLifecycle,
+  useManagerPagehideDisposal,
+} from "@/state_machines/react";
+import { createTraceObserver } from "@/state_machines/trace";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useStore } from "jotai";
+import { usePostHog } from "posthog-js/react";
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
+import {
+  type FirstPromptDeps,
   createFirstPromptCommandRunner,
   getRequestedChatModeForFirstPrompt,
-  type FirstPromptDeps,
 } from "./commands";
 import { FirstPromptController } from "./controller";
 import {
-  projectFirstPromptState,
   type FirstPromptSagaProjection,
+  projectFirstPromptState,
 } from "./projection";
-import type { FirstPromptEvent, FirstPromptPayload } from "./state";
 import { resolveFirstPromptDefaultChatMode } from "./provider_resume";
-import type { UserSettings } from "@/lib/schemas";
+import type { FirstPromptEvent, FirstPromptPayload } from "./state";
 
 export interface FirstPromptChatStream {
   submit(request: {

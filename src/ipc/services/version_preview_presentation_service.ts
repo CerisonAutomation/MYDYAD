@@ -1,10 +1,10 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { VersionCommandResult } from "@/ipc/types";
 import {
-  windowRegistry,
   type WindowRegistry,
+  windowRegistry,
 } from "@/window_infrastructure/main/window_registry";
 import type { WindowSessionId } from "@/window_infrastructure/types";
-import type { VersionCommandResult } from "@/ipc/types";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { safeSend } from "../utils/safe_sender";
 
 export class VersionPreviewPresentationService {

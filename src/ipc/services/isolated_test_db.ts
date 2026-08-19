@@ -1,32 +1,32 @@
 import fs from "node:fs";
 import log from "electron-log";
 
+import { getAppPort } from "../../../shared/ports";
+import type { apps } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
-import { apps } from "../../db/schema";
-import {
-  createTempTestBranch,
-  markAndDeleteTempTestBranch,
-} from "../utils/neon_test_branch";
-import { createNeonTestAccount } from "../utils/neon_test_account";
-import {
-  checkRls,
-  createTempTestUser,
-  deleteTempTestUser,
-  type TempTestUser,
-} from "../utils/supabase_test_user";
 import { detectLegacyAppKey } from "../../supabase_admin/supabase_app_key";
 import { getPublishableKey } from "../../supabase_admin/supabase_context";
+import type { TestIsolation } from "../types/tests";
 import {
   getEnvFilePath,
   readEnvFileIfExists,
   updateNeonEnvVars,
 } from "../utils/app_env_var_utils";
 import { detectFrameworkType } from "../utils/framework_utils";
+import { createNeonTestAccount } from "../utils/neon_test_account";
+import {
+  createTempTestBranch,
+  markAndDeleteTempTestBranch,
+} from "../utils/neon_test_branch";
 import { runningApps, stopAppByInfo } from "../utils/process_manager";
-import { cleanUpPort, executeApp } from "./app_runtime_service";
+import {
+  type TempTestUser,
+  checkRls,
+  createTempTestUser,
+  deleteTempTestUser,
+} from "../utils/supabase_test_user";
 import { appRunActorService } from "./app_run_actor_service";
-import { getAppPort } from "../../../shared/ports";
-import type { TestIsolation } from "../types/tests";
+import { cleanUpPort, executeApp } from "./app_runtime_service";
 
 const logger = log.scope("isolated_test_db");
 

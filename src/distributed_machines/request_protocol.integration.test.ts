@@ -1,27 +1,27 @@
-import { describe, expect, it } from "vitest";
-import { change } from "@/state_machines/types";
 import {
-  createInvocationRef,
   type InvocationRef,
+  createInvocationRef,
 } from "@/state_machines/invocation_ref";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
+import { change } from "@/state_machines/types";
+import { describe, expect, it } from "vitest";
 import { ActorHost } from "./actor_host";
 import type { DistributedMachineDefinition } from "./definition";
 import {
+  type OperationLookupIdentity,
+  OperationRegistry,
   bindOperationRegistryLifetimes,
   finalizeOperationAdmission,
-  OperationRegistry,
-  type OperationLookupIdentity,
 } from "./operation_registry";
 import { PreparedRequestScope } from "./prepared_request";
 import { createCompletionAwareActor } from "./request_actor";
 import type {
   RequestId,
-  RequestIdentity,
   RequestIdempotencyKey,
+  RequestIdentity,
   RequestMessageId,
 } from "./request_identity";
 

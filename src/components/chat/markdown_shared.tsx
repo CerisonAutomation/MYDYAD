@@ -1,12 +1,12 @@
+import { ipc } from "@/ipc/types";
 /**
  * Shared markdown plumbing — a leaf module so neither DyadMarkdownParser nor
  * VanillaMarkdownParser has to import render helpers through each other
  * (which caused a module evaluation-order ReferenceError in dev).
  */
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import remarkGfm from "remark-gfm";
 import { CodeHighlight } from "./CodeHighlight";
-import { ipc } from "@/ipc/types";
 
 export const customLink = ({
   node: _node,

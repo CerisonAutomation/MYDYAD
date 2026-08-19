@@ -2,7 +2,6 @@ import { useAtom } from "jotai";
 import { KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { SkippableBanner } from "./SkippableBanner";
 import { dismissedLegacySupabaseKeyAppIdsAtom } from "@/atoms/supabaseAtoms";
 import {
   useLegacySupabaseKey,
@@ -12,6 +11,7 @@ import { useLoadApp } from "@/hooks/useLoadApp";
 import { useSettings } from "@/hooks/useSettings";
 import { isSupabaseConnected } from "@/lib/schemas";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
+import { SkippableBanner } from "./SkippableBanner";
 
 /**
  * Warns, above the chat input, that this app still authenticates with the

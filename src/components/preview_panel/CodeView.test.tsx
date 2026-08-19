@@ -1,10 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createStore, Provider } from "jotai";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { selectedFileAtom, stagedDiffFileAtom } from "@/atoms/viewAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedFileAtom, stagedDiffFileAtom } from "@/atoms/viewAtoms";
 import { queryKeys } from "@/lib/queryKeys";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CodeView } from "./CodeView";
 
 const mocks = vi.hoisted(() => ({

@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useSettings } from "@/hooks/useSettings";
-import { showError, showSuccess } from "@/lib/toast";
 import { ipc } from "@/ipc/types";
+import type { ManagedNodeInstallProgress, NodeSystemInfo } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { showError, showSuccess } from "@/lib/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  FolderOpen,
-  RotateCcw,
-  CheckCircle,
   AlertCircle,
+  CheckCircle,
   Download,
-  Trash2,
+  FolderOpen,
   Loader2,
+  RotateCcw,
+  Trash2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ManagedNodeInstallProgress, NodeSystemInfo } from "@/ipc/types";
 
 export function NodePathSelector() {
   const { settings, updateSettings } = useSettings();

@@ -1,12 +1,12 @@
-import { getNeonAvailableSystemPrompt } from "../prompts/neon_prompt";
-import { getCachedEmailPasswordConfig } from "./neon_management_client";
-import { getNeonClientCode, getNeonContext } from "./neon_context";
-import { getDyadAppPath } from "../paths/paths";
+import type { AppFrameworkType } from "@/lib/framework_constants";
 import {
   detectFrameworkType,
   detectNextJsMajorVersion,
 } from "../ipc/utils/framework_utils";
-import type { AppFrameworkType } from "@/lib/framework_constants";
+import { getDyadAppPath } from "../paths/paths";
+import { getNeonAvailableSystemPrompt } from "../prompts/neon_prompt";
+import { getNeonClientCode, getNeonContext } from "./neon_context";
+import { getCachedEmailPasswordConfig } from "./neon_management_client";
 
 interface BuildNeonPromptAdditionsParams {
   projectId: string;

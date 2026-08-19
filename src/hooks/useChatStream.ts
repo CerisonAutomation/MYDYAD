@@ -1,8 +1,8 @@
+import type { ChatStreamRuntimeDeps } from "@/chat_stream/runtime_deps";
+import { usePackageManagerWarningStore } from "@/package_manager_warnings/PackageManagerWarningProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "jotai";
 import { usePostHog } from "posthog-js/react";
-import { usePackageManagerWarningStore } from "@/package_manager_warnings/PackageManagerWarningProvider";
-import type { ChatStreamRuntimeDeps } from "@/chat_stream/runtime_deps";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 

@@ -1,37 +1,37 @@
-import { useTranslation } from "react-i18next";
+import { PrivacyBanner } from "@/components/TelemetryBanner";
+import { HomeChatInput } from "@/components/chat/HomeChatInput";
+import { useSettings } from "@/hooks/useSettings";
+import { INSPIRATION_PROMPTS } from "@/prompts/inspiration_prompts";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
+import { usePostHog } from "posthog-js/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   attachmentsAtom,
   hasManuallySelectedChatModeAtom,
   homeChatInputValueAtom,
   homeSelectedAppAtom,
 } from "../atoms/chatAtoms";
-import { useSettings } from "@/hooks/useSettings";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { HomeChatInput } from "@/components/chat/HomeChatInput";
-import { usePostHog } from "posthog-js/react";
-import { PrivacyBanner } from "@/components/TelemetryBanner";
-import { INSPIRATION_PROMPTS } from "@/prompts/inspiration_prompts";
 
-import { ImportAppButton } from "@/components/ImportAppButton";
 import { FeaturedAppShowcase } from "@/components/FeaturedAppShowcase";
+import { ImportAppButton } from "@/components/ImportAppButton";
 
-import type { FileAttachment } from "@/ipc/types";
-import type { ListedApp } from "@/ipc/types/app";
-import { hasDyadProKey, type ChatMode } from "@/lib/schemas";
-import {
-  FREE_PRO_MODEL_FALLBACK_CHAT_MODE,
-  isFreeProBuildModeCombination,
-} from "@/lib/freeProModel";
-import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
-import { RefreshCw, Zap } from "lucide-react";
 import {
   useFirstPromptSaga,
   useFirstPromptSend,
 } from "@/first_prompt/FirstPromptProvider";
+import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
+import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import type { FileAttachment } from "@/ipc/types";
+import type { ListedApp } from "@/ipc/types/app";
+import {
+  FREE_PRO_MODEL_FALLBACK_CHAT_MODE,
+  isFreeProBuildModeCombination,
+} from "@/lib/freeProModel";
 import { getHomeDefaultChatMode } from "@/lib/homeChatMode";
+import { type ChatMode, hasDyadProKey } from "@/lib/schemas";
+import { RefreshCw, Zap } from "lucide-react";
 
 // Adding an export for attachments
 export interface HomeSubmitOptions {

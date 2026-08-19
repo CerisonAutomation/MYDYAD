@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import {
   type RetryReplayEvent,
   buildRetryReplayMessages,
@@ -6,6 +5,7 @@ import {
   maybeCaptureRetryReplayText,
   toToolResultOutput,
 } from "@/pro/main/ipc/handlers/local_agent/retry_replay_utils";
+import { describe, expect, it } from "vitest";
 
 // ---------------------------------------------------------------------------
 // buildRetryReplayMessages

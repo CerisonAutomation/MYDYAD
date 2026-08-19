@@ -1,11 +1,4 @@
-/**
- * Loading Skeleton Component
- *
- * Provides skeleton loading states for better UX.
- * Shows placeholder content while data is loading.
- */
 
-import React from "react";
 import { cn } from "@/lib/utils";
 
 interface SkeletonProps {

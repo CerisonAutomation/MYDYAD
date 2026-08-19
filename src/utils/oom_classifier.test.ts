@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { classifyOom } from "@/utils/oom_classifier";
 import type { MinidumpSummary } from "@/utils/minidump_summary";
+import { classifyOom } from "@/utils/oom_classifier";
+import { describe, expect, it } from "vitest";
 
 const baseDump: MinidumpSummary = { exceptionCode: 0xc0000005 };
 

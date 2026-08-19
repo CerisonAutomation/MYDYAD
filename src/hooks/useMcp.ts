@@ -1,20 +1,20 @@
-import { useMemo } from "react";
+import { ipc } from "@/ipc/types";
+import type {
+  CreateMcpServer,
+  McpListToolsResult,
+  McpServer,
+  McpServerUpdate,
+  McpTool,
+  McpToolConsent,
+} from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
 import {
   keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ipc } from "@/ipc/types";
-import type {
-  McpServer,
-  McpServerUpdate,
-  McpTool,
-  McpToolConsent,
-  CreateMcpServer,
-  McpListToolsResult,
-} from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
+import { useMemo } from "react";
 
 export type Transport = "stdio" | "http";
 

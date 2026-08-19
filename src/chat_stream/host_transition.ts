@@ -1,5 +1,5 @@
 import { sameInvocationRef } from "@/state_machines/invocation_ref";
-import { ignore, type TransitionResult } from "@/state_machines/types";
+import { type TransitionResult, ignore } from "@/state_machines/types";
 import type { ChatStreamHostCommand, ChatStreamHostState } from "./host_state";
 import type { ChatStreamWireEvent } from "./transport";
 

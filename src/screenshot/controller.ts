@@ -1,6 +1,6 @@
 import {
-  TransactionalDispatcher,
   type DispatcherError,
+  TransactionalDispatcher,
 } from "@/state_machines/dispatcher";
 import type { TransitionObserver } from "@/state_machines/types";
 import {

@@ -609,8 +609,9 @@ export function getRankedCandidates(
     .slice(0, MAX_INTERNAL_CANDIDATES)
     .map((candidate) => {
       if (!candidate.id) {
-        throw new Error(
+        throw new DyadError(
           `Ranked candidate missing stable id: ${candidate.path}`,
+          DyadErrorKind.Internal,
         );
       }
       return candidate;

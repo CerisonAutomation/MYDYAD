@@ -1,14 +1,14 @@
-import log from "electron-log";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { getDyadAppPath } from "@/paths/paths";
+import { db } from "@/db";
+import { apps } from "@/db/schema";
 import {
   ATTACHMENTS_MANIFEST_FILE,
   DYAD_MEDIA_DIR_NAME,
   pruneAttachmentManifest,
 } from "@/ipc/utils/media_path_utils";
-import { db } from "@/db";
-import { apps } from "@/db/schema";
+import { getDyadAppPath } from "@/paths/paths";
+import log from "electron-log";
 
 const logger = log.scope("media_cleanup");
 

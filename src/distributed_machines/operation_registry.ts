@@ -1,9 +1,9 @@
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import {
-  sameInvocationRef,
-  type InvocationRef,
-} from "@/state_machines/invocation_ref";
 import type { TransitionOutcomePublisher } from "@/state_machines/dispatcher";
+import {
+  type InvocationRef,
+  sameInvocationRef,
+} from "@/state_machines/invocation_ref";
 import type {
   ActorDisposalCause,
   ActorInstanceId,

@@ -1,13 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { readSettings } from "@/main/settings";
 import { SupabaseManagementAPIError } from "@dyad-sh/supabase-management-js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   classifyManagementApiError,
   getProjectApiKeys,
   listSupabaseOrganizations,
   refreshSupabaseToken,
 } from "./supabase_management_client";
-import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
-import { readSettings } from "@/main/settings";
 
 vi.mock("@/main/settings", () => ({
   readSettings: vi.fn(() => ({})),

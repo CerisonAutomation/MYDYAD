@@ -1,11 +1,11 @@
-import React from "react";
-import { toast } from "sonner";
-import { X, Copy, Check, ExternalLink } from "lucide-react";
+
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Check, Copy, ExternalLink, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface CustomErrorToastProps {
   message: string;

@@ -1,12 +1,12 @@
-import type { FC, ReactNode } from "react";
 import { Globe } from "lucide-react";
+import type { FC, ReactNode } from "react";
 import {
+  DyadBadge,
   DyadCard,
   DyadCardHeader,
-  DyadBadge,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
-import { CustomTagState } from "./stateTypes";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadWebFetchProps {
   children?: ReactNode;

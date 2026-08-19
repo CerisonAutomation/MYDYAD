@@ -1,19 +1,19 @@
-import React, { useCallback } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { ExternalLink, Star } from "lucide-react";
-import { SidebarMenuItem } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { AppAvatar } from "@/components/AppAvatar";
-import type { ListedApp } from "@/ipc/types/app";
+import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { SidebarMenuItem } from "@/components/ui/sidebar";
 import { ipc } from "@/ipc/types";
-import { useTranslation } from "react-i18next";
+import type { ListedApp } from "@/ipc/types/app";
 import { showError } from "@/lib/toast";
+import { formatDistanceToNow } from "date-fns";
+import { ExternalLink, Star } from "lucide-react";
+import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 type AppItemProps = {
   app: ListedApp;

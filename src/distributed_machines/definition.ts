@@ -1,5 +1,4 @@
 import type { IdSource } from "@/state_machines/clock";
-import type { z } from "zod";
 import type {
   CommandScheduler,
   DispatchTicket,
@@ -13,17 +12,18 @@ import type {
   TransitionObserver,
   TransitionResult,
 } from "@/state_machines/types";
-import type {
-  RemoteIntentContract,
-  RemoteIntentPolicy,
-  RuntimeRemoteIntentContract,
-} from "./remote_intent_contract";
+import type { z } from "zod";
 import type { KeyedAdmissionGeneration } from "./keyed_admission_gate";
 import type {
   OperationLookupIdentity,
   OperationReceiptMetadata,
   OperationRegistry,
 } from "./operation_registry";
+import type {
+  RemoteIntentContract,
+  RemoteIntentPolicy,
+  RuntimeRemoteIntentContract,
+} from "./remote_intent_contract";
 
 export type ActorInstanceId = string;
 

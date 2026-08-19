@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
-  transformToolTags,
-  formatAsTranscript,
-  TOOL_RESULT_TRUNCATION_LIMIT,
   type CompactionMessage,
+  TOOL_RESULT_TRUNCATION_LIMIT,
+  formatAsTranscript,
+  transformToolTags,
 } from "@/ipc/handlers/compaction/compaction_storage";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("transformToolTags", () => {
   it("passes through content without tool tags unchanged", () => {

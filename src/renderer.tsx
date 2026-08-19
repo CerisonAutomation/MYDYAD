@@ -1,10 +1,10 @@
+import { RouterProvider } from "@tanstack/react-router";
+import log from "electron-log";
+import posthog from "posthog-js";
+import { PostHogProvider } from "posthog-js/react";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { router } from "./router";
-import { RouterProvider } from "@tanstack/react-router";
-import { PostHogProvider } from "posthog-js/react";
-import posthog from "posthog-js";
-import log from "electron-log";
 
 // Fix EIO/ENOTTY/EBADF errors when renderer console transport writes to a
 // closed file descriptor (happens during shutdown or packaged builds).
@@ -34,60 +34,60 @@ try {
 }
 import {
   getTelemetryUserId,
-  isTelemetryOptedIn,
   isDyadProUser,
+  isTelemetryOptedIn,
 } from "./hooks/useSettings";
 
 // Initialize i18next before any rendering
 import "./i18n";
 import {
+  MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-  MutationCache,
   useQueryClient,
 } from "@tanstack/react-query";
-import { showError } from "./lib/toast";
-import { ipc } from "./ipc/types";
 import { useStore } from "jotai";
-import { queryKeys } from "./lib/queryKeys";
+import {
+  earlyTelemetryEvents,
+  registerEarlyRendererEvents,
+} from "./app_wiring/early_renderer_events";
+import { registerRendererIpcListeners } from "./app_wiring/registerRendererIpcListeners";
+import {
+  ensureRecentViewedChatIdAtom,
+  initializeChatTabSessionStorageAtom,
+} from "./atoms/chatAtoms";
+import { clearRecorderForAppAtom } from "./atoms/recorderAtoms";
+import { clearTestRuntimeForAppAtom } from "./atoms/testRuntimeAtoms";
+import {
+  ChatStreamProvider,
+  useChatStreamManager,
+} from "./chat_stream/ChatStreamProvider";
+import { ipc } from "./ipc/types";
 import {
   createExceptionFromTelemetry,
   getExceptionTelemetryContext,
   shouldBypassNonProTelemetrySampling,
   shouldFilterPostHogExceptionEvent,
 } from "./lib/posthogTelemetry";
-import { registerRendererIpcListeners } from "./app_wiring/registerRendererIpcListeners";
-import {
-  ChatStreamProvider,
-  useChatStreamManager,
-} from "./chat_stream/ChatStreamProvider";
+import { queryKeys } from "./lib/queryKeys";
+import { showError } from "./lib/toast";
 import {
   EntityDisposalProvider,
   useEntityDisposal,
   useRegisterEntityDisposer,
 } from "./state_machines/react";
-import { clearTestRuntimeForAppAtom } from "./atoms/testRuntimeAtoms";
 import {
-  ensureRecentViewedChatIdAtom,
-  initializeChatTabSessionStorageAtom,
-} from "./atoms/chatAtoms";
+  captureErrorScreenshot,
+  getLastErrorScreenshot,
+} from "./utils/error_screenshot";
 import {
   configureChatTabWindowSession,
   promoteMostRecentChatTabSession,
   pruneChatTabWindowSessions,
 } from "./window_infrastructure/chat_tab_session_storage";
-import type { VisibleEntity } from "./window_infrastructure/types";
 import { initialWindowNavigation } from "./window_infrastructure/initial_window_navigation";
-import {
-  earlyTelemetryEvents,
-  registerEarlyRendererEvents,
-} from "./app_wiring/early_renderer_events";
-import { clearRecorderForAppAtom } from "./atoms/recorderAtoms";
-import {
-  captureErrorScreenshot,
-  getLastErrorScreenshot,
-} from "./utils/error_screenshot";
+import type { VisibleEntity } from "./window_infrastructure/types";
 
 // @ts-ignore
 registerEarlyRendererEvents();

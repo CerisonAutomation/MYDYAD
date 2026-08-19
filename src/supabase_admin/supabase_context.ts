@@ -1,16 +1,7 @@
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { retryWithRateLimit } from "@/ipc/utils/retryWithRateLimit";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { renderTestDatabaseSchema } from "@/lib/test_database_schema";
-import {
-  getProjectApiKeys,
-  getSupabaseClient,
-  type SupabaseApiKey,
-} from "./supabase_management_client";
-import {
-  SUPABASE_SCHEMA_QUERY,
-  SUPABASE_FUNCTIONS_QUERY,
-} from "./supabase_schema_query";
 import {
   buildSchemaSnapshotSql,
   filterSchemaForTable,
@@ -18,6 +9,15 @@ import {
   missingPublicTableComment,
   renderSchemaSql,
 } from "ts-pg-schema-diff";
+import {
+  type SupabaseApiKey,
+  getProjectApiKeys,
+  getSupabaseClient,
+} from "./supabase_management_client";
+import {
+  SUPABASE_FUNCTIONS_QUERY,
+  SUPABASE_SCHEMA_QUERY,
+} from "./supabase_schema_query";
 
 // Prefix of a new-format publishable key.
 const PUBLISHABLE_KEY_PREFIX = "sb_publishable_";
@@ -94,13 +94,13 @@ export async function getPublishableKey({
   }
   return publishableKey.api_key;
 }
-export const getSupabaseClientCode = async function ({
+export const getSupabaseClientCode = async ({
   projectId,
   organizationSlug,
 }: {
   projectId: string;
   organizationSlug: string | null;
-}) {
+}) => {
   const publishableKey = await getPublishableKey({
     projectId,
     organizationSlug,

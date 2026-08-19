@@ -5,7 +5,10 @@
  * Beautiful UI with smooth animations and provider status indicators.
  */
 
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { PriceBadge } from "@/components/PriceBadge";
+import { ProviderIcon } from "@/components/ProviderIcon";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,27 +16,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import type { LanguageModel, LocalModel } from "@/ipc/types";
 import {
-  CheckIcon,
-  SearchIcon,
-  XIcon,
-  Settings2Icon,
-  KeyRoundIcon,
-  ZapIcon,
-  SparklesIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ProviderIcon } from "@/components/ProviderIcon";
-import { PriceBadge } from "@/components/PriceBadge";
-import {
+  type SearchableModel,
   buildModelSearchIndex,
   createModelFuse,
   searchModels,
-  type SearchableModel,
 } from "@/lib/model_search";
-import type { LanguageModel, LocalModel } from "@/ipc/types";
+import { cn } from "@/lib/utils";
+import {
+  CheckIcon,
+  KeyRoundIcon,
+  SearchIcon,
+  Settings2Icon,
+  SparklesIcon,
+  XIcon,
+  ZapIcon,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ModelSearchDialogProps {
   open: boolean;

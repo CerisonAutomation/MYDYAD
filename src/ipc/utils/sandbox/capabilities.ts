@@ -1,14 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { assertMutationPathAllowed, safeJoin } from "@/ipc/utils/path_utils";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readContainedTextFile } from "@/ipc/utils/bounded_text_file";
 import {
   getDyadMediaDir,
   listStoredAttachments,
   resolveAttachmentLogicalPath,
   toAttachmentLogicalPath,
 } from "@/ipc/utils/media_path_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { readContainedTextFile } from "@/ipc/utils/bounded_text_file";
+import { assertMutationPathAllowed, safeJoin } from "@/ipc/utils/path_utils";
 import { isDotenvFilePath, redactDotenvValues } from "@/utils/dotenv_redaction";
 import { SANDBOX_READ_FILE_LIMIT_BYTES } from "./limits";
 

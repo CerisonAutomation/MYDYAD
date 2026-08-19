@@ -1,21 +1,21 @@
+import { parseSearchReplaceBlocks } from "@/pro/shared/search_replace_parser";
+import { ArrowLeftRight, Search } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { Search, ArrowLeftRight } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
-import { useAutoCollapse } from "./useAutoCollapse";
-import { parseSearchReplaceBlocks } from "@/pro/shared/search_replace_parser";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
-  DyadExpandIcon,
-  DyadStateIndicator,
-  DyadFilePath,
-  DyadDescription,
+  DyadCard,
   DyadCardContent,
+  DyadCardHeader,
+  DyadDescription,
+  DyadExpandIcon,
+  DyadFilePath,
+  DyadStateIndicator,
 } from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadSearchReplaceProps {
   children?: ReactNode;

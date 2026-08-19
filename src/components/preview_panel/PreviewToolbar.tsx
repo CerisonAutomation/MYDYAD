@@ -1,11 +1,33 @@
-import { useAtom, useAtomValue } from "jotai";
 import {
   type PreviewMode,
   previewModeAtom,
   selectedAppIdAtom,
 } from "@/atoms/appAtoms";
 import { isChatPanelHiddenAtom, isPreviewOpenAtom } from "@/atoms/viewAtoms";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCheckProblems } from "@/hooks/useCheckProblems";
+import { useReducedMotionPref } from "@/hooks/useReducedMotion";
+import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { useVersions } from "@/hooks/useVersions";
+import type { Version } from "@/ipc/types";
+import { cn } from "@/lib/utils";
+import {
+  type PreviewEvent,
+  type PreviewState,
+  diffVersionIdForState,
+} from "@/version_preview/state";
+import { motion } from "framer-motion";
+import { useAtom, useAtomValue } from "jotai";
 import {
   AlertTriangle,
   Code,
@@ -20,30 +42,8 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { useReducedMotionPref } from "@/hooks/useReducedMotion";
-import { useVersionPreview } from "@/hooks/useVersionPreview";
-import { useVersions } from "@/hooks/useVersions";
-import {
-  diffVersionIdForState,
-  type PreviewEvent,
-  type PreviewState,
-} from "@/version_preview/state";
-import type { Version } from "@/ipc/types";
+import { useTranslation } from "react-i18next";
 
 type ToolbarMode = Exclude<PreviewMode, "plan">;
 

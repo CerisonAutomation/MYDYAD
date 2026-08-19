@@ -1,4 +1,4 @@
-import { draftIncludesSignIn, type RecordedTestDraft } from "./draft";
+import { type RecordedTestDraft, draftIncludesSignIn } from "./draft";
 import type { LocatorDescriptor, RecordedAction } from "./types";
 
 /** JS/JSON string literal — safe against quotes, backslashes, newlines. */

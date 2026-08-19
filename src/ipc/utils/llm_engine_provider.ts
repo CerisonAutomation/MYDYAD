@@ -1,24 +1,24 @@
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { OpenAICompatibleChatLanguageModel } from "@ai-sdk/openai-compatible";
 import { OpenAIResponsesLanguageModel } from "@ai-sdk/openai/internal";
-import { createAnthropic } from "@ai-sdk/anthropic";
 import {
-  FetchFunction,
+  type FetchFunction,
   loadApiKey,
   withoutTrailingSlash,
 } from "@ai-sdk/provider-utils";
 
-import log from "electron-log";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { getExtraProviderOptionsForEngine } from "./thinking_utils";
-import { getTestFetchOption } from "./test_fetch_override";
-import { DYAD_INTERNAL_REQUEST_ID_HEADER } from "./provider_options";
-import type { ModelSelection, UserSettings } from "../../lib/schemas";
-import type { LanguageModel } from "ai";
 import {
   findInvalidProviderApiKeyCharacter,
   formatInvalidProviderApiKeyMessage,
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
+import type { LanguageModel } from "ai";
+import log from "electron-log";
+import type { ModelSelection, UserSettings } from "../../lib/schemas";
+import { DYAD_INTERNAL_REQUEST_ID_HEADER } from "./provider_options";
+import { getTestFetchOption } from "./test_fetch_override";
+import { getExtraProviderOptionsForEngine } from "./thinking_utils";
 
 const logger = log.scope("llm_engine_provider");
 

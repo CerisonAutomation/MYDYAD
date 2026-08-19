@@ -1,6 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { FileWarning, TriangleAlert } from "lucide-react";
-import { useSetAtom } from "jotai";
+import {
+  clearStagedDiffAtom,
+  closeCommitDialogAtom,
+  openCommitDialogAtom,
+  openStagedDiffAtom,
+} from "@/atoms/commitAtoms";
+import { CommitFileList } from "@/components/chat/CommitFileList";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,18 +15,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  clearStagedDiffAtom,
-  closeCommitDialogAtom,
-  openCommitDialogAtom,
-  openStagedDiffAtom,
-} from "@/atoms/commitAtoms";
-import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
 import { useCommitChanges } from "@/hooks/useCommitChanges";
 import { useCommitMessage } from "@/hooks/useCommitMessage";
 import { useDiscardChanges } from "@/hooks/useDiscardChanges";
+import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
 import { useVersionPreview } from "@/hooks/useVersionPreview";
-import { CommitFileList } from "@/components/chat/CommitFileList";
+import { useSetAtom } from "jotai";
+import { FileWarning, TriangleAlert } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface UncommittedFilesBannerProps {
   appId: number | null;

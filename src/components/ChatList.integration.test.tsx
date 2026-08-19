@@ -1,13 +1,13 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { eq } from "drizzle-orm";
 import { chats } from "@/db/schema";
 import { ipc } from "@/ipc/types";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { eq } from "drizzle-orm";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 describe("ChatList favorites (integration)", () => {
   let harness: HybridChatHarness;

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { OUTPUT_TRUNCATION_MARKER } from "./bounded_output_buffer";
 import {
+  PtyCommandExecutionError,
   formatDuration,
   normalizePtyOutput,
-  PtyCommandExecutionError,
   runPtyCommand,
 } from "./pty_command_runner";
-import { OUTPUT_TRUNCATION_MARKER } from "./bounded_output_buffer";
 
 const { processSpawnMock, spawnMock } = vi.hoisted(() => ({
   processSpawnMock: vi.fn(),

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { screen } from "@testing-library/react";
 
-import { setupHybridChatHarness } from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import { setupHybridChatHarness } from "@/testing/hybrid_chat_harness";
 
 type TestWindow = Window &
   typeof globalThis & {

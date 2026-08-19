@@ -4,17 +4,17 @@ vi.hoisted(() => {
   process.env.E2E_TEST_BUILD = "true";
 });
 
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
 
 import { screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 function makeEvent() {
   const frame = { url: "http://localhost:5173/" };

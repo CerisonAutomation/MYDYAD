@@ -1,16 +1,16 @@
-import {
-  useUpdateCustomTheme,
-  useDeleteCustomTheme,
-} from "@/hooks/useCustomThemes";
-import type { PromptItem } from "@/hooks/usePrompts";
-import { Badge } from "@/components/ui/badge";
-import { Palette, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { CreateOrEditPromptDialog } from "@/components/CreatePromptDialog";
 import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 import { EditThemeDialog } from "@/components/EditThemeDialog";
-import { showError } from "@/lib/toast";
+import { Badge } from "@/components/ui/badge";
+import {
+  useDeleteCustomTheme,
+  useUpdateCustomTheme,
+} from "@/hooks/useCustomThemes";
+import type { PromptItem } from "@/hooks/usePrompts";
 import type { CustomTheme } from "@/ipc/types";
+import { showError } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { FileText, Palette } from "lucide-react";
 
 export type LibraryItem =
   | { type: "theme"; data: CustomTheme }

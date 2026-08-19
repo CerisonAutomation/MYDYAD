@@ -1,17 +1,18 @@
-import React, { useMemo, useState } from "react";
-import { useAutoCollapse } from "./useAutoCollapse";
 import { Wrench } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
-  DyadExpandIcon,
+  DyadCard,
   DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadMcpToolCallProps {
   node?: DyadTagNode;

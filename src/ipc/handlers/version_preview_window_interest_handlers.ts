@@ -1,10 +1,10 @@
-import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { windowRegistry } from "@/window_infrastructure/main/window_registry";
-import { versionContracts } from "../types/version";
+import { eq } from "drizzle-orm";
 import { versionPreviewActorService } from "../services/version_preview_actor_service";
+import { versionContracts } from "../types/version";
 import { createTypedHandler } from "./base";
 
 export function registerVersionPreviewWindowInterestHandlers(): void {

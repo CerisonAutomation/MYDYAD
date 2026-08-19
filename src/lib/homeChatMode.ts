@@ -1,9 +1,9 @@
+import { getFreeProCompatibleChatMode } from "./freeProModel";
 import {
-  getEffectiveDefaultChatMode,
   type ChatMode,
   type UserSettings,
+  getEffectiveDefaultChatMode,
 } from "./schemas";
-import { getFreeProCompatibleChatMode } from "./freeProModel";
 
 export function getHomeDefaultChatMode(
   settings: UserSettings,

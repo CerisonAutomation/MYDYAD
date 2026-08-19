@@ -1,25 +1,25 @@
-import { useState, useEffect } from "react";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-import { X, Move, Square, Palette, Type } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { ComponentSelection } from "@/ipc/types";
-import { useSetAtom, useAtomValue } from "jotai";
-import {
+  currentComponentCoordinatesAtom,
   pendingVisualChangesAtom,
   selectedComponentsPreviewAtom,
-  currentComponentCoordinatesAtom,
   visualEditingSelectedComponentAtom,
 } from "@/atoms/previewAtoms";
-import { StylePopover } from "./StylePopover";
 import { ColorPicker } from "@/components/ui/ColorPicker";
 import { NumberInput } from "@/components/ui/NumberInput";
-import { rgbToHex, processNumericValue } from "@/utils/style-utils";
-import { ImageSwapPopover, type ImageUploadData } from "./ImageSwapPopover";
+import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { ComponentSelection } from "@/ipc/types";
 import { mergePendingChange } from "@/ipc/types/visual-editing";
+import { processNumericValue, rgbToHex } from "@/utils/style-utils";
+import { useAtomValue, useSetAtom } from "jotai";
+import { Move, Palette, Square, Type, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ImageSwapPopover, type ImageUploadData } from "./ImageSwapPopover";
+import { StylePopover } from "./StylePopover";
 
 const FONT_WEIGHT_OPTIONS = [
   { value: "", label: "Default" },

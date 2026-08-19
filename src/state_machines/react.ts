@@ -1,4 +1,6 @@
 import {
+  type ComponentType,
+  type PropsWithChildren,
   createContext,
   createElement,
   useCallback,
@@ -7,8 +9,6 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type ComponentType,
-  type PropsWithChildren,
 } from "react";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 import { EntityDisposalRegistry, type EntityDisposer } from "./entity_disposal";

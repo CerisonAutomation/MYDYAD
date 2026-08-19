@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import type {
   CommandExecutor,
   ReservedCommandBatch,
@@ -8,10 +7,11 @@ import {
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { change } from "@/state_machines/types";
+import { describe, expect, it } from "vitest";
 import {
   ActorAdmissionError,
-  ActorHost,
   type ActorDisposedEvent,
+  ActorHost,
   type ActorHostError,
 } from "./actor_host";
 import type {

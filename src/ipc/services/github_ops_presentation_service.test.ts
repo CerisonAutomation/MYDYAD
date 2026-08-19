@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
 import { WindowRegistry } from "@/window_infrastructure/main/window_registry";
 import { WindowSessionIdSchema } from "@/window_infrastructure/types";
+import { describe, expect, it, vi } from "vitest";
 import { GithubOpsPresentationService } from "./github_ops_presentation_service";
 
 describe("GithubOpsPresentationService", () => {

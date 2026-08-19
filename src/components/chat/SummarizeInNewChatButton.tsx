@@ -1,12 +1,12 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
 import { showError } from "@/lib/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 
 export function useSummarizeInNewChat() {
   const chatId = useAtomValue(selectedChatIdAtom);

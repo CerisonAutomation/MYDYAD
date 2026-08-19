@@ -1,12 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { FolderOpen, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ipc } from "@/ipc/types";
+import { FolderOpen, ScrollText } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 import { CodeHighlight } from "./CodeHighlight";
-import type { DyadTagNode } from "./stateTypes";
-import type { CustomTagState } from "./stateTypes";
-import { useAutoCollapse } from "./useAutoCollapse";
 import {
   DyadBadge,
   DyadCard,
@@ -14,6 +12,9 @@ import {
   DyadCardHeader,
   DyadExpandIcon,
 } from "./DyadCardPrimitives";
+import type { DyadTagNode } from "./stateTypes";
+import type { CustomTagState } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadScriptProps {
   node?: DyadTagNode;

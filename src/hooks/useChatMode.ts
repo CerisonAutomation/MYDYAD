@@ -1,22 +1,22 @@
-import { useCallback, useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
-import { ipc, type Chat, type UpdateChatParams } from "@/ipc/types";
-import type { ChatSummary, ModelSelection } from "@/lib/schemas";
+import { type Chat, type UpdateChatParams, ipc } from "@/ipc/types";
 import {
-  getEffectiveDefaultChatMode,
-  type ChatMode,
-  type UserSettings,
-} from "@/lib/schemas";
-import {
-  getUnavailableChatModeReason,
   type ChatModeFallbackReason,
+  getUnavailableChatModeReason,
 } from "@/lib/chatMode";
 import { getFreeProCompatibleChatMode } from "@/lib/freeProModel";
 import { queryKeys } from "@/lib/queryKeys";
-import { useSettings } from "./useSettings";
+import type { ChatSummary, ModelSelection } from "@/lib/schemas";
+import {
+  type ChatMode,
+  type UserSettings,
+  getEffectiveDefaultChatMode,
+} from "@/lib/schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import { useCallback, useMemo } from "react";
 import { useFreeAgentQuota } from "./useFreeAgentQuota";
+import { useSettings } from "./useSettings";
 
 type ChatModeMutationContext = {
   previousChat?: Chat;

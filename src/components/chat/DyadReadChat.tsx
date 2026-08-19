@@ -1,18 +1,18 @@
+import { BookOpen } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadReadChatProps {
   children?: ReactNode;

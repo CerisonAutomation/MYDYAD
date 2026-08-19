@@ -48,7 +48,7 @@ interface PaginatedResponse<T> {
 
 function parseIntParam(value: string | undefined, defaultVal: number): number {
   if (!value) return defaultVal;
-  const n = parseInt(value, 10);
+  const n = Number.parseInt(value, 10);
   return isNaN(n) ? defaultVal : n;
 }
 

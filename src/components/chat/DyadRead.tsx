@@ -1,6 +1,6 @@
+import { FileText } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
-import { FileText } from "lucide-react";
 import { DyadBadge } from "./DyadCardPrimitives";
 import type { DyadTagNode } from "./stateTypes";
 

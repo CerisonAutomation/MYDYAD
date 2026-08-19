@@ -18,13 +18,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { eq } from "drizzle-orm";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
 import { chats, messages } from "@/db/schema";
 import { readSettings, writeSettings } from "@/main/settings";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 function errorEvents(harness: HybridChatHarness) {
   return harness.bridge.sentEvents.filter(

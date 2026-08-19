@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
 import {
+  type NeonBranchEnvValues,
+  VERCEL_ENV_TARGETS,
   buildVercelEnvPayload,
   canonicalOrigin,
   reconcileTrustedDomains,
-  VERCEL_ENV_TARGETS,
-  type NeonBranchEnvValues,
 } from "@/ipc/utils/vercel_neon_sync_helpers";
+import { describe, expect, it } from "vitest";
 
 const baseVars: NeonBranchEnvValues = {
   databaseUrl: "postgresql://user:pass@host.neon.tech/db",

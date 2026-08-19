@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
+import { useEffect, useRef } from "react";
 
 import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
 import { getHomeDefaultChatMode } from "@/lib/homeChatMode";

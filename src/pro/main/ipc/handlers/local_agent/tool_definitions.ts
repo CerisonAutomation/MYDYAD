@@ -3,53 +3,78 @@
  * Each tool includes a zod schema, description, and execute function
  */
 
-import { IpcMainInvokeEvent } from "electron";
 import { readSettings, writeSettings } from "@/main/settings";
 import type { SqlConsentMetadata } from "@/shared/sqlConsentMetadata";
 import {
   rememberUserInputSubscriber,
   userInputRegistry,
 } from "@/user_input/main";
-import { writeFileTool } from "./tools/write_file";
-import { deleteFileTool } from "./tools/delete_file";
-import { renameFileTool } from "./tools/rename_file";
-import { copyFileTool } from "./tools/copy_file";
+import type { IpcMainInvokeEvent } from "electron";
 import { addDependencyTool } from "./tools/add_dependency";
+import { copyFileTool } from "./tools/copy_file";
+import { deleteFileTool } from "./tools/delete_file";
 import { executeSqlTool } from "./tools/execute_sql";
-import { getNeonProjectInfoTool } from "./tools/get_neon_project_info";
 import { getDatabaseTableSchemaTool } from "./tools/get_database_table_schema";
+import { getNeonProjectInfoTool } from "./tools/get_neon_project_info";
+import { renameFileTool } from "./tools/rename_file";
+import { writeFileTool } from "./tools/write_file";
 
-import { readFileTool } from "./tools/read_file";
-import { listFilesTool } from "./tools/list_files";
-import { getSupabaseProjectInfoTool } from "./tools/get_supabase_project_info";
-import { setChatSummaryTool } from "./tools/set_chat_summary";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { ExecuteAddDependencyError } from "@/ipc/processors/executeAddDependency";
+import type { AgentToolConsent } from "@/lib/schemas";
+import { getNeonClientCode } from "@/neon_admin/neon_context";
+import { getSupabaseClientCode } from "@/supabase_admin/supabase_context";
+import type { LanguageModelV3ToolResultOutput } from "@ai-sdk/provider";
+import { accessibilityAuditorTool } from "./tools/accessibility_auditor";
+import { actionPlanTool } from "./tools/action_plan";
 import { addIntegrationTool } from "./tools/add_integration";
-import { enableNitroTool } from "./tools/enable_nitro";
-import { readLogsTool } from "./tools/read_logs";
-import { searchReplaceTool } from "./tools/search_replace";
-import { webSearchTool } from "./tools/web_search";
-import { webCrawlTool } from "./tools/web_crawl";
-import { webFetchTool } from "./tools/web_fetch";
-import { generateImageTool } from "./tools/generate_image";
-import { updateTodosTool } from "./tools/update_todos";
-import { runTypeChecksTool } from "./tools/run_type_checks";
-import { runTestsTool } from "./tools/run_tests";
-import { generateTestAssertionsTool } from "./tools/generate_test_assertions";
+import { aiSecurityAuditTool } from "./tools/ai_security_audit";
+import { withAnalysisGuard } from "./tools/analysis_semaphore";
+import { apiExtractTool } from "./tools/api_extract";
+import { apiGeneratorTool } from "./tools/api_generator";
 import { rebuildAppTool, restartAppTool } from "./tools/app_lifecycle";
-import { grepTool } from "./tools/grep";
+import { architectureMapTool } from "./tools/architecture_map";
+import { astGrepSearchTool } from "./tools/ast_grep_search";
+import { autoQualityTool } from "./tools/auto_quality";
+import { autoRefactorTool } from "./tools/auto_refactor";
+import { autoZenithTool } from "./tools/auto_zenith";
+import { batchExecutorTool } from "./tools/batch_executor";
+import { browserControlTool } from "./tools/browser_control";
+import { busFactorTool } from "./tools/bus_factor";
+import { codeContextTool } from "./tools/code_context";
+import { codeContextGraphTool } from "./tools/code_context_graph";
+import { codeResearchTool } from "./tools/code_research";
+import { codeReviewBotTool } from "./tools/code_review_bot";
 import { codeSearchTool } from "./tools/code_search";
-import { exploreCodeTool } from "./tools/explore_code";
-import { exploreChatHistoryTool } from "./tools/explore_chat_history";
-import { searchChatsTool } from "./tools/search_chats";
-import { readChatTool } from "./tools/read_chat";
-import { planningQuestionnaireTool } from "./tools/planning_questionnaire";
-import { writePlanTool } from "./tools/write_plan";
-import { exitPlanTool } from "./tools/exit_plan";
-import { readGuideTool } from "./tools/read_guide";
+import { codeSmellsTool } from "./tools/code_smells";
+import { codeqlScanTool } from "./tools/codeql_scan";
+import { colorContrastTool } from "./tools/color_contrast";
+import { complexityTool } from "./tools/complexity";
+import { componentPlaygroundTool } from "./tools/component_playground";
+import { contextOptimizeTool } from "./tools/context_optimize";
+import { crawl4aiTool } from "./tools/crawl4ai";
+import { cssAnalyzerTool } from "./tools/css_analyzer";
+import { deadCodeTool } from "./tools/dead_code";
+import { depAuditTool } from "./tools/dep_audit";
+import { dependencyGraphTool } from "./tools/dependency_graph";
+import { dependencyUpdaterTool } from "./tools/dependency_updater";
+import { diffImpactTool } from "./tools/diff_impact";
+import { documentationGeneratorTool } from "./tools/documentation_generator";
+import { domSnapshotTool } from "./tools/dom_snapshot";
+import { enableNitroTool } from "./tools/enable_nitro";
+import { domManipulatorTool } from "./tools/enhanced/dom_manipulator";
+import { networkInterceptorTool } from "./tools/enhanced/network_interceptor";
+import { errorVisualizerTool } from "./tools/error_visualizer";
 import { executeSandboxScriptTool } from "./tools/execute_sandbox_script";
-import { searchMcpToolsTool } from "./tools/search_mcp_tools";
+import { exitPlanTool } from "./tools/exit_plan";
+import { exploreChatHistoryTool } from "./tools/explore_chat_history";
+import { exploreCodeTool } from "./tools/explore_code";
+import { fdFindTool } from "./tools/fd_find";
+import { formatCodeTool } from "./tools/format_code";
+import { generateImageTool } from "./tools/generate_image";
+import { generateTestAssertionsTool } from "./tools/generate_test_assertions";
 import { getMcpToolSchemaTool } from "./tools/get_mcp_tool_schema";
-import { writeAppBlueprintTool } from "./tools/write_app_blueprint";
+import { getSupabaseProjectInfoTool } from "./tools/get_supabase_project_info";
 import {
   gitDiffTool,
   gitLogTool,
@@ -58,104 +83,65 @@ import {
   gitShowFileTool,
   gitStatusTool,
 } from "./tools/git";
-import { smartContextTool } from "./tools/smart_context";
-import { localLazyEditsTool } from "./tools/local_lazy_edits";
-import { localTranscribeTool } from "./tools/local_transcribe";
-import { hotspotsTool } from "./tools/hotspots";
-import { codeSmellsTool } from "./tools/code_smells";
-import { deadCodeTool } from "./tools/dead_code";
-import { securityScanTool } from "./tools/security_scan";
-import { complexityTool } from "./tools/complexity";
-import { testGapsTool } from "./tools/test_gaps";
-import { apiExtractTool } from "./tools/api_extract";
-import { depAuditTool } from "./tools/dep_audit";
-import { contextOptimizeTool } from "./tools/context_optimize";
-import { perfAuditTool } from "./tools/perf_audit";
-import { architectureMapTool } from "./tools/architecture_map";
-import { repoPulseTool } from "./tools/repo_pulse";
-import { licenseCheckTool } from "./tools/license_check";
-import { actionPlanTool } from "./tools/action_plan";
-import { onboardingBriefTool } from "./tools/onboarding_brief";
-import { diffImpactTool } from "./tools/diff_impact";
-import { reviewPrTool } from "./tools/review_pr";
-import { testPlanTool } from "./tools/test_plan";
-import { symbolOpsTool } from "./tools/symbol_ops";
-import { sequentialThinkingTool } from "./tools/sequential_thinking";
-import { crawl4aiTool } from "./tools/crawl4ai";
-import { codeContextTool } from "./tools/code_context";
-import { semgrepScanTool } from "./tools/semgrep_scan";
-import { codeqlScanTool } from "./tools/codeql_scan";
-import { autoRefactorTool } from "./tools/auto_refactor";
-import { dependencyUpdaterTool } from "./tools/dependency_updater";
-import { testGeneratorTool } from "./tools/test_generator";
-import { documentationGeneratorTool } from "./tools/documentation_generator";
-import { apiGeneratorTool } from "./tools/api_generator";
-import { securityPentestTool } from "./tools/security_pentest";
-import { promptOptimizerTool } from "./tools/prompt_optimizer";
-import { promptTesterTool } from "./tools/prompt_tester";
-import { promptBenchmarkerTool } from "./tools/prompt_benchmarker";
-import { promptRedTeamTool } from "./tools/prompt_redteam";
-import { busFactorTool } from "./tools/bus_factor";
-import { typeSafetyTool } from "./tools/type_safety";
 import { gitBlameTool } from "./tools/git_blame";
 import { gitBranchesTool } from "./tools/git_branches";
+import { gitCommitTool } from "./tools/git_commit";
 import { gitDiffStagedTool } from "./tools/git_diff_staged";
 import { gitLogFileTool } from "./tools/git_log_file";
 import { gitStashTool } from "./tools/git_stash";
-import { pythonAstSummaryTool } from "./tools/python_ast_summary";
-import { tsAstSummaryTool } from "./tools/ts_ast_summary";
 import { githubIssuesTool } from "./tools/github_issues";
 import { githubPrsTool } from "./tools/github_prs";
-import { gitCommitTool } from "./tools/git_commit";
-import { formatCodeTool } from "./tools/format_code";
 import { gitingestTool } from "./tools/gitingest";
-import { autoZenithTool } from "./tools/auto_zenith";
-import { codeResearchTool } from "./tools/code_research";
-import { treeSitterAnalyzeTool } from "./tools/tree_sitter_analyze";
-import { astGrepSearchTool } from "./tools/ast_grep_search";
-import { fdFindTool } from "./tools/fd_find";
-import { tokenCompressorTool } from "./tools/token_compressor";
-import { aiSecurityAuditTool } from "./tools/ai_security_audit";
-import { codeReviewBotTool } from "./tools/code_review_bot";
-import { codeContextGraphTool } from "./tools/code_context_graph";
+import { globPatternTool } from "./tools/glob_pattern";
+import { grepTool } from "./tools/grep";
+import { hotspotsTool } from "./tools/hotspots";
+import { importAnalyzerTool } from "./tools/import_analyzer";
+import { layoutDebuggerTool } from "./tools/layout_debugger";
+import { licenseCheckTool } from "./tools/license_check";
+import { listFilesTool } from "./tools/list_files";
+import { localLazyEditsTool } from "./tools/local_lazy_edits";
+import { localTranscribeTool } from "./tools/local_transcribe";
 // Multifetch, Batch, Thinking, Provider Router
 import { multifetchTool } from "./tools/multifetch";
-import { batchExecutorTool } from "./tools/batch_executor";
-import { thinkingChainTool } from "./tools/thinking_chain";
-import { providerRouterTool } from "./tools/provider_router";
-// 17 Gamechanging Visual Tools
-import { visualBugDetectorTool } from "./tools/visual_bug_detector";
-import { accessibilityAuditorTool } from "./tools/accessibility_auditor";
-import { responsiveCheckerTool } from "./tools/responsive_checker";
+import { onboardingBriefTool } from "./tools/onboarding_brief";
+import { perfAuditTool } from "./tools/perf_audit";
 import { performanceProfilerTool } from "./tools/performance_profiler";
-import { stateVisualizerTool } from "./tools/state_visualizer";
-import { dependencyGraphTool } from "./tools/dependency_graph";
-import { smartSuggestionsTool } from "./tools/smart_suggestions";
-import { layoutDebuggerTool } from "./tools/layout_debugger";
-import { errorVisualizerTool } from "./tools/error_visualizer";
-import { importAnalyzerTool } from "./tools/import_analyzer";
-import { componentPlaygroundTool } from "./tools/component_playground";
-import { smartFixTool } from "./tools/smart_fix";
-import { visualTestTool } from "./tools/visual_test";
+import { planningQuestionnaireTool } from "./tools/planning_questionnaire";
+import { promptBenchmarkerTool } from "./tools/prompt_benchmarker";
+import { promptOptimizerTool } from "./tools/prompt_optimizer";
+import { promptRedTeamTool } from "./tools/prompt_redteam";
+import { promptTesterTool } from "./tools/prompt_tester";
+import { providerRouterTool } from "./tools/provider_router";
+import { pythonAstSummaryTool } from "./tools/python_ast_summary";
+import { readChatTool } from "./tools/read_chat";
+import { readFileTool } from "./tools/read_file";
+import { readGuideTool } from "./tools/read_guide";
+import { readLogsTool } from "./tools/read_logs";
 import { regressionDetectorTool } from "./tools/regression_detector";
-import { colorContrastTool } from "./tools/color_contrast";
-import { cssAnalyzerTool } from "./tools/css_analyzer";
-import { autoQualityTool } from "./tools/auto_quality";
-import { browserControlTool } from "./tools/browser_control";
+import { repoPulseTool } from "./tools/repo_pulse";
+import { responsiveCheckerTool } from "./tools/responsive_checker";
+import { reviewPrTool } from "./tools/review_pr";
+import { runTestsTool } from "./tools/run_tests";
+import { runTypeChecksTool } from "./tools/run_type_checks";
+import { searchChatsTool } from "./tools/search_chats";
+import { searchMcpToolsTool } from "./tools/search_mcp_tools";
+import { searchReplaceTool } from "./tools/search_replace";
+import { securityPentestTool } from "./tools/security_pentest";
+import { securityScanTool } from "./tools/security_scan";
+import { semgrepScanTool } from "./tools/semgrep_scan";
+import { sequentialThinkingTool } from "./tools/sequential_thinking";
+import { setChatSummaryTool } from "./tools/set_chat_summary";
+import { smartContextTool } from "./tools/smart_context";
+import { smartFixTool } from "./tools/smart_fix";
+import { smartSuggestionsTool } from "./tools/smart_suggestions";
+import { stateVisualizerTool } from "./tools/state_visualizer";
+import { symbolOpsTool } from "./tools/symbol_ops";
 import { takeScreenshotTool } from "./tools/take_screenshot";
-import { domSnapshotTool } from "./tools/dom_snapshot";
-import { domManipulatorTool } from "./tools/enhanced/dom_manipulator";
-import { networkInterceptorTool } from "./tools/enhanced/network_interceptor";
-import { globPatternTool } from "./tools/glob_pattern";
-import type { LanguageModelV3ToolResultOutput } from "@ai-sdk/provider";
-import {
-  escapeXmlAttr,
-  escapeXmlContent,
-  type ToolDefinition,
-  type AgentContext,
-  type ToolResult,
-} from "./tools/types";
-import { withAnalysisGuard } from "./tools/analysis_semaphore";
+import { testGapsTool } from "./tools/test_gaps";
+import { testGeneratorTool } from "./tools/test_generator";
+import { testPlanTool } from "./tools/test_plan";
+import { thinkingChainTool } from "./tools/thinking_chain";
+import { tokenCompressorTool } from "./tools/token_compressor";
 import {
   assertAppBlueprintApproved,
   requireToolConsentOrThrow,
@@ -163,11 +149,25 @@ import {
   trackAppMutation,
   trackFileEditTool,
 } from "./tools/tool_invocation";
-import type { AgentToolConsent } from "@/lib/schemas";
-import { getSupabaseClientCode } from "@/supabase_admin/supabase_context";
-import { getNeonClientCode } from "@/neon_admin/neon_context";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { ExecuteAddDependencyError } from "@/ipc/processors/executeAddDependency";
+import { treeSitterAnalyzeTool } from "./tools/tree_sitter_analyze";
+import { tsAstSummaryTool } from "./tools/ts_ast_summary";
+import { typeSafetyTool } from "./tools/type_safety";
+import {
+  type AgentContext,
+  type ToolDefinition,
+  type ToolResult,
+  escapeXmlAttr,
+  escapeXmlContent,
+} from "./tools/types";
+import { updateTodosTool } from "./tools/update_todos";
+// 17 Gamechanging Visual Tools
+import { visualBugDetectorTool } from "./tools/visual_bug_detector";
+import { visualTestTool } from "./tools/visual_test";
+import { webCrawlTool } from "./tools/web_crawl";
+import { webFetchTool } from "./tools/web_fetch";
+import { webSearchTool } from "./tools/web_search";
+import { writeAppBlueprintTool } from "./tools/write_app_blueprint";
+import { writePlanTool } from "./tools/write_plan";
 
 function getToolErrorDisplayDetails(error: unknown): string {
   if (error instanceof ExecuteAddDependencyError) {

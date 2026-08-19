@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { findLanguageModel } from "@/ipc/utils/findLanguageModel";
 import {
+  estimateToolResultTokens,
   getCompactionThreshold,
   getTemperature,
-  estimateToolResultTokens,
   shouldTriggerCompaction,
 } from "@/ipc/utils/token_utils";
-import { findLanguageModel } from "@/ipc/utils/findLanguageModel";
 
 vi.mock("@/main/settings", () => ({
   readSettings: vi.fn(),

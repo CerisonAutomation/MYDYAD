@@ -22,11 +22,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 function commitWithTestIdentity(cwd: string, message: string) {
   execFileSync(

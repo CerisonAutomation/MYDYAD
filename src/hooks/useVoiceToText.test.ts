@@ -1,12 +1,12 @@
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { StrictMode } from "react";
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useVoiceToText } from "@/hooks/useVoiceToText";
 import {
   AUDIO_RECORDING_TIMESLICE_MS,
   MAX_AUDIO_RECORDING_BYTES,
   MAX_AUDIO_RECORDING_DURATION_MS,
 } from "@/ipc/types/audio";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { StrictMode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { transcribeAudioMock } = vi.hoisted(() => ({
   transcribeAudioMock: vi.fn(),

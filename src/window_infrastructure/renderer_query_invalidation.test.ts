@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { describe, expect, it, vi } from "vitest";
 import { queryKeys } from "@/lib/queryKeys";
-import type { WindowSessionId } from "./types";
+import { describe, expect, it, vi } from "vitest";
 import { RendererQueryInvalidationConsumer } from "./renderer_query_invalidation";
+import type { WindowSessionId } from "./types";
 
 describe("RendererQueryInvalidationConsumer", () => {
   it("dedupes epochs, defaults origin handling to empty, and recovers on gaps", () => {

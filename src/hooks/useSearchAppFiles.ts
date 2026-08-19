@@ -1,7 +1,7 @@
 import { ipc } from "@/ipc/types";
 import type { AppFileSearchResult } from "@/ipc/types";
-import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export function useSearchAppFiles(appId: number | null, query: string) {
   const trimmedQuery = query.trim();

@@ -1,67 +1,23 @@
-import { useAtomValue, useSetAtom, useStore } from "jotai";
-import { useTranslation } from "react-i18next";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  FlaskConical,
-  Play,
-  Square,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Circle,
-  ChevronDown,
-  ChevronRight,
-  Image as ImageIcon,
-  Sparkles,
-  Eye,
-  EyeOff,
-  Zap,
-  ShieldCheck,
-  CircleDot,
-  Code,
-  Trash2,
-} from "lucide-react";
 import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useCurrentAppUrl } from "@/hooks/useAppRun";
-import { selectedFileAtom } from "@/atoms/viewAtoms";
 import { clearStagedDiffAtom } from "@/atoms/commitAtoms";
 import {
   currentRecordingStateAtom,
   recordingStartRequestAtom,
 } from "@/atoms/recorderAtoms";
 import {
+  type RuntimeTestResult,
+  type TestStatus,
   applyTestRunFinishedAtom,
   applyTestRunStartedAtom,
   currentTestRunOutputAtom,
-  currentTestSpecsAtom,
   currentTestRunStateAtom,
-  setTestSpecsForAppAtom,
+  currentTestSpecsAtom,
   setTestRunStateForAppAtom,
-  type RuntimeTestResult,
-  type TestStatus,
+  setTestSpecsForAppAtom,
 } from "@/atoms/testRuntimeAtoms";
-import type { TestCase, TestCaseResult, FileAttachment } from "@/ipc/types";
-import { ipc } from "@/ipc/types";
-import { useDeleteAppTest } from "@/hooks/useDeleteAppTest";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import { useSwitchToPublishableKey } from "@/hooks/useLegacySupabaseKey";
-import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
-import { useSetTestingEnabled } from "@/hooks/useSetTestingEnabled";
-import { useSettings } from "@/hooks/useSettings";
-import { useStreamChat } from "@/hooks/useStreamChat";
+import { selectedFileAtom } from "@/atoms/viewAtoms";
 import { useStreamFinished } from "@/chat_stream/ChatStreamProvider";
-import { useChatMode } from "@/hooks/useChatMode";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,13 +28,57 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useCurrentAppUrl } from "@/hooks/useAppRun";
+import { useChatMode } from "@/hooks/useChatMode";
+import { useDeleteAppTest } from "@/hooks/useDeleteAppTest";
+import { useSwitchToPublishableKey } from "@/hooks/useLegacySupabaseKey";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
+import { useSetTestingEnabled } from "@/hooks/useSetTestingEnabled";
+import { useSettings } from "@/hooks/useSettings";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import type { FileAttachment, TestCase, TestCaseResult } from "@/ipc/types";
+import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { findCaseResult, statusLabel, testKey } from "@/lib/testResultUtils";
+import { showError, showInfo, showSuccess } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { usePreviewIframeController } from "@/preview_iframe/usePreviewIframe";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom, useStore } from "jotai";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  CircleDot,
+  Code,
+  Eye,
+  EyeOff,
+  FlaskConical,
+  Image as ImageIcon,
+  Loader2,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Square,
+  Trash2,
+  XCircle,
+  Zap,
+} from "lucide-react";
+import {
+  type ReactNode,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
 import { AgentModeRequiredDialog } from "./AgentModeRequiredDialog";
 import { MigrateTestsBanner } from "./MigrateTestsBanner";
-import { queryKeys } from "@/lib/queryKeys";
-import { cn } from "@/lib/utils";
-import { showError, showInfo, showSuccess } from "@/lib/toast";
-import { findCaseResult, statusLabel, testKey } from "@/lib/testResultUtils";
-import { usePreviewIframeController } from "@/preview_iframe/usePreviewIframe";
 import { sameOriginStartPath } from "./previewAddressPath";
 
 function StatusIcon({ status }: { status: TestStatus }) {
@@ -334,14 +334,11 @@ function FixButton({ onClick, label }: { onClick: () => void; label: string }) {
   );
 }
 
-interface AskAiToFix {
-  (
+type AskAiToFix = (
     file: string,
     error: string | undefined,
     testTitle?: string,
-    screenshotPath?: string,
-  ): void;
-}
+    screenshotPath?: string,) => void
 
 interface TestCaseRowProps {
   appId: number;

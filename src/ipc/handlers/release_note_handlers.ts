@@ -1,9 +1,9 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
 import fetch from "node-fetch";
+import { systemContracts } from "../types/system";
 import { IS_TEST_BUILD } from "../utils/test_utils";
 import { createTypedHandler } from "./base";
-import { systemContracts } from "../types/system";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("release_note_handlers");
 

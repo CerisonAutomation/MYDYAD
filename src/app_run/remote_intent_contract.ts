@@ -1,23 +1,23 @@
-import { DEFAULT_REMOTE_OPERATION_OUTCOME_ENVELOPE_BYTES } from "@/distributed_machines/remote_protocol";
 import {
   DEFAULT_REMOTE_INTENT_ENVELOPE_BYTES,
   DEFAULT_REMOTE_SNAPSHOT_ENVELOPE_BYTES,
   PROTOCOL_V1_REFUSAL_MAP,
   defineRemoteIntentContract,
 } from "@/distributed_machines/remote_intent_contract";
-import type { AppRunWireEvent } from "./transport";
-import {
-  AppRunIntentEventSchema,
-  AppRunKeySchema,
-  AppRunRemoteSnapshotSchema,
-  type AppRunIntentEvent,
-  type AppRunKey,
-  type AppRunRemoteSnapshot,
-} from "./transport";
+import { DEFAULT_REMOTE_OPERATION_OUTCOME_ENVELOPE_BYTES } from "@/distributed_machines/remote_protocol";
 import {
   AppRunInvocationRefSchema,
   AppRunOperationOutcomeSchema,
 } from "./operations";
+import type { AppRunWireEvent } from "./transport";
+import {
+  type AppRunIntentEvent,
+  AppRunIntentEventSchema,
+  type AppRunKey,
+  AppRunKeySchema,
+  type AppRunRemoteSnapshot,
+  AppRunRemoteSnapshotSchema,
+} from "./transport";
 
 const trackedAtAdmission = {
   completion: "tracked-completion",

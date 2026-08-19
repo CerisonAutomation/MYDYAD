@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   removeUnusedAppPackageFiles,
   removeUnusedCopiedResources,
 } from "@/lib/packaging_cleanup";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const tempDirectories: string[] = [];
 

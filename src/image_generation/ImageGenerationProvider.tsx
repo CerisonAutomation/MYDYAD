@@ -1,4 +1,3 @@
-import { useEffect, useRef, type PropsWithChildren } from "react";
 import {
   dismissImageGenerationToast,
   showImageGeneratingToast,
@@ -6,6 +5,7 @@ import {
 } from "@/components/ImageGenerationToast";
 import { ipc } from "@/ipc/types";
 import { showError } from "@/lib/toast";
+import { type PropsWithChildren, useEffect, useRef } from "react";
 import { ImageGenerationRequestScopeProvider } from "./request_scope";
 
 export function ImageGenerationProvider({ children }: PropsWithChildren) {

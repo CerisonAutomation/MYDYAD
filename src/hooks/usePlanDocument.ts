@@ -1,12 +1,12 @@
-import { useMemo } from "react";
 import type { createStore } from "jotai";
 import { useAtomValue } from "jotai";
 import { selectAtom } from "jotai/utils";
+import { useMemo } from "react";
 
 import {
-  planStateAtom,
   type PlanData,
   type PlanState,
+  planStateAtom,
 } from "@/atoms/planAtoms";
 
 type JotaiStore = ReturnType<typeof createStore>;

@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -49,7 +49,7 @@ function makeWrapper(manuallySelected = false, initialChat?: Chat) {
   const store = createStore();
   store.set(hasManuallySelectedChatModeAtom, manuallySelected);
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+    defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
   });
   if (initialChat) {
     queryClient.setQueryData(

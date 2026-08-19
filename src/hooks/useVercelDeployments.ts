@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ipc, type VercelDeployment } from "@/ipc/types";
+import { type VercelDeployment, ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useVercelDeployments(appId: number) {
   const queryClient = useQueryClient();

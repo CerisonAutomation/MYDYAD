@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { ipc } from "@/ipc/types";
 import { useSettings } from "@/hooks/useSettings";
-import { CommunityCodeConsentDialog } from "./CommunityCodeConsentDialog";
-import type { Template } from "@/shared/templates";
-import { Button } from "./ui/button";
-import { cn } from "@/lib/utils";
+import { ipc } from "@/ipc/types";
 import { showWarning } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import type { Template } from "@/shared/templates";
+import { ArrowLeft } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { CommunityCodeConsentDialog } from "./CommunityCodeConsentDialog";
+import { Button } from "./ui/button";
 
 interface TemplateCardProps {
   template: Template;

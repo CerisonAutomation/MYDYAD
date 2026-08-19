@@ -1,12 +1,12 @@
 import path from "path";
-import fs from "fs-extra";
-import { app } from "electron";
-import { copyDirectoryRecursive } from "../utils/file_utils";
-import { gitClone, getCurrentCommitHash } from "../utils/git_utils";
-import { readSettings } from "@/main/settings";
-import { getTemplateOrThrow } from "../utils/template_utils";
-import log from "electron-log";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readSettings } from "@/main/settings";
+import { app } from "electron";
+import log from "electron-log";
+import fs from "fs-extra";
+import { copyDirectoryRecursive } from "../utils/file_utils";
+import { getCurrentCommitHash, gitClone } from "../utils/git_utils";
+import { getTemplateOrThrow } from "../utils/template_utils";
 
 const logger = log.scope("createFromTemplate");
 

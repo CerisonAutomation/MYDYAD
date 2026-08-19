@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -6,14 +5,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
 
 import {
-  useAgentTools,
-  type AgentToolName,
   type AgentTool,
+  type AgentToolName,
+  useAgentTools,
 } from "@/hooks/useAgentTools";
-import { Loader2, ChevronRight } from "lucide-react";
-import { AgentToolConsent } from "@/lib/schemas";
+import type { AgentToolConsent } from "@/lib/schemas";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AgentToolsSettings() {

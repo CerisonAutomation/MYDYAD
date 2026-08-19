@@ -1,14 +1,14 @@
-import { useCallback } from "react";
 import { useStore } from "jotai";
+import { useCallback } from "react";
 
 import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
+import { readPlanDocument } from "@/hooks/usePlanDocument";
 import type { PlanExitPayload } from "@/ipc/types/plan";
+import { sha256Hex } from "@/lib/browser_hash";
+import { useSyncExternalStore } from "react";
 import { usePlanHandoffManager } from "./PlanHandoffProvider";
 import type { PlanHandoffRemoteManager } from "./remote_manager";
 import type { PlanHandoffRemoteSnapshot } from "./transport";
-import { useSyncExternalStore } from "react";
-import { readPlanDocument } from "@/hooks/usePlanDocument";
-import { sha256Hex } from "@/lib/browser_hash";
 import { serializePlanDocument } from "./transport";
 
 const NO_CHAT_ID = -1;

@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
-import { activeRecordings } from "./recording_registry";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getGithubOperationResources,
   GithubOpsService,
+  getGithubOperationResources,
 } from "./github_ops_service";
+import { activeRecordings } from "./recording_registry";
 
 const handlers = vi.hoisted(() => ({
   disconnect: vi.fn<() => Promise<void>>(),

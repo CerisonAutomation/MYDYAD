@@ -34,8 +34,8 @@ import {
   VALID_RECEIVE_CHANNELS,
   VALID_SEND_CHANNELS,
 } from "@/ipc/preload/channels";
-import type { ElectronMockShared } from "./electron_mock";
 import { configureTrustedRenderer } from "@/ipc/utils/renderer_security";
+import type { ElectronMockShared } from "./electron_mock";
 
 type Listener = (...args: unknown[]) => void;
 

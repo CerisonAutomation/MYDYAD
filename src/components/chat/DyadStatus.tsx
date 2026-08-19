@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import { CustomTagState } from "./stateTypes";
+import { AlertTriangle, CircleX, Loader2 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 import {
   DyadCard,
+  DyadCardContent,
   DyadCardHeader,
   DyadExpandIcon,
   DyadFinishedIcon,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
-import { AlertTriangle, CircleX, Loader2 } from "lucide-react";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadStatusProps {
   node: {

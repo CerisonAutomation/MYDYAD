@@ -1,14 +1,11 @@
-import { net } from "electron";
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { EventEmitter } from "node:events";
+import type { EventEmitter } from "node:events";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
-import log from "electron-log";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import {
   clearSanitizedPathCache,
   getManagedToolsDir,
@@ -16,7 +13,10 @@ import {
   sanitizePathEnv,
 } from "@/ipc/utils/managed_tools";
 import { getPathEnvKey } from "@/ipc/utils/path_env";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { isVersionAtLeast } from "@/shared/version_utils";
+import { net } from "electron";
+import log from "electron-log";
 
 const logger = log.scope("managed_node");
 

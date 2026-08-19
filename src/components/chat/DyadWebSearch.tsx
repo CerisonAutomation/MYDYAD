@@ -1,16 +1,16 @@
-import type React from "react";
-import { useState, type ReactNode } from "react";
 import { Globe } from "lucide-react";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
-import { useAutoCollapse } from "./useAutoCollapse";
+import type React from "react";
+import { type ReactNode, useState } from "react";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadWebSearchProps {
   children?: ReactNode;

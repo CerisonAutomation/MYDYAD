@@ -1,22 +1,23 @@
-import {
-  type LucideIcon,
-  Home,
-  Settings,
-  HelpCircle,
-  Store,
-  BookOpen,
-  Blocks,
-} from "lucide-react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useSidebar } from "@/components/ui/sidebar"; // import useSidebar hook
-import { useEffect, useRef, useState } from "react";
-import type { ComponentType } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { dropdownOpenAtom } from "@/atoms/uiAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { dropdownOpenAtom } from "@/atoms/uiAtoms";
+import { useSidebar } from "@/components/ui/sidebar"; // import useSidebar hook
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+  Blocks,
+  BookOpen,
+  HelpCircle,
+  Home,
+  type LucideIcon,
+  Settings,
+  Store,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import type { ComponentType } from "react";
 
+import { helpDialogAtom } from "@/atoms/helpDialogAtom";
 import {
   Sidebar,
   SidebarContent,
@@ -28,12 +29,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { ChatList } from "./ChatList";
 import { AppList } from "./AppList";
+import { ChatList } from "./ChatList";
 import { HelpDialog } from "./HelpDialog";
-import { helpDialogAtom } from "@/atoms/helpDialogAtom";
-import { SettingsList } from "./SettingsList";
 import { LibraryList } from "./LibraryList";
+import { SettingsList } from "./SettingsList";
 import {
   type AppSidebarHoverState,
   type AppSidebarItemTitle,

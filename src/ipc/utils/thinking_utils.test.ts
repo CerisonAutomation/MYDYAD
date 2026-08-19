@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import {
   getAnthropicProviderOptions,
   getExtraProviderOptionsForEngine,
@@ -6,6 +5,7 @@ import {
   getOpenAIProviderOptions,
 } from "@/ipc/utils/thinking_utils";
 import type { ModelSelection, UserSettings } from "@/lib/schemas";
+import { describe, expect, it } from "vitest";
 
 const baseSettings = {
   selectedModel: { provider: "openai", name: "test-model" },

@@ -1,19 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
-import { z } from "zod";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
+import { describe, expect, it, vi } from "vitest";
+import { z } from "zod";
 import { ActorHost, type ActorHostError } from "./actor_host";
 import {
-  observeDomainRevision,
   RemoteMachineClient,
-  RemoteMachineTransportError,
+  type RemoteMachineTransportError,
+  observeDomainRevision,
 } from "./remote_client";
 import { createRemoteMachineManifest } from "./remote_manifest";
 import { RemoteMachineTransport } from "./remote_transport";
-import { createRemoteTestMachine, FakeDuplexRemoteTransport } from "./testing";
+import { FakeDuplexRemoteTransport, createRemoteTestMachine } from "./testing";
 
 async function flush(): Promise<void> {
   await Promise.resolve();

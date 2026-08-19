@@ -1,22 +1,30 @@
 import { db } from "@/db";
 import { apps } from "@/db/schema";
 import {
-  defineFrameworkCoveredRemoteMachine,
   type DistributedMachineDefinition,
+  defineFrameworkCoveredRemoteMachine,
 } from "@/distributed_machines/definition";
 import {
+  type CorrelatedOperationOutcome,
   createOperationOutcomePublisher,
   finalizeOperationAdmission,
-  type CorrelatedOperationOutcome,
 } from "@/distributed_machines/operation_registry";
-import type { RequestId } from "@/distributed_machines/request_identity";
 import { defineRuntimeRemoteIntentContract } from "@/distributed_machines/remote_intent_contract";
-import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
-import { addLog, clearLogs } from "@/lib/log_store";
-import { appRuntimeService } from "@/ipc/services/app_runtime_service";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
+import type { RequestId } from "@/distributed_machines/request_identity";
+import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { appRuntimeService } from "@/ipc/services/app_runtime_service";
+import { MainAppRuntimeOutput } from "@/ipc/services/main_app_runtime_output";
+import { addLog, clearLogs } from "@/lib/log_store";
+import { sameInvocationRef } from "@/state_machines/invocation_ref";
+import { ignore } from "@/state_machines/types";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
+import {
+  type AppRunOperationOutcome,
+  appRunOperationRegistry,
+} from "./operations";
+import { appRunRemoteIntentContract } from "./remote_intent_contract";
 import type {
   AppRunIgnoreReason,
   AppRunInvocationRef,
@@ -26,27 +34,19 @@ import type {
   RunState,
 } from "./state";
 import { APP_RUN_INVOCATION_KIND } from "./state";
+import { transition } from "./transition";
 import {
-  AppRunIntentEventSchema,
-  AppRunKeySchema,
-  AppRunRemoteSnapshotSchema,
-  appRunKey,
-  projectAppRunRemoteSnapshot,
-  type AppRunKey,
   type AppRunIntentEvent,
+  AppRunIntentEventSchema,
+  type AppRunKey,
+  AppRunKeySchema,
   type AppRunProducerEvent,
   type AppRunRemoteSnapshot,
+  AppRunRemoteSnapshotSchema,
   type AppRunWireEvent,
+  appRunKey,
+  projectAppRunRemoteSnapshot,
 } from "./transport";
-import { transition } from "./transition";
-import { ignore } from "@/state_machines/types";
-import { MainAppRuntimeOutput } from "@/ipc/services/main_app_runtime_output";
-import {
-  appRunOperationRegistry,
-  type AppRunOperationOutcome,
-} from "./operations";
-import { appRunRemoteIntentContract } from "./remote_intent_contract";
-import { sameInvocationRef } from "@/state_machines/invocation_ref";
 
 export const APP_RUN_MACHINE_ID = "app_run" as const;
 

@@ -5,13 +5,13 @@
 // the real ChatPanel consent/tool-card UI over the real chat/local-agent stack.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { ipc } from "@/ipc/types";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 
 describe("MCP chat flows (integration)", () => {
   let harness: HybridChatHarness;

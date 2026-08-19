@@ -1,23 +1,23 @@
-import { useNavigate } from "@tanstack/react-router";
-import { Folder, PlusCircle, Search, Star } from "lucide-react";
-import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+} from "@/components/ui/sidebar";
+import { useAppCollections } from "@/hooks/useAppCollections";
 import { useLoadApps } from "@/hooks/useLoadApps";
 import { useOpenApp } from "@/hooks/useOpenApp";
-import { useAppCollections } from "@/hooks/useAppCollections";
 import { useSettings } from "@/hooks/useSettings";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
+import { Folder, PlusCircle, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppSearchDialog } from "./AppSearchDialog";
 import { AppItem } from "./appItem";

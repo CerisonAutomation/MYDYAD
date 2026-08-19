@@ -1,29 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  getDyadWriteTags,
-  getDyadRenameTags,
   getDyadAddDependencyTags,
   getDyadDeleteTags,
+  getDyadRenameTags,
+  getDyadWriteTags,
 } from "@/ipc/utils/dyad_tag_parser";
 
-import { processFullResponseActions } from "@/ipc/processors/response_processor";
-import {
-  addTrackedValue,
-  removeDyadTags,
-  removeTrackedValue,
-  setPartialResponseForStream,
-  hasUnclosedDyadWrite,
-  processStreamChunks,
-  takePartialResponseForStream,
-} from "@/ipc/handlers/chat_stream_handlers";
-import type { AsyncIterableStream, TextStreamPart, ToolSet } from "ai";
 import fs from "node:fs";
 import path from "node:path";
 import { db } from "@/db";
-import { cleanFullResponse } from "@/ipc/utils/cleanFullResponse";
-import { gitAdd, gitRemove, gitCommit } from "@/ipc/utils/git_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import {
+  addTrackedValue,
+  hasUnclosedDyadWrite,
+  processStreamChunks,
+  removeDyadTags,
+  removeTrackedValue,
+  setPartialResponseForStream,
+  takePartialResponseForStream,
+} from "@/ipc/handlers/chat_stream_handlers";
+import { processFullResponseActions } from "@/ipc/processors/response_processor";
+import { cleanFullResponse } from "@/ipc/utils/cleanFullResponse";
+import { gitAdd, gitCommit, gitRemove } from "@/ipc/utils/git_utils";
+import type { AsyncIterableStream, TextStreamPart, ToolSet } from "ai";
 
 const MOCK_APP_PATH = "/mock/user/data/path/mock-app-path";
 const appPath = (...segments: string[]) =>

@@ -1,17 +1,17 @@
 import { createHash } from "node:crypto";
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
 
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type { Problem, ProblemReport } from "@/ipc/types";
-import log from "electron-log";
-import { getTypeScriptCachePath } from "@/paths/paths";
-import { getPackageManagerCommandEnv } from "@/ipc/utils/socket_firewall";
-import { prependPathSegment } from "@/ipc/utils/managed_tools";
 import {
-  runBufferedProcess,
   type BufferedProcessResult,
+  runBufferedProcess,
 } from "@/ipc/utils/buffered_process";
+import { prependPathSegment } from "@/ipc/utils/managed_tools";
+import { getPackageManagerCommandEnv } from "@/ipc/utils/socket_firewall";
+import { getTypeScriptCachePath } from "@/paths/paths";
+import log from "electron-log";
 import {
   isMissingPathError,
   resolveTypeScriptPackageJsonPath,

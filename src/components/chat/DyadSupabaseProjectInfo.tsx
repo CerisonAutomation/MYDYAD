@@ -1,6 +1,6 @@
-import React from "react";
-import { CustomTagState } from "./stateTypes";
+import type React from "react";
 import { DyadDbProjectInfo } from "./DyadDbProjectInfo";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadSupabaseProjectInfoProps {
   node: {

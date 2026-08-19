@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getUserDataPath } from "@/paths/paths";
 import { getPathEnvKey } from "@/ipc/utils/path_env";
+import { getUserDataPath } from "@/paths/paths";
 
 export const MANAGED_TOOLS_DIR = "managed-tools";
 const SANITIZED_PATH_CACHE_TTL_MS = 5_000;

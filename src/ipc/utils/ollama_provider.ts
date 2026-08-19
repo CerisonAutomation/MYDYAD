@@ -16,11 +16,9 @@ export interface OllamaProviderOptions {
   fetch?: FetchFunction;
 }
 
-export interface OllamaChatSettings {}
+export type OllamaChatSettings = {}
 
-export interface OllamaProvider {
-  (modelId: OllamaChatModelId, settings?: OllamaChatSettings): LanguageModel;
-}
+export type OllamaProvider = (modelId: OllamaChatModelId, settings?: OllamaChatSettings) => LanguageModel
 
 export function createOllamaProvider(
   options?: OllamaProviderOptions,

@@ -1,7 +1,7 @@
-import log from "electron-log";
-import { Output } from "ai";
 import type { StreamingPatch } from "@/ipc/types";
 import { hashPrefix } from "@/lib/prefixHash";
+import { Output } from "ai";
+import log from "electron-log";
 
 const logger = log.scope("stream_text_utils");
 

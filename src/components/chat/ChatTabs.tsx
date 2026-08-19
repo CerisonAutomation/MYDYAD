@@ -1,38 +1,29 @@
 import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useAtomValue, useSetAtom, useStore } from "jotai";
-import { Loader2, MoreHorizontal, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import type { ChatSummary } from "@/lib/schemas";
-import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
-import { useChats } from "@/hooks/useChats";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { useSelectChat } from "@/hooks/useSelectChat";
-import { useIsMac } from "@/hooks/useChatModeToggle";
+  chatNavigationEvents,
+  earlyChatTabRemovalEvents,
+} from "@/app_wiring/early_renderer_events";
+import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
 import {
-  recentViewedChatIdsAtom,
-  selectedChatIdAtom,
-  setRecentViewedChatIdsAtom,
-  pushRecentViewedChatIdAtom,
-  closedChatIdsAtom,
-  pruneClosedChatIdsAtom,
-  sessionOpenedChatIdsAtom,
+  type ClosedTabRecord,
+  attachmentsAtom,
+  chatInputValuesByIdAtom,
   closeMultipleTabsAtom,
+  closedChatIdsAtom,
+  ensureRecentViewedChatIdAtom,
+  groupTabsByAppAtom,
   hydrateChatTabSessionAtom,
   persistChatTabSessionAtom,
-  groupTabsByAppAtom,
-  type ClosedTabRecord,
-  chatInputValuesByIdAtom,
-  ensureRecentViewedChatIdAtom,
+  pruneClosedChatIdsAtom,
+  pushRecentViewedChatIdAtom,
+  recentViewedChatIdsAtom,
   removeTransferredChatTabAtom,
-  attachmentsAtom,
+  selectedChatIdAtom,
+  sessionOpenedChatIdsAtom,
+  setRecentViewedChatIdsAtom,
 } from "@/atoms/chatAtoms";
+import { resetCommitDialogAtom } from "@/atoms/commitAtoms";
+import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
+import { terminalOpenByChatIdAtom } from "@/atoms/terminalAtoms";
 import {
   editorCursorAtom,
   isChatPanelHiddenAtom,
@@ -40,37 +31,9 @@ import {
   selectedFileAtom,
   stagedDiffFileAtom,
 } from "@/atoms/viewAtoms";
-import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
-import { resetCommitDialogAtom } from "@/atoms/commitAtoms";
-import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
-import { terminalOpenByChatIdAtom } from "@/atoms/terminalAtoms";
-import {
-  assertActiveStoredChatTabInstance,
-  adoptStoredChatTab,
-  chatTabSessionStorageKey,
-  clearSourceChatTabRemoval,
-  getActiveStoredChatTab,
-  getActiveStoredChatTabs,
-  getActiveWindowSessionId,
-  hasSourceChatTabRemoval,
-  markSourceChatTabRemoval,
-  removeActiveStoredChatTab,
-} from "@/window_infrastructure/chat_tab_session_storage";
-import type { TabInstanceId } from "@/window_infrastructure/types";
-import { ipc } from "@/ipc/types";
-import { usePreviewIframeManager } from "@/preview_iframe/PreviewIframeProvider";
-import { showError } from "@/lib/toast";
-import { useSettings } from "@/hooks/useSettings";
-import { useReopenClosedTab } from "@/hooks/useReopenClosedTab";
 import { useStreamFinished } from "@/chat_stream/ChatStreamProvider";
-import { cn } from "@/lib/utils";
+import { isStreamActive } from "@/chat_stream/transition";
 import { AppAvatar } from "@/components/AppAvatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -81,18 +44,55 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMac } from "@/hooks/useChatModeToggle";
 import { useChatStreamState } from "@/hooks/useChatStream";
-import { isStreamActive } from "@/chat_stream/transition";
+import { useChats } from "@/hooks/useChats";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useReopenClosedTab } from "@/hooks/useReopenClosedTab";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { useSettings } from "@/hooks/useSettings";
+import { ipc } from "@/ipc/types";
+import type { ChatSummary } from "@/lib/schemas";
+import { showError } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { usePreviewIframeManager } from "@/preview_iframe/PreviewIframeProvider";
 import {
-  chatNavigationEvents,
-  earlyChatTabRemovalEvents,
-} from "@/app_wiring/early_renderer_events";
+  adoptStoredChatTab,
+  assertActiveStoredChatTabInstance,
+  chatTabSessionStorageKey,
+  clearSourceChatTabRemoval,
+  getActiveStoredChatTab,
+  getActiveStoredChatTabs,
+  getActiveWindowSessionId,
+  hasSourceChatTabRemoval,
+  markSourceChatTabRemoval,
+  removeActiveStoredChatTab,
+} from "@/window_infrastructure/chat_tab_session_storage";
+import type { TabInstanceId } from "@/window_infrastructure/types";
 import type { ChatTabPresentationState } from "@/window_infrastructure/types";
+import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
+import { useAtomValue, useSetAtom, useStore } from "jotai";
+import { Loader2, MoreHorizontal, X } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
 
 const MIN_VISIBLE_TAB_WIDTH_PX = 160;
 const TAB_GAP_PX = 4;

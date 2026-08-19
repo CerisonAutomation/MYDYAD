@@ -1,25 +1,25 @@
-import { useEffect, useState } from "react";
-import { useAtom, useAtomValue } from "jotai";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import {
-  AlertTriangle,
-  XCircle,
-  FileText,
-  Wrench,
-  RefreshCw,
-  Check,
-  Info,
-} from "lucide-react";
-import { Problem, ProblemReport } from "@/ipc/types";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { Problem, ProblemReport } from "@/ipc/types";
+import { useAtom, useAtomValue } from "jotai";
+import {
+  AlertTriangle,
+  Check,
+  FileText,
+  Info,
+  RefreshCw,
+  Wrench,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { useCheckProblems } from "@/hooks/useCheckProblems";
 import { useChatMode } from "@/hooks/useChatMode";
-import { createProblemFixPrompt } from "@/shared/problem_prompt";
+import { useCheckProblems } from "@/hooks/useCheckProblems";
+import { useStreamChat } from "@/hooks/useStreamChat";
 import { showError } from "@/lib/toast";
+import { createProblemFixPrompt } from "@/shared/problem_prompt";
 import { useTranslation } from "react-i18next";
 
 interface ProblemItemProps {

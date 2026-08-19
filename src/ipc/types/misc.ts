@@ -1,14 +1,14 @@
 import { z } from "zod";
 import {
-  defineContract,
-  defineEvent,
   createClient,
   createEventClient,
+  defineContract,
+  defineEvent,
 } from "../contracts/core";
-import { ConsoleEntrySchema } from "./supabase";
 import { ProblemReportSchema } from "./agent";
-import { ChatStreamInvocationRefSchema } from "./chat";
 import { AppRunInvocationRefSchema } from "./app";
+import { ChatStreamInvocationRefSchema } from "./chat";
+import { ConsoleEntrySchema } from "./supabase";
 
 // =============================================================================
 // Portal Schemas

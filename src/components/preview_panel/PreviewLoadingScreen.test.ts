@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { ConsoleEntry } from "@/ipc/types";
+import { describe, expect, it } from "vitest";
 import {
   didPreviewCommandFail,
   getPreviewLoadingSessionStartedAt,

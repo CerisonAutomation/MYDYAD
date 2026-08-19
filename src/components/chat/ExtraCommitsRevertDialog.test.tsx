@@ -1,6 +1,6 @@
+import type { Version } from "@/ipc/types";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { Version } from "@/ipc/types";
 import { ExtraCommitsRevertDialog } from "./ExtraCommitsRevertDialog";
 
 const version: Version = {

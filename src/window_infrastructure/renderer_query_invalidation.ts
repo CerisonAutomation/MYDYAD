@@ -1,4 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { queryKeysForInvalidationScope } from "./query_keys";
 import type {
   QueryInvalidationBatch,
   QueryInvalidationEvent,
@@ -6,7 +7,6 @@ import type {
   WindowSessionId,
 } from "./types";
 import { queryInvalidationScopeKey } from "./types";
-import { queryKeysForInvalidationScope } from "./query_keys";
 
 export class RendererQueryInvalidationConsumer {
   private lastEpoch = 0;

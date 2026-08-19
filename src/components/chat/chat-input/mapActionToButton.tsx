@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import type { SuggestedAction } from "@/lib/schemas";
 import {
-  SummarizeInNewChatButton,
-  RefactorFileButton,
-  WriteCodeProperlyButton,
-  RebuildButton,
-  RestartButton,
-  RefreshButton,
-  KeepGoingButton,
   AddTypeScriptButton,
+  KeepGoingButton,
+  RebuildButton,
+  RefactorFileButton,
+  RefreshButton,
+  RestartButton,
+  SummarizeInNewChatButton,
+  WriteCodeProperlyButton,
 } from "./SuggestionButtons";
 
 export function mapActionToButton(action: SuggestedAction) {

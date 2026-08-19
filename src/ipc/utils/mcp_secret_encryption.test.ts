@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const isEncryptionAvailable = vi.fn(() => true);
 
@@ -28,7 +28,7 @@ vi.mock("electron-log", () => ({
 
 import { setDatabaseForTesting } from "@/db";
 import { mcpServers } from "@/db/schema";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
 import { encryptStoredMcpSecrets } from "./mcp_secret_encryption";
 
 let db: TestDb;

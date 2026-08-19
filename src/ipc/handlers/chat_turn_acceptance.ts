@@ -1,16 +1,16 @@
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { and, eq, isNull } from "drizzle-orm";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
-import * as schema from "@/db/schema";
-import { chats, messages } from "@/db/schema";
 import {
   ensureIntentRecord,
   getAcceptedMessageId,
   markIntentAccepted,
 } from "@/chat_stream/persistence";
+import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
+import type * as schema from "@/db/schema";
+import { chats, messages } from "@/db/schema";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type { ChatMode, ModelSelection, StoredChatMode } from "@/lib/schemas";
-import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
 
 type ChatTurnDatabase = Pick<
   BetterSQLite3Database<typeof schema>,

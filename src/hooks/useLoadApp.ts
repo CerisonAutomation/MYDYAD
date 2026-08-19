@@ -1,6 +1,6 @@
-import { useQuery, QueryClient } from "@tanstack/react-query";
-import { ipc, type App } from "@/ipc/types";
+import { type App, ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { type QueryClient, useQuery } from "@tanstack/react-query";
 
 export function useLoadApp(appId: number | null) {
   const {

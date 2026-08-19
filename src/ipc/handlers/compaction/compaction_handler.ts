@@ -3,45 +3,45 @@
  * Orchestrates the compaction of long conversations to stay within context limits.
  */
 
-import { IpcMainInvokeEvent } from "electron";
-import { streamText, ModelMessage } from "ai";
-import log from "electron-log";
+import { type ModelMessage, streamText } from "ai";
 import { eq } from "drizzle-orm";
+import type { IpcMainInvokeEvent } from "electron";
+import log from "electron-log";
 
 import { db } from "@/db";
 import { chats, messages } from "@/db/schema";
-import { readSettings } from "@/main/settings";
 import { getModelClient } from "@/ipc/utils/get_model_client";
-import {
-  getCompactionThreshold,
-  getContextWindow,
-  shouldTriggerCompaction,
-} from "@/ipc/utils/token_utils";
-import { safeSend } from "@/ipc/utils/safe_sender";
-import {
-  cancelOrphanedBaseStream,
-  fastTextOutput,
-} from "@/ipc/utils/stream_text_utils";
-import { COMPACTION_SYSTEM_PROMPT } from "@/prompts/compaction_system_prompt";
-import {
-  storePreCompactionMessages,
-  formatAsTranscript,
-  type CompactionMessage,
-} from "./compaction_storage";
-import { getPostCompactionMessages } from "./compaction_utils";
-import {
-  getProviderOptions,
-  getAiHeaders,
-  DYAD_INTERNAL_REQUEST_ID_HEADER,
-} from "@/ipc/utils/provider_options";
-import { escapeXmlContent } from "../../../../shared/xmlEscape";
-import { isDyadProEnabled } from "@/lib/schemas";
 import {
   normalizeModelSelection,
   resolveDefaultModelSelection,
   resolveModelSelection,
 } from "@/ipc/utils/model_effort";
+import {
+  DYAD_INTERNAL_REQUEST_ID_HEADER,
+  getAiHeaders,
+  getProviderOptions,
+} from "@/ipc/utils/provider_options";
+import { safeSend } from "@/ipc/utils/safe_sender";
+import {
+  cancelOrphanedBaseStream,
+  fastTextOutput,
+} from "@/ipc/utils/stream_text_utils";
+import {
+  getCompactionThreshold,
+  getContextWindow,
+  shouldTriggerCompaction,
+} from "@/ipc/utils/token_utils";
 import { getModelPreferenceKey } from "@/lib/modelEffort";
+import { isDyadProEnabled } from "@/lib/schemas";
+import { readSettings } from "@/main/settings";
+import { COMPACTION_SYSTEM_PROMPT } from "@/prompts/compaction_system_prompt";
+import { escapeXmlContent } from "../../../../shared/xmlEscape";
+import {
+  type CompactionMessage,
+  formatAsTranscript,
+  storePreCompactionMessages,
+} from "./compaction_storage";
+import { getPostCompactionMessages } from "./compaction_utils";
 
 const logger = log.scope("compaction_handler");
 

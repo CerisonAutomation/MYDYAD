@@ -1,20 +1,20 @@
-import { describe, it, expect } from "vitest";
 import {
-  transformContentPart,
-  processPendingMessages,
-  injectMessagesAtPositions,
-  prepareStepMessages,
-  hasIncompleteTodos,
+  type InjectedMessage,
   buildTodoReminderMessage,
   ensureToolResultOrdering,
+  hasIncompleteTodos,
+  injectMessagesAtPositions,
+  prepareStepMessages,
+  processPendingMessages,
   sanitizeStepMessages,
-  type InjectedMessage,
+  transformContentPart,
 } from "@/pro/main/ipc/handlers/local_agent/prepare_step_utils";
 import type {
-  UserMessageContentPart,
   Todo,
+  UserMessageContentPart,
 } from "@/pro/main/ipc/handlers/local_agent/tools/types";
-import { FilePart, ModelMessage } from "ai";
+import type { FilePart, ModelMessage } from "ai";
+import { describe, expect, it } from "vitest";
 
 function textToolResult(value: string) {
   return { type: "text" as const, value };

@@ -3,10 +3,10 @@
 import React from "react";
 import {
   fetchUser,
-  updateUser,
   fetchUserActivity,
+  updateUser,
 } from "../services/userService";
-import type { User, ActivityEntry } from "../types";
+import type { ActivityEntry, User } from "../types";
 
 interface Props {
   userId: string;

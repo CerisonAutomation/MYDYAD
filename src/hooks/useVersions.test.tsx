@@ -1,10 +1,10 @@
+import type { Version } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Version } from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
 import { useVersions } from "./useVersions";
 
 const { listVersionsMock, setVersionFavoriteMock, setVersionNoteMock } =
@@ -51,7 +51,7 @@ describe("useVersions", () => {
     const oid = "a".repeat(40);
     const queryClient = new QueryClient({
       defaultOptions: {
-        queries: { retry: false, staleTime: Infinity },
+        queries: { retry: false, staleTime: Number.POSITIVE_INFINITY },
         mutations: { retry: false },
       },
     });

@@ -553,8 +553,9 @@ Output: Optimized program with metrics, code, and save path`,
 
       case "optimize": {
         if (!args.signature_name || !args.instructions) {
-          throw new Error(
+          throw new DyadError(
             "signature_name and instructions are required for optimize",
+            DyadErrorKind.Validation,
           );
         }
 
@@ -601,8 +602,9 @@ Output: Optimized program with metrics, code, and save path`,
 
       case "evaluate": {
         if (!args.signature_name || !args.instructions) {
-          throw new Error(
+          throw new DyadError(
             "signature_name and instructions are required for evaluate",
+            DyadErrorKind.Validation,
           );
         }
 

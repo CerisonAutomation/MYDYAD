@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import type { PlanAnnotation } from "@/atoms/planAtoms";
 import {
   applyPlanAnnotationHighlights,
   clearPlanAnnotationHighlights,
   getPlanSelectionSnapshot,
 } from "@/components/preview_panel/plan/planAnnotationDom";
+import { beforeEach, describe, expect, it } from "vitest";
 
 function createAnnotation(overrides: Partial<PlanAnnotation>): PlanAnnotation {
   return {

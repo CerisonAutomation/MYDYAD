@@ -7,9 +7,9 @@
 // payload, exercising the real handler logic without an Electron
 // process.
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isIpcInvokeEnvelope, unwrapIpcEnvelope } from "@/ipc/contracts/core";
 import { configureTrustedRenderer } from "@/ipc/utils/renderer_security";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- ipcMain capture ----------------------------------------------------
 const handlers = new Map<string, (event: unknown, input: unknown) => unknown>();

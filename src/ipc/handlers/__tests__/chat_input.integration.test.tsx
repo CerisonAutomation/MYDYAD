@@ -3,14 +3,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 
 import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
-import {
   CHAT_PROMPT_LENGTH_LIMIT_MESSAGE,
   MAX_CHAT_PROMPT_CHARS,
 } from "@/shared/chatAttachmentLimits";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("chat input proposal gating (integration)", () => {
   let harness: HybridChatHarness;

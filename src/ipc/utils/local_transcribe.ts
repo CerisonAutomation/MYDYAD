@@ -9,11 +9,11 @@
  * - Local Whisper models (future)
  */
 
+import path from "path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readSettings } from "@/main/settings";
 import log from "electron-log";
 import { readFile } from "fs/promises";
-import path from "path";
-import { readSettings } from "@/main/settings";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("local_transcribe");
 

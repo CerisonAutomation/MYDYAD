@@ -1,41 +1,41 @@
 import {
-  SendHorizontalIcon,
-  StopCircleIcon,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   FolderOpenIcon,
-  XIcon,
-  Mic,
-  MicOff,
   Loader2,
   Lock,
+  Mic,
+  MicOff,
+  SendHorizontalIcon,
+  StopCircleIcon,
+  XIcon,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 
-import { useSettings } from "@/hooks/useSettings";
 import { homeChatInputValueAtom, homeSelectedAppAtom } from "@/atoms/chatAtoms";
+import { useAttachments } from "@/hooks/useAttachments";
+import { useChatModeToggle } from "@/hooks/useChatModeToggle";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useSettings } from "@/hooks/useSettings";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { useTypingPlaceholder } from "@/hooks/useTypingPlaceholder";
+import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { useVoiceToText } from "@/hooks/useVoiceToText";
+import { ipc } from "@/ipc/types";
+import { showError } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import type { HomeSubmitOptions } from "@/pages/home";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { useAttachments } from "@/hooks/useAttachments";
+import { AppSearchDialog } from "../AppSearchDialog";
+import { ChatInputControls } from "../ChatInputControls";
 import { AttachmentsList } from "./AttachmentsList";
+import { AuxiliaryActionsMenu } from "./AuxiliaryActionsMenu";
 import { DragDropOverlay } from "./DragDropOverlay";
 import { FileAttachmentTypeDialog } from "./FileAttachmentTypeDialog";
-import { HomeSubmitOptions } from "@/pages/home";
-import { ChatInputControls } from "../ChatInputControls";
 import { LexicalChatInput } from "./LexicalChatInput";
-import { useChatModeToggle } from "@/hooks/useChatModeToggle";
-import { useTypingPlaceholder } from "@/hooks/useTypingPlaceholder";
-import { AuxiliaryActionsMenu } from "./AuxiliaryActionsMenu";
-import { cn } from "@/lib/utils";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { AppSearchDialog } from "../AppSearchDialog";
-import { useVoiceToText } from "@/hooks/useVoiceToText";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { showError } from "@/lib/toast";
-import { ipc } from "@/ipc/types";
 
 export function HomeChatInput({
   onSubmit,

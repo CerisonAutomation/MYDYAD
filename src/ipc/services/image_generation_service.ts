@@ -1,10 +1,18 @@
+import fs from "node:fs";
+import path from "node:path";
+import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { db } from "../../db";
+import { apps } from "../../db/schema";
+import { readSettings } from "../../main/settings";
+import { getDyadAppPath } from "../../paths/paths";
+import { ensureDyadGitignored } from "../handlers/gitignoreUtils";
 import {
   ImageGenerationApiResponseSchema,
   type ImageThemeMode,
 } from "../types/image_generation";
-import { db } from "../../db";
-import { apps } from "../../db/schema";
-import { getDyadAppPath } from "../../paths/paths";
+import { getDyadEngineBaseUrl } from "../utils/dyad_engine_url";
 import { DYAD_MEDIA_DIR_NAME } from "../utils/media_path_utils";
 import { safeJoin } from "../utils/path_utils";
 import {
@@ -12,14 +20,6 @@ import {
   readAppResource,
 } from "./app_operation_coordinator";
 import { assertNoActiveRecording } from "./recording_registry";
-import { readSettings } from "../../main/settings";
-import { eq } from "drizzle-orm";
-import fs from "node:fs";
-import path from "node:path";
-import log from "electron-log";
-import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
-import { getDyadEngineBaseUrl } from "../utils/dyad_engine_url";
-import { ensureDyadGitignored } from "../handlers/gitignoreUtils";
 
 const logger = log.scope("image_generation_service");
 

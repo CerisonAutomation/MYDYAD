@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { createIpcSuccessEnvelope } from "@/ipc/contracts/core";
-import {
-  installRendererIpcBridge,
-  type RendererIpcBridge,
-} from "./renderer_ipc_bridge";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ElectronMockShared } from "./electron_mock";
+import {
+  type RendererIpcBridge,
+  installRendererIpcBridge,
+} from "./renderer_ipc_bridge";
 
 type TestIpcRenderer = {
   invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;

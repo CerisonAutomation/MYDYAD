@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import type { LanguageModelV3StreamPart } from "@ai-sdk/provider";
 import { streamText } from "ai";
 import { MockLanguageModelV3, simulateReadableStream } from "ai/test";
-import type { LanguageModelV3StreamPart } from "@ai-sdk/provider";
+import { describe, expect, it } from "vitest";
 import { fastTextOutput } from "./stream_text_utils";
 
 describe("fastTextOutput", () => {

@@ -1,33 +1,33 @@
 import { randomUUID } from "node:crypto";
-import type { QueryKey } from "@tanstack/react-query";
-import {
-  adoptThenRemoveTab,
-  type TransferableTab,
-} from "@/window_infrastructure/tab_transfer";
-import {
-  QueryInvalidationBus,
-  queryInvalidationChannel,
-} from "@/window_infrastructure/main/query_invalidation_bus";
-import {
-  WindowRegistry,
-  type WindowEndpoint,
-} from "@/window_infrastructure/main/window_registry";
-import { HighVolumeWindowInterests } from "@/window_infrastructure/main/high_volume_interests";
-import { RendererQueryInvalidationConsumer } from "@/window_infrastructure/renderer_query_invalidation";
 import { EntityDisposalRegistry } from "@/state_machines/entity_disposal";
 import {
   EntityDisposalBus,
   entityDisposalChannel,
 } from "@/window_infrastructure/main/entity_disposal_bus";
+import { HighVolumeWindowInterests } from "@/window_infrastructure/main/high_volume_interests";
+import {
+  QueryInvalidationBus,
+  queryInvalidationChannel,
+} from "@/window_infrastructure/main/query_invalidation_bus";
+import {
+  type WindowEndpoint,
+  WindowRegistry,
+} from "@/window_infrastructure/main/window_registry";
+import { RendererQueryInvalidationConsumer } from "@/window_infrastructure/renderer_query_invalidation";
+import {
+  type TransferableTab,
+  adoptThenRemoveTab,
+} from "@/window_infrastructure/tab_transfer";
 import type {
   EntityDisposalEvent,
   QueryInvalidationBatch,
   QueryInvalidationScope,
   TabInstanceId,
+  VisibleEntity,
   WindowInterest,
   WindowSessionId,
-  VisibleEntity,
 } from "@/window_infrastructure/types";
+import type { QueryKey } from "@tanstack/react-query";
 
 interface HarnessWindow {
   endpoint: HarnessEndpoint;

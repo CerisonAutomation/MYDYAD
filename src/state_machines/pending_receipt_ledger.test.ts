@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { createFakeClock } from "./testing";
 import { PendingReceiptLedger } from "./pending_receipt_ledger";
+import { createFakeClock } from "./testing";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

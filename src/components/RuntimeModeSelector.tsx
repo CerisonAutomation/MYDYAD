@@ -1,19 +1,5 @@
-import { SettingField } from "@/components/settings/SettingField";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useSettings } from "@/hooks/useSettings";
-import { showError } from "@/lib/toast";
-import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useCurrentAppUrl } from "@/hooks/useAppRun";
-import { useTranslation } from "react-i18next";
-import type { RuntimeMode2 } from "@/lib/schemas";
-import { useState } from "react";
+import { SettingField } from "@/components/settings/SettingField";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +10,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCurrentAppUrl } from "@/hooks/useAppRun";
+import { useSettings } from "@/hooks/useSettings";
+import type { RuntimeMode2 } from "@/lib/schemas";
+import { showError } from "@/lib/toast";
+import { useAtomValue } from "jotai";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /** Cloud sandbox removed — always returns false. Kept for backward compatibility. */
 export function shouldShowCloudSandboxOption(_input: {

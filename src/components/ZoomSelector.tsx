@@ -1,6 +1,3 @@
-import { useMemo } from "react";
-import { useSettings } from "@/hooks/useSettings";
-import { ZoomLevel, ZoomLevelSchema, DEFAULT_ZOOM_LEVEL } from "@/lib/schemas";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -9,6 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSettings } from "@/hooks/useSettings";
+import { DEFAULT_ZOOM_LEVEL, type ZoomLevel, ZoomLevelSchema } from "@/lib/schemas";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 const ZOOM_LEVEL_LABELS: Record<ZoomLevel, string> = {

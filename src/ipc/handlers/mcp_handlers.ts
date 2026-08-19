@@ -1,11 +1,20 @@
-import log from "electron-log";
 import { getRemoteMcpCatalog } from "@/ipc/shared/remote_mcp_catalog";
+import { and, eq, isNotNull } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { mcpServers, mcpToolConsents } from "../../db/schema";
-import { eq, and, isNotNull } from "drizzle-orm";
-import { createTypedHandler } from "./base";
 import { DyadError, DyadErrorKind } from "../../errors/dyad_error";
+import { createTypedHandler } from "./base";
 
+import net from "node:net";
+import { safeStorage } from "electron";
+import {
+  DEFAULT_OAUTH_CALLBACK_PORT,
+  type McpConsentValue,
+  type McpServer,
+  type McpTransport,
+  mcpContracts,
+} from "../types/mcp";
 import { getStoredConsent } from "../utils/mcp_consent";
 import { mcpManager } from "../utils/mcp_manager";
 import {
@@ -14,21 +23,12 @@ import {
   withMcpOAuthServerMutation,
 } from "../utils/mcp_oauth_flow";
 import { oauthStateHasTokens } from "../utils/mcp_oauth_provider";
+import { findAvailablePort } from "../utils/port_utils";
 import {
   encryptSecretMap,
   encryptToString,
   readServerSecretMap,
 } from "../utils/secret_storage";
-import {
-  mcpContracts,
-  DEFAULT_OAUTH_CALLBACK_PORT,
-  type McpServer,
-  type McpTransport,
-  type McpConsentValue,
-} from "../types/mcp";
-import { findAvailablePort } from "../utils/port_utils";
-import net from "node:net";
-import { safeStorage } from "electron";
 import {
   classifyOAuthError,
   looksLikeUnauthorized,

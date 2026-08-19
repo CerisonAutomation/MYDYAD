@@ -1,6 +1,6 @@
+import type { ImageGenerationPresentationEvent } from "@/ipc/types/image_generation";
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { ImageGenerationPresentationEvent } from "@/ipc/types/image_generation";
 import { ImageGenerationProvider } from "./ImageGenerationProvider";
 
 const mocks = vi.hoisted(() => ({

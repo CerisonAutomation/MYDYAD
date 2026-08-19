@@ -14,62 +14,62 @@ import {
   getStreamChannels,
 } from "../contracts/core";
 
-// Import all contracts
-import { settingsContracts } from "../types/settings";
-import { appContracts } from "../types/app";
-import { chatContracts, chatStreamContract } from "../types/chat";
 import { agentContracts, agentEvents } from "../types/agent";
-import { githubContracts, gitContracts } from "../types/github";
-import {
-  connectionFlowContracts,
-  connectionFlowEvents,
-} from "../types/connection_flow";
-import { mcpContracts } from "../types/mcp";
-import { vercelContracts } from "../types/vercel";
-import { supabaseContracts } from "../types/supabase";
-import { neonContracts } from "../types/neon";
-import { migrationContracts } from "../types/migration";
-import { systemContracts, systemEvents } from "../types/system";
-import { versionContracts, versionEvents } from "../types/version";
-import { languageModelContracts } from "../types/language-model";
-import { promptContracts } from "../types/prompts";
-import { templateContracts } from "../types/templates";
-import { proposalContracts } from "../types/proposals";
-import { importContracts } from "../types/import";
-import { helpContracts, helpStreamContract } from "../types/help";
-import { capacitorContracts } from "../types/capacitor";
-import { contextContracts } from "../types/context";
-import { upgradeContracts } from "../types/upgrade";
-import { visualEditingContracts } from "../types/visual-editing";
-import { securityContracts } from "../types/security";
-import { miscContracts, miscEvents } from "../types/misc";
-import { freeAgentQuotaContracts } from "../types/free_agent_quota";
-import { freeModelQuotaContracts } from "../types/free_model_quota";
-import { planEvents, planContracts } from "../types/plan";
-import { audioContracts } from "../types/audio";
-import { mediaContracts } from "../types/media";
-import {
-  imageGenerationContracts,
-  imageGenerationEvents,
-} from "../types/image_generation";
+import { appContracts } from "../types/app";
 import {
   appBlueprintContracts,
   appBlueprintEvents,
 } from "../types/app_blueprint";
 import { appCollectionContracts } from "../types/app_collections";
-import { terminalContracts } from "../types/terminal";
-import { testsContracts, testsEvents } from "../types/tests";
-import { recordingContracts, recordingEvents } from "../types/recording";
-import { userInputContracts, userInputEvents } from "../types/user_input";
-import { firstPromptSendContracts } from "../types/first_prompt";
+import { audioContracts } from "../types/audio";
+import { capacitorContracts } from "../types/capacitor";
+import { chatContracts, chatStreamContract } from "../types/chat";
 import {
-  windowInfrastructureContracts,
-  windowInfrastructureEvents,
-} from "../types/window_infrastructure";
+  connectionFlowContracts,
+  connectionFlowEvents,
+} from "../types/connection_flow";
+import { contextContracts } from "../types/context";
 import {
   distributedMachineContracts,
   distributedMachineEvents,
 } from "../types/distributed_machines";
+import { firstPromptSendContracts } from "../types/first_prompt";
+import { freeAgentQuotaContracts } from "../types/free_agent_quota";
+import { freeModelQuotaContracts } from "../types/free_model_quota";
+import { gitContracts, githubContracts } from "../types/github";
+import { helpContracts, helpStreamContract } from "../types/help";
+import {
+  imageGenerationContracts,
+  imageGenerationEvents,
+} from "../types/image_generation";
+import { importContracts } from "../types/import";
+import { languageModelContracts } from "../types/language-model";
+import { mcpContracts } from "../types/mcp";
+import { mediaContracts } from "../types/media";
+import { migrationContracts } from "../types/migration";
+import { miscContracts, miscEvents } from "../types/misc";
+import { neonContracts } from "../types/neon";
+import { planContracts, planEvents } from "../types/plan";
+import { promptContracts } from "../types/prompts";
+import { proposalContracts } from "../types/proposals";
+import { recordingContracts, recordingEvents } from "../types/recording";
+import { securityContracts } from "../types/security";
+// Import all contracts
+import { settingsContracts } from "../types/settings";
+import { supabaseContracts } from "../types/supabase";
+import { systemContracts, systemEvents } from "../types/system";
+import { templateContracts } from "../types/templates";
+import { terminalContracts } from "../types/terminal";
+import { testsContracts, testsEvents } from "../types/tests";
+import { upgradeContracts } from "../types/upgrade";
+import { userInputContracts, userInputEvents } from "../types/user_input";
+import { vercelContracts } from "../types/vercel";
+import { versionContracts, versionEvents } from "../types/version";
+import { visualEditingContracts } from "../types/visual-editing";
+import {
+  windowInfrastructureContracts,
+  windowInfrastructureEvents,
+} from "../types/window_infrastructure";
 
 // =============================================================================
 // Invoke Channels (derived from all contracts)

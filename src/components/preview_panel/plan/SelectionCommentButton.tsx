@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSetAtom } from "jotai";
-import { MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
+  type PlanAnnotation,
   addPlanAnnotation,
   planAnnotationsAtom,
-  type PlanAnnotation,
 } from "@/atoms/planAtoms";
+import { Button } from "@/components/ui/button";
+import { useSetAtom } from "jotai";
+import { MessageSquare } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ANNOTATION_MARK_SELECTOR,
   getPlanSelectionSnapshot,

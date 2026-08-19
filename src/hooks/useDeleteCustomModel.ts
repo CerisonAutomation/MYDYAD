@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface DeleteCustomModelParams {
   providerId: string;

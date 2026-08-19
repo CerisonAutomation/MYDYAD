@@ -1,16 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { apps, chats, messages } from "@/db/schema";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
 import {
-  loadChatQueue,
   disposeSessionChatQueue,
+  loadChatQueue,
   mutateChatQueue,
   persistQueuedIntent,
 } from "@/chat_stream/persistence";
-import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
 import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
+import { apps, chats, messages } from "@/db/schema";
+import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
 import { acceptChatTurn } from "./chat_turn_acceptance";
 
 describe("acceptChatTurn", () => {

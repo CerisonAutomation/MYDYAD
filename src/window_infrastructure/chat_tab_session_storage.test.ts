@@ -1,18 +1,19 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createStore } from "jotai";
 import capturedSessionFixture from "@/__tests__/golden_single_window/fixtures/chat-tab-session.real.json";
 import {
+  type ChatTabSession,
   chatTabSessionStorageAtom,
   initializeChatTabSessionStorageAtom,
-  type ChatTabSession,
 } from "@/atoms/chatAtoms";
+import { createStore } from "jotai";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  activeStoredChatTabInstanceState,
-  LEGACY_CHAT_TAB_SESSION_STORAGE_KEY,
   LEGACY_CHAT_TAB_SESSION_MIGRATION_KEY,
+  LEGACY_CHAT_TAB_SESSION_STORAGE_KEY,
+  type StoredWindowChatTabSession,
+  activeStoredChatTabInstanceState,
   adoptStoredChatTab,
-  clearSourceChatTabRemoval,
   chatTabSessionStorageKey,
+  clearSourceChatTabRemoval,
   configureChatTabWindowSession,
   createChatTabSessionStorage,
   hasSourceChatTabRemoval,
@@ -20,7 +21,6 @@ import {
   promoteMostRecentChatTabSession,
   pruneChatTabWindowSessions,
   removeActiveStoredChatTab,
-  type StoredWindowChatTabSession,
 } from "./chat_tab_session_storage";
 import type { TabInstanceId, WindowSessionId } from "./types";
 

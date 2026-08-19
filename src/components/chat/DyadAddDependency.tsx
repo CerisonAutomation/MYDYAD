@@ -1,19 +1,19 @@
 import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
 import { useAutoCollapse } from "./useAutoCollapse";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
 
 import { ipc } from "@/ipc/types";
 
 import { Package } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
-  DyadExpandIcon,
+  DyadCard,
   DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
 } from "./DyadCardPrimitives";
 import { getNpmPackagePageUrl } from "./npmPackageUrl";
 

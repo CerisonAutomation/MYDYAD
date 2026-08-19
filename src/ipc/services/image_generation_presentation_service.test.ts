@@ -1,9 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import type { RequestId } from "@/distributed_machines/request_identity";
 import type { ImageGenerationActorState } from "@/image_generation/state";
 import { WindowRegistry } from "@/window_infrastructure/main/window_registry";
 import { WindowSessionIdSchema } from "@/window_infrastructure/types";
+import { describe, expect, it, vi } from "vitest";
 import { ImageGenerationPresentationService } from "./image_generation_presentation_service";
-import type { RequestId } from "@/distributed_machines/request_identity";
 
 function setup() {
   const windows = new WindowRegistry();

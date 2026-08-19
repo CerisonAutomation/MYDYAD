@@ -1,7 +1,7 @@
 import type { RemoteMachineTransport } from "@/distributed_machines/remote_transport";
 import {
-  remoteMachineTransport,
   type RemoteTransportEndpoint,
+  remoteMachineTransport,
 } from "../services/distributed_machine_host";
 import { distributedMachineContracts } from "../types/distributed_machines";
 import { createTypedHandler } from "./base";

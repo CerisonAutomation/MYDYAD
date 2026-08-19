@@ -128,7 +128,7 @@ export function captureRendererException(
 
 export function captureRendererMessage(
   message: string,
-  level: string = "info",
+  level = "info",
 ) {
   const sdk = loadSentry();
   if (!initialized || !sdk) {

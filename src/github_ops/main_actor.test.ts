@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActorHost } from "@/distributed_machines/actor_host";
 import type { HostedActorRef } from "@/distributed_machines/definition";
 import { RemoteMachineClient } from "@/distributed_machines/remote_client";
@@ -6,20 +5,21 @@ import { createRemoteMachineManifest } from "@/distributed_machines/remote_manif
 import { RemoteMachineTransport } from "@/distributed_machines/remote_transport";
 import { FakeDuplexRemoteTransport } from "@/distributed_machines/testing";
 import {
+  CONFLICT_RESOLUTION_CLAIM_TIMEOUT_MS,
+  githubOpsDefinition,
+} from "@/ipc/services/github_ops_definition";
+import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
-import {
-  CONFLICT_RESOLUTION_CLAIM_TIMEOUT_MS,
-  githubOpsDefinition,
-} from "@/ipc/services/github_ops_definition";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { githubOpsClientDefinition } from "./client_definition";
 import type { GithubOpsIgnoreReason } from "./state";
 import {
-  githubOpsKey,
   type GithubOpsActorState,
   type GithubOpsWireEvent,
+  githubOpsKey,
 } from "./transport";
 
 const service = vi.hoisted(() => ({

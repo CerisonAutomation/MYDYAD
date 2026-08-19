@@ -1,9 +1,9 @@
-import { useTranslation } from "react-i18next";
-import { ipc } from "@/ipc/types";
-import { Button } from "./ui/button";
-import { atom, useAtom } from "jotai";
-import { useSettings } from "@/hooks/useSettings";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useSettings } from "@/hooks/useSettings";
+import { ipc } from "@/ipc/types";
+import { atom, useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
+import { Button } from "./ui/button";
 
 const hideBannerAtom = atom(false);
 

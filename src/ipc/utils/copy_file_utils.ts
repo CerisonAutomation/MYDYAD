@@ -1,28 +1,28 @@
 import fs from "node:fs";
 import path from "node:path";
+import { db } from "@/db";
+import { apps } from "@/db/schema";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getDyadAppPath } from "@/paths/paths";
+import { eq } from "drizzle-orm";
 import log from "electron-log";
-import { assertMutationPathAllowed, safeJoin } from "./path_utils";
+import { deploySupabaseFunction } from "../../supabase_admin/supabase_management_client";
+import {
+  extractFunctionNameFromPath,
+  isServerFunction,
+  isSharedServerModule,
+} from "../../supabase_admin/supabase_utils";
+import {
+  appOperationCoordinator,
+  readAppResource,
+} from "../services/app_operation_coordinator";
 import { gitAdd } from "./git_utils";
 import {
   DYAD_MEDIA_DIR_NAME,
   isWithinDyadMediaDir,
   resolveAttachmentLogicalPath,
 } from "./media_path_utils";
-import {
-  appOperationCoordinator,
-  readAppResource,
-} from "../services/app_operation_coordinator";
-import { deploySupabaseFunction } from "../../supabase_admin/supabase_management_client";
-import {
-  isServerFunction,
-  isSharedServerModule,
-  extractFunctionNameFromPath,
-} from "../../supabase_admin/supabase_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { db } from "@/db";
-import { apps } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { getDyadAppPath } from "@/paths/paths";
+import { assertMutationPathAllowed, safeJoin } from "./path_utils";
 
 const logger = log.scope("copy_file_utils");
 

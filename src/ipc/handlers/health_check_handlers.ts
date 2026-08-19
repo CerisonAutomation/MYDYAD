@@ -1,7 +1,7 @@
-import { createTypedHandler } from "./base";
+import log from "electron-log";
 import { z } from "zod";
 import { db } from "../../db";
-import log from "electron-log";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("health_check");
 

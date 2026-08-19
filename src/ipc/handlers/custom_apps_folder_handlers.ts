@@ -1,12 +1,5 @@
-import { dialog } from "electron";
-import { mkdir } from "fs/promises";
-import log from "electron-log";
-import { join, isAbsolute, normalize } from "path";
-import { db } from "../../db";
-import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { createTypedHandler } from "./base";
-import { systemContracts } from "../types/system";
+import { isAbsolute, join, normalize } from "path";
+import { writeSettings } from "@/main/settings";
 import {
   getCustomFolderCache,
   getDefaultDyadAppsDirectory,
@@ -14,8 +7,15 @@ import {
   invalidateDyadAppsBaseDirectoryCache,
   isDirectoryAccessible,
 } from "@/paths/paths";
+import { eq } from "drizzle-orm";
+import { dialog } from "electron";
+import log from "electron-log";
+import { mkdir } from "fs/promises";
+import { db } from "../../db";
+import { apps } from "../../db/schema";
+import { systemContracts } from "../types/system";
 import { gitAddSafeDirectory } from "../utils/git_utils";
-import { writeSettings } from "@/main/settings";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("custom_apps_folder_handlers");
 

@@ -1,30 +1,30 @@
 import {
-  createServer,
   type IncomingMessage,
   type Server,
   type ServerResponse,
+  createServer,
 } from "node:http";
-import log from "electron-log";
+import {
+  type McpOAuthListenerHandle,
+  type McpOAuthListenerRequest,
+  createMcpOAuthRegistry,
+} from "@/mcp_oauth/registry";
+import { systemClock, uuidIdSource } from "@/state_machines/clock";
+import { PendingReceiptLedger } from "@/state_machines/pending_receipt_ledger";
 import { auth } from "@ai-sdk/mcp";
 import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { mcpServers } from "../../db/schema";
+import { DyadError, DyadErrorKind } from "../../errors/dyad_error";
+import { DEFAULT_OAUTH_CALLBACK_PORT } from "../types/mcp";
+import { mcpManager } from "./mcp_manager";
 import {
   DyadOAuthClientProvider,
   decryptFromString,
   issueMcpOAuthWriteAuthority,
   revokeMcpOAuthWriteAuthority,
 } from "./mcp_oauth_provider";
-import { DEFAULT_OAUTH_CALLBACK_PORT } from "../types/mcp";
-import { mcpManager } from "./mcp_manager";
-import { DyadError, DyadErrorKind } from "../../errors/dyad_error";
-import {
-  createMcpOAuthRegistry,
-  type McpOAuthListenerHandle,
-  type McpOAuthListenerRequest,
-} from "@/mcp_oauth/registry";
-import { systemClock, uuidIdSource } from "@/state_machines/clock";
-import { PendingReceiptLedger } from "@/state_machines/pending_receipt_ledger";
 import { publishQueryInvalidations } from "./query_invalidation_delivery";
 
 const logger = log.scope("mcp_oauth_flow");

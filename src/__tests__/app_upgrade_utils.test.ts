@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import fs from "node:fs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  isComponentTaggerUpgradeNeeded,
   applyComponentTagger,
+  isComponentTaggerUpgradeNeeded,
 } from "../ipc/utils/app_upgrade_utils";
-import { simpleSpawn } from "../ipc/utils/simpleSpawn";
 import { gitAddAll, gitCommit } from "../ipc/utils/git_utils";
+import { simpleSpawn } from "../ipc/utils/simpleSpawn";
 
 vi.mock(
   "node:fs",

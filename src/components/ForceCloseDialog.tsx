@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useSetAtom } from "jotai";
+import { earlyForceCloseEvents } from "@/app_wiring/early_renderer_events";
+import { helpDialogAtom } from "@/atoms/helpDialogAtom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,9 +10,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useSetAtom } from "jotai";
 import { AlertTriangle, Upload } from "lucide-react";
-import { helpDialogAtom } from "@/atoms/helpDialogAtom";
-import { earlyForceCloseEvents } from "@/app_wiring/early_renderer_events";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ForceClosePerformanceData {
   timestamp: number;

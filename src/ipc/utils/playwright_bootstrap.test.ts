@@ -3,13 +3,13 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  buildPlaywrightConfig,
-  detectSystemBrowserChannel,
   DYAD_CONFIG_FILENAME,
-  ensurePlaywrightBootstrap,
-  isPlaywrightBrowserInstalled,
   TEST_BASE_URL_ENV,
   TEST_RESULTS_JSON,
+  buildPlaywrightConfig,
+  detectSystemBrowserChannel,
+  ensurePlaywrightBootstrap,
+  isPlaywrightBrowserInstalled,
 } from "./playwright_bootstrap";
 
 const tempDirs: string[] = [];

@@ -1,16 +1,16 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
-import { spawn as defaultSpawnPty } from "node-pty";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
 import type { WebContents } from "electron";
 import log from "electron-log";
+import { spawn as defaultSpawnPty } from "node-pty";
 import { shellEnvSync } from "shell-env";
-import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { type PtyProcessLike, terminatePtyProcess } from "./pty_command_runner";
 import { safeSend } from "./safe_sender";
-import { terminatePtyProcess, type PtyProcessLike } from "./pty_command_runner";
 
 const logger = log.scope("pty_session_manager");
 

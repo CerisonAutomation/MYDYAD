@@ -1,15 +1,15 @@
-import { describe, expect, it } from "vitest";
 import {
-  assertReferenceStability,
   assertAllCommandsProducible,
   assertAllStatesReachable,
+  assertReferenceStability,
   commandsOf,
   exploreReachableStates,
   ignoreReasonOf,
 } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import type {
-  FirstPromptEvent,
   FirstPromptCommand,
+  FirstPromptEvent,
   FirstPromptPayload,
   FirstPromptState,
 } from "./state";

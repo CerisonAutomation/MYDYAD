@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Provider, createStore, useAtomValue } from "jotai";
 import type { PropsWithChildren } from "react";
-import { createStore, Provider, useAtomValue } from "jotai";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
 import { useChatModeToggle } from "./useChatModeToggle";

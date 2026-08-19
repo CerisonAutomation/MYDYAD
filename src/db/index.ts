@@ -1,15 +1,15 @@
+import fs from "node:fs";
+import path from "node:path";
+import Database from "better-sqlite3";
 // db.ts
 import {
   type BetterSQLite3Database,
   drizzle,
 } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import * as schema from "./schema";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import path from "node:path";
-import fs from "node:fs";
-import { getUserDataPath } from "../paths/paths";
 import log from "electron-log";
+import { getUserDataPath } from "../paths/paths";
+import * as schema from "./schema";
 
 const logger = log.scope("db");
 

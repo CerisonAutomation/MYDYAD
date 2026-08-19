@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
-import { type UserSettings, hasDyadProKey } from "@/lib/schemas";
 import {
   getInitialLoadTelemetryProperties,
   getSettingsPersonTelemetryProperties,
 } from "@/lib/posthogTelemetry";
-import { usePostHog } from "posthog-js/react";
-import { useAppVersion } from "./useAppVersion";
 import { queryKeys } from "@/lib/queryKeys";
+import { type UserSettings, hasDyadProKey } from "@/lib/schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePostHog } from "posthog-js/react";
+import { useCallback, useEffect, useRef } from "react";
+import { useAppVersion } from "./useAppVersion";
 
 const TELEMETRY_CONSENT_KEY = "dyadTelemetryConsent";
 const TELEMETRY_USER_ID_KEY = "dyadTelemetryUserId";
@@ -50,7 +50,7 @@ export function useSettings() {
   } = useQuery({
     queryKey: queryKeys.instructions.platform,
     queryFn: () => ipc.instructions.getSystemPlatform(),
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const {
@@ -59,7 +59,7 @@ export function useSettings() {
   } = useQuery({
     queryKey: queryKeys.instructions.initialLoadTelemetryContext,
     queryFn: () => ipc.instructions.getInitialLoadTelemetryContext(),
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   useEffect(() => {

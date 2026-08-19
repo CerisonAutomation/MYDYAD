@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { InvalidToolInputError, type ModelMessage, streamText } from "ai";
 import type { IpcMainInvokeEvent, WebContents } from "electron";
-import { InvalidToolInputError, streamText, type ModelMessage } from "ai";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ============================================================================
 // Test Fakes & Builders
@@ -353,19 +353,19 @@ vi.mock("@/ipc/handlers/compaction/compaction_handler", () => ({
 // Import the function under test AFTER mocks are set up
 // ============================================================================
 
+import type { AiMessagesJsonV6 } from "@/db/schema";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getModelClient } from "@/ipc/utils/get_model_client";
+import { MCP_RESULT_MAX_BYTES } from "@/ipc/utils/mcp_result_sanitizer";
 import {
   buildChatMessageHistory,
   handleLocalAgentStream,
 } from "@/pro/main/ipc/handlers/local_agent/local_agent_handler";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { buildAgentToolSet } from "@/pro/main/ipc/handlers/local_agent/tool_definitions";
 import {
   commitAllChanges,
   deployAllFunctionsIfNeeded,
 } from "@/pro/main/ipc/handlers/local_agent/processors/file_operations";
-import { MCP_RESULT_MAX_BYTES } from "@/ipc/utils/mcp_result_sanitizer";
-import type { AiMessagesJsonV6 } from "@/db/schema";
-import { getModelClient } from "@/ipc/utils/get_model_client";
+import { buildAgentToolSet } from "@/pro/main/ipc/handlers/local_agent/tool_definitions";
 
 // ============================================================================
 // Tests

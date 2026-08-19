@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { ChatStreamHostState } from "../host_state";
 import {
   initialChatStreamHostState,
   transitionChatStreamHost,
 } from "../host_transition";
-import type { ChatStreamHostState } from "../host_state";
 import type { SerializableChatTurnIntent } from "../transport";
 
 const invocationRef = {

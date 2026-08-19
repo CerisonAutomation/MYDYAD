@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import { SquareTerminal, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 
 interface TerminalEscapeBannerProps {
   appName: string;

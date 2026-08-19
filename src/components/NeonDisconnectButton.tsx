@@ -1,7 +1,7 @@
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { useSettings } from "@/hooks/useSettings";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface NeonDisconnectButtonProps {
   className?: string;

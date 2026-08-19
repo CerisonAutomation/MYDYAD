@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { CreateAppDialog } from "@/components/CreateAppDialog";
+import { TemplateCard } from "@/components/TemplateCard";
 import { BackButton } from "@/components/ui/back-button";
 import { useSettings } from "@/hooks/useSettings";
 import { useTemplates } from "@/hooks/useTemplates";
-import { TemplateCard } from "@/components/TemplateCard";
-import { CreateAppDialog } from "@/components/CreateAppDialog";
+import type React from "react";
+import { useState } from "react";
 
 const TemplatesPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

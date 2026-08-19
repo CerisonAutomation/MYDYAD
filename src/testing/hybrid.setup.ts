@@ -1,6 +1,6 @@
 import { configure, prettyDOM } from "@testing-library/dom";
-import { afterEach, vi } from "vitest";
 import log from "electron-log";
+import { afterEach, vi } from "vitest";
 import type { RendererIpcBridge } from "./renderer_ipc_bridge";
 
 // Quiet electron-log's console transport during tests: per-request info/debug

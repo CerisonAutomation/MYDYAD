@@ -1,10 +1,10 @@
-import { createStore, Provider } from "jotai";
+import i18n from "@/i18n";
+import type { SubscriptionStatus, UserBudgetInfo } from "@/ipc/types";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Provider, createStore } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SubscriptionStatus, UserBudgetInfo } from "@/ipc/types";
-import i18n from "@/i18n";
 
 const mocks = vi.hoisted(() => ({
   status: null as SubscriptionStatus | null,

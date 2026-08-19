@@ -1,5 +1,5 @@
-import { createRoute } from "@tanstack/react-router";
 import { PluginDetailPage } from "@/components/plugins/PluginDetailPage";
+import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./root";
 
 export const pluginDetailRoute = createRoute({

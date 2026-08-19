@@ -1,3 +1,11 @@
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { resolve } from "node:path";
 /**
  * Compaction quality benchmark (plans/benchmark-compaction.md).
  *
@@ -16,38 +24,30 @@
  * benchmark-results/compaction/<run>/results.jsonl and summarized in
  * summary.md.
  */
-import { describe, it, beforeAll, afterAll, expect } from "vitest";
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
-import { resolve } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 if (!process.env.DYAD_PRO_API_KEY && process.env.DYAD_PRO_KEY) {
   process.env.DYAD_PRO_API_KEY = process.env.DYAD_PRO_KEY;
 }
 
-import { GPT_5_4, getEvalModel, hasDyadProKey } from "./helpers/get_eval_model";
 import {
-  loadFixtures,
-  loadSpecs,
-  validateSpec,
-  validateFixture,
-  fixtureTranscript,
-  runCompaction,
-  structuralChecks,
-  judgeFactGrid,
-  runProbes,
-  computeScores,
   type CompactionFixture,
   type FactGridResult,
   type ProbeResult,
   type Scores,
   type StructuralResult,
+  computeScores,
+  fixtureTranscript,
+  judgeFactGrid,
+  loadFixtures,
+  loadSpecs,
+  runCompaction,
+  runProbes,
+  structuralChecks,
+  validateFixture,
+  validateSpec,
 } from "./helpers/compaction_harness";
+import { GPT_5_4, getEvalModel, hasDyadProKey } from "./helpers/get_eval_model";
 
 const MODELS = (process.env.CMP_MODELS ?? "gpt-5.6-sol,gpt-5.6-luna")
   .split(",")

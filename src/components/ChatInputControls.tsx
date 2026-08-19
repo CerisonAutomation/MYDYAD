@@ -1,7 +1,7 @@
+import { ChatModeSelector } from "./ChatModeSelector";
 import { ContextFilesPicker } from "./ContextFilesPicker";
 import { ModelPicker } from "./ModelPicker";
 import { Agent2ModeSelector } from "./ProModeSelector";
-import { ChatModeSelector } from "./ChatModeSelector";
 
 export function ChatInputControls({
   showContextFilesPicker = false,

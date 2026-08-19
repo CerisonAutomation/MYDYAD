@@ -1,17 +1,17 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DyadErrorKind } from "@/errors/dyad_error";
 import {
   ADD_DEPENDENCY_INSTALL_TIMEOUT_MS,
   CommandExecutionError,
   PNPM_INSTALL_POLICY_ARGS,
   SOCKET_FIREWALL_WARNING_MESSAGE,
 } from "@/ipc/utils/socket_firewall";
-import { DyadErrorKind } from "@/errors/dyad_error";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  executeAddDependency,
   ExecuteAddDependencyError,
+  executeAddDependency,
 } from "./executeAddDependency";
 
 const {

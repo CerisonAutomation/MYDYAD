@@ -3,10 +3,10 @@ import path from "node:path";
 import log from "electron-log";
 
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
+import { gitAdd, gitCommit, isGitPathClean } from "@/ipc/utils/git_utils";
 import { getFileWriteKey, withLock } from "@/ipc/utils/lock_utils";
 import { assertMutationPathAllowed, safeJoin } from "@/ipc/utils/path_utils";
-import { gitAdd, gitCommit, isGitPathClean } from "@/ipc/utils/git_utils";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { getProjectApiKeys } from "./supabase_management_client";
 
 const logger = log.scope("supabase_app_key");

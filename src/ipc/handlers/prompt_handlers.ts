@@ -1,10 +1,10 @@
-import log from "electron-log";
 import { db } from "@/db";
 import { prompts } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { createTypedHandler } from "./base";
-import { promptContracts } from "../types/prompts";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { promptContracts } from "../types/prompts";
+import { createTypedHandler } from "./base";
 
 const _logger = log.scope("prompt_handlers");
 

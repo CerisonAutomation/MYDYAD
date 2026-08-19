@@ -1,6 +1,12 @@
-import { useMemo, useState } from "react";
-import { Folder, Image } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,35 +18,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useSelectChat } from "@/hooks/useSelectChat";
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  ipc,
-  type MediaFile,
-  type RenameMediaFileParams,
   type DeleteMediaFileParams,
+  type MediaFile,
   type MoveMediaFileParams,
+  type RenameMediaFileParams,
+  ipc,
 } from "@/ipc/types";
-import { useQueryClient } from "@tanstack/react-query";
+import { buildDyadMediaUrl } from "@/lib/dyadMediaUrl";
 import { queryKeys } from "@/lib/queryKeys";
 import { showError } from "@/lib/toast";
-import { useSelectChat } from "@/hooks/useSelectChat";
+import { cn } from "@/lib/utils";
 import { INVALID_FILE_NAME_CHARS } from "@/shared/media_validation";
-import {
-  getFileNameWithoutExtension,
-  getFileExtension,
-} from "./media-library/media-folder-utils";
-import { MediaFolderOpen } from "./media-library/MediaFolderOpen";
-import { ImageLightbox } from "./chat/ImageLightbox";
-import { buildDyadMediaUrl } from "@/lib/dyadMediaUrl";
+import { useQueryClient } from "@tanstack/react-query";
+import { Folder, Image } from "lucide-react";
+import { useMemo, useState } from "react";
 import { AppSearchSelect } from "./AppSearchSelect";
+import { ImageLightbox } from "./chat/ImageLightbox";
+import { MediaFolderOpen } from "./media-library/MediaFolderOpen";
+import {
+  getFileExtension,
+  getFileNameWithoutExtension,
+} from "./media-library/media-folder-utils";
 
 interface DyadAppMediaFolderProps {
   appName: string;

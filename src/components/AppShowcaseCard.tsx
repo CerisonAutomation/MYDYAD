@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import type { ListedApp } from "@/ipc/types/app";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { ListedApp } from "@/ipc/types/app";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface AppShowcaseCardProps {
   app: ListedApp;

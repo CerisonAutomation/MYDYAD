@@ -1,7 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { apps, chats } from "@/db/schema";
 import { DyadErrorKind } from "@/errors/dyad_error";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
+import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   assertQueueSnapshotWithinLimit,
   claimQueueHead,
@@ -16,7 +17,6 @@ import {
   restoreClaimedQueueHead,
   stageActiveIntent,
 } from "./persistence";
-import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
 import type { SerializableChatTurnIntent } from "./transport";
 
 describe("chat stream persistence", () => {

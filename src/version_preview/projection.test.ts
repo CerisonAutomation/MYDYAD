@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
 import { assertCapabilityTransitionConsistency } from "@/state_machines/testing";
-import type { PreviewEvent, PreviewSession, PreviewState } from "./state";
-import { CLOSED_STATE } from "./state";
+import { describe, expect, it } from "vitest";
 import {
   projectVersionPreview,
   selectVersionPreviewCapabilities,
 } from "./projection";
+import type { PreviewEvent, PreviewSession, PreviewState } from "./state";
+import { CLOSED_STATE } from "./state";
 import { transition } from "./transition";
 
 const APP_ID = 7;

@@ -1,4 +1,3 @@
-import { useMemo, useState, type ReactNode } from "react";
 import {
   CheckCircle2,
   ChevronRight,
@@ -9,9 +8,10 @@ import {
   GitCommitHorizontal,
   History,
   LoaderCircle,
-  RotateCcw,
   type LucideIcon,
+  RotateCcw,
 } from "lucide-react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
 import type { CustomTagState } from "./stateTypes";

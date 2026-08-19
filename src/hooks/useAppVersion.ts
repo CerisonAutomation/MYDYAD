@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export function useAppVersion() {
   const { data } = useQuery({
@@ -9,7 +9,7 @@ export function useAppVersion() {
       const result = await ipc.instructions.getAppVersion();
       return result.version;
     },
-    staleTime: Infinity, // App version never changes during a session
+    staleTime: Number.POSITIVE_INFINITY, // App version never changes during a session
   });
 
   return data ?? null;

@@ -3,12 +3,12 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { eq } from "drizzle-orm";
 
-import { messages, language_models } from "@/db/schema";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
+import { language_models, messages } from "@/db/schema";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 async function setContextWindow(
   harness: HybridChatHarness,

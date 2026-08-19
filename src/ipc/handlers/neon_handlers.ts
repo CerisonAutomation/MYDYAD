@@ -1,11 +1,15 @@
 import fs from "node:fs/promises";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readAppResource } from "@/ipc/services/app_operation_coordinator";
+import type { AppOperationRequest } from "@/ipc/services/app_operation_coordinator";
+import { createAppOperationHandler } from "@/ipc/utils/app_mutation_lock";
+import { getDyadAppPath } from "@/paths/paths";
+import { EndpointType } from "@neondatabase/api-client";
+import { eq } from "drizzle-orm";
 import type { IpcMainInvokeEvent } from "electron";
-import { z } from "zod";
-import { createTestOnlyLoggedHandler } from "./safe_handle";
-import { createTypedHandler } from "./base";
-import type { IpcContract } from "../contracts/core";
-import { handleNeonOAuthReturn } from "../../neon_admin/neon_return_handler";
-import { runOAuthReturnExchange } from "./connection_flow_handlers";
+import type { z } from "zod";
+import { db } from "../../db";
+import { apps } from "../../db/schema";
 import {
   getCachedEmailPasswordConfig,
   getNeonClient,
@@ -13,40 +17,36 @@ import {
   getNeonOrganizationId,
   invalidateEmailPasswordConfigCache,
 } from "../../neon_admin/neon_management_client";
-import { neonContracts, type NeonBranch } from "../types/neon";
-import { db } from "../../db";
-import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { EndpointType } from "@neondatabase/api-client";
-import { retryOnLocked } from "../utils/retryOnLocked";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { handleNeonOAuthReturn } from "../../neon_admin/neon_return_handler";
+import type { IpcContract } from "../contracts/core";
+import { type NeonBranch, neonContracts } from "../types/neon";
 import {
   getEnvFilePath,
   readEnvFileIfExists,
   removeNeonEnvVars,
 } from "../utils/app_env_var_utils";
 import {
-  logger,
-  combineWarnings,
-  buildNeonAuthActivationWarning,
-  getAppWithNeonBranch,
-  ensureNeonAuth,
-  autoInjectNeonEnvVars,
-  assertNoSupabaseProject,
-  assertNoNeonProject,
-  getOrCreateNeonAuthCookieSecret,
-  syncActiveNeonAuthCookieSecretFromEnv,
-  resolveNeonBranchEnvVars,
   type NeonBranchType,
+  assertNoNeonProject,
+  assertNoSupabaseProject,
+  autoInjectNeonEnvVars,
+  buildNeonAuthActivationWarning,
+  combineWarnings,
+  ensureNeonAuth,
+  getAppWithNeonBranch,
+  getOrCreateNeonAuthCookieSecret,
+  logger,
+  resolveNeonBranchEnvVars,
+  syncActiveNeonAuthCookieSecretFromEnv,
 } from "../utils/neon_utils";
 import {
-  ensureNitroIfVite,
   type EnsureNitroResult,
+  ensureNitroIfVite,
 } from "../utils/nitro_setup";
-import { getDyadAppPath } from "@/paths/paths";
-import { createAppOperationHandler } from "@/ipc/utils/app_mutation_lock";
-import { readAppResource } from "@/ipc/services/app_operation_coordinator";
-import type { AppOperationRequest } from "@/ipc/services/app_operation_coordinator";
+import { retryOnLocked } from "../utils/retryOnLocked";
+import { createTypedHandler } from "./base";
+import { runOAuthReturnExchange } from "./connection_flow_handlers";
+import { createTestOnlyLoggedHandler } from "./safe_handle";
 
 const testOnlyHandle = createTestOnlyLoggedHandler(logger);
 const NEON_APP_MUTATION_RESOURCES = [

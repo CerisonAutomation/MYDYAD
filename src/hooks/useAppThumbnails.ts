@@ -1,7 +1,7 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 /**
  * Fetches thumbnails for the given app ids and exposes them as a

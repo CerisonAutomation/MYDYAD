@@ -1,9 +1,9 @@
-import log from "electron-log";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { getDyadAppPath } from "@/paths/paths";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
+import { getDyadAppPath } from "@/paths/paths";
+import log from "electron-log";
 
 const logger = log.scope("git_remote_token_scrub");
 

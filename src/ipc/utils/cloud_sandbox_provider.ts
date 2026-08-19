@@ -1,28 +1,12 @@
-/**
- * Local Sandbox Provider — replaces cloud sandbox with local execution
- *
- * All sandbox operations now execute locally using Node.js worker threads.
- * No remote API calls. No Dyad Pro credits consumed.
- * All code runs on the user's machine with full access.
- *
- * Features:
- *   • Local Node.js execution (no container runtime required)
- *   • Optional Colima/Docker container support
- *   • File watching and hot-reload
- *   • Preview server management
- *   • Process lifecycle management
- */
 
-import { readSettings } from "@/main/settings";
-import { normalizePath } from "../../../shared/normalizePath";
+import { execFile } from "node:child_process";
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
-import log from "electron-log";
-import { IS_TEST_BUILD } from "./test_utils";
-import { z } from "zod";
-import { isPathIgnoredByGitIgnore } from "./gitignore_utils";
-import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import log from "electron-log";
+import { z } from "zod";
+import { normalizePath } from "../../../shared/normalizePath";
+import { isPathIgnoredByGitIgnore } from "./gitignore_utils";
 
 const execFileAsync = promisify(execFile);
 

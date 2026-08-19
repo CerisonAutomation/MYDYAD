@@ -69,6 +69,7 @@ vi.mock("electron-log", () => ({
   },
 }));
 
+import { appOperationCoordinator } from "../services/app_operation_coordinator";
 import {
   createTempTestBranch,
   deleteTempTestBranch,
@@ -77,7 +78,6 @@ import {
   reconcileOrphanTestBranches,
   restoreAppFromTestBranch,
 } from "./neon_test_branch";
-import { appOperationCoordinator } from "../services/app_operation_coordinator";
 
 type AppRow = any;
 

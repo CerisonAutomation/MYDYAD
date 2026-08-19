@@ -1,6 +1,6 @@
 import type { ChildProcess } from "node:child_process";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BufferedProcessSpawnError } from "./buffered_process";
 import { runPortalMigrationCommand } from "./portal_migration";
 

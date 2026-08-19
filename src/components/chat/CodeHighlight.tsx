@@ -1,15 +1,3 @@
-import React, { useState, useEffect, memo, type ReactNode } from "react";
-import ShikiHighlighter, {
-  isInlineCode,
-  createHighlighterCore,
-  createJavaScriptRegexEngine,
-} from "react-shiki/core";
-import type { Element as HastElement } from "hast";
-import { useTheme } from "../../contexts/ThemeContext";
-import { PLAN_ANNOTATION_IGNORE_ATTRIBUTE } from "../preview_panel/plan/planAnnotationDom";
-import { Copy, Check } from "lucide-react";
-import github from "@shikijs/themes/github-light-default";
-import githubDark from "@shikijs/themes/github-dark-default";
 // common languages
 import astro from "@shikijs/langs/astro";
 import css from "@shikijs/langs/css";
@@ -29,6 +17,18 @@ import sql from "@shikijs/langs/sql";
 import tsx from "@shikijs/langs/tsx";
 import typescript from "@shikijs/langs/typescript";
 import vue from "@shikijs/langs/vue";
+import githubDark from "@shikijs/themes/github-dark-default";
+import github from "@shikijs/themes/github-light-default";
+import type { Element as HastElement } from "hast";
+import { Check, Copy } from "lucide-react";
+import { type ReactNode, memo, useEffect, useState } from "react";
+import ShikiHighlighter, {
+  isInlineCode,
+  createHighlighterCore,
+  createJavaScriptRegexEngine,
+} from "react-shiki/core";
+import { useTheme } from "../../contexts/ThemeContext";
+import { PLAN_ANNOTATION_IGNORE_ATTRIBUTE } from "../preview_panel/plan/planAnnotationDom";
 
 type HighlighterCore = Awaited<ReturnType<typeof createHighlighterCore>>;
 
@@ -69,7 +69,7 @@ function useHighlighter() {
   const [highlighter, setHighlighter] = useState<HighlighterCore>();
 
   useEffect(() => {
-    getHighlighter().then(setHighlighter);
+    getHighlighter().then(setHighlighter).catch(() => {});
   }, []);
 
   return highlighter;

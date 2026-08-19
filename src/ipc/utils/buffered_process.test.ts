@@ -1,14 +1,14 @@
+import type { ChildProcess } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
-import type { ChildProcess } from "node:child_process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { OUTPUT_TRUNCATION_MARKER } from "./bounded_output_buffer";
 import {
   BUFFERED_PROCESS_FORCE_KILL_GRACE_MS,
-  BufferedProcessSpawnError,
+  type BufferedProcessSpawnError,
   runBufferedProcess,
 } from "./buffered_process";
-import { OUTPUT_TRUNCATION_MARKER } from "./bounded_output_buffer";
 
 const { spawnMock, treeKillMock } = vi.hoisted(() => ({
   spawnMock: vi.fn(),

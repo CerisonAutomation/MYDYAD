@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showError, showSuccess } from "@/lib/toast";
 import { Edit2, Plus, Save, Trash2, X } from "lucide-react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export type KeyValue = { key: string; value: string };

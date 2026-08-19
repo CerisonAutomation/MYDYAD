@@ -140,7 +140,7 @@ export function captureException(error: Error, context?: Record<string, any>) {
   });
 }
 
-export function captureMessage(message: string, level: string = "info") {
+export function captureMessage(message: string, level = "info") {
   const sdk = loadSentry();
   if (!initialized || !sdk) {
     return;

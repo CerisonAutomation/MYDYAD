@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { commandsOf, ignoreReasonOf } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import type {
   UserInputDescriptor,
   UserInputState,

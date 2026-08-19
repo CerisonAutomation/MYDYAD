@@ -1,16 +1,31 @@
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { terminalOpenByChatIdAtom } from "@/atoms/terminalAtoms";
+import { useChats } from "@/hooks/useChats";
+import { useCurrentBranch } from "@/hooks/useCurrentBranch";
+import { useRenameBranch } from "@/hooks/useRenameBranch";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { useVersions } from "@/hooks/useVersions";
+import { ipc } from "@/ipc/types";
+import { showError, showSuccess } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { isMutatingState } from "@/version_preview/state";
+import { useRouter } from "@tanstack/react-router";
+import { useAtom, useAtomValue } from "jotai";
 import {
-  PanelRightOpen,
-  History,
-  PlusCircle,
   GitBranch,
+  History,
   Info,
+  PanelRightOpen,
+  PlusCircle,
   SquareTerminal,
 } from "lucide-react";
 import { PanelRightClose } from "lucide-react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAtom, useAtomValue } from "jotai";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useVersions } from "@/hooks/useVersions";
+import { LoadingBar } from "../ui/LoadingBar";
 import { Button } from "../ui/button";
 import {
   Tooltip,
@@ -18,22 +33,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { ipc } from "@/ipc/types";
-import { useRouter } from "@tanstack/react-router";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useSelectChat } from "@/hooks/useSelectChat";
-import { useChats } from "@/hooks/useChats";
-import { showError, showSuccess } from "@/lib/toast";
-import { useEffect } from "react";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { useCurrentBranch } from "@/hooks/useCurrentBranch";
-import { useVersionPreview } from "@/hooks/useVersionPreview";
-import { isMutatingState } from "@/version_preview/state";
-import { useRenameBranch } from "@/hooks/useRenameBranch";
-import { LoadingBar } from "../ui/LoadingBar";
 import { UncommittedFilesBanner } from "./UncommittedFilesBanner";
-import { terminalOpenByChatIdAtom } from "@/atoms/terminalAtoms";
-import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
   isVersionPaneOpen: boolean;

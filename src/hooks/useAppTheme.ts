@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useAppTheme(appId: number | undefined) {
   const queryClient = useQueryClient();

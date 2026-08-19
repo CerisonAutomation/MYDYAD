@@ -1,15 +1,15 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { type PropsWithChildren, StrictMode, createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { createElement, StrictMode, type PropsWithChildren } from "react";
-import {
-  observeDomainRevision,
-  type ObservedRevisionToken,
-} from "./remote_client";
 import type {
   PreparedAdmission,
   PreparedRequest,
   PreparedRequestSettlement,
 } from "./prepared_request";
+import {
+  type ObservedRevisionToken,
+  observeDomainRevision,
+} from "./remote_client";
 import { useMachineMutation } from "./use_machine_mutation";
 
 interface Outcome {

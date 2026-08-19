@@ -1,30 +1,30 @@
-import { useTranslation } from "react-i18next";
+import { useFirstPromptSaga } from "@/first_prompt/FirstPromptProvider";
+import { SECTION_IDS } from "@/lib/settingsSearchIndex";
+import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
 import { useNavigate } from "@tanstack/react-router";
 import {
-  CircleCheck,
   ChevronRight,
+  CircleCheck,
   GiftIcon,
   Play,
   Settings,
 } from "lucide-react";
-import { useFirstPromptSaga } from "@/first_prompt/FirstPromptProvider";
-import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
-import { SECTION_IDS } from "@/lib/settingsSearchIndex";
+import { useTranslation } from "react-i18next";
 
 import SetupProviderCard from "@/components/SetupProviderCard";
 
-import { ipc } from "@/ipc/types";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { usePostHog } from "posthog-js/react";
 import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
 import { useScrollAndNavigateTo } from "@/hooks/useScrollAndNavigateTo";
-// @ts-ignore
-import logo from "../../assets/logo.svg";
+import { ipc } from "@/ipc/types";
+import { cn } from "@/lib/utils";
+import { usePostHog } from "posthog-js/react";
 // @ts-ignore
 import googleIcon from "../../assets/ai-logos/google-g-icon.svg";
 // @ts-ignore
 import openrouterLogo from "../../assets/ai-logos/openrouter-logo.png";
+// @ts-ignore
+import logo from "../../assets/logo.svg";
 import { SetupDyadProButton } from "./ProBanner";
 
 export function SetupBanner({

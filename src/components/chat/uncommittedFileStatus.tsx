@@ -1,6 +1,6 @@
-import { Plus, Pencil, Trash2, ArrowRightLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { UncommittedFile } from "@/hooks/useUncommittedFiles";
+import { cn } from "@/lib/utils";
+import { ArrowRightLeft, Pencil, Plus, Trash2 } from "lucide-react";
 
 export function getStatusIcon(status: UncommittedFile["status"]) {
   switch (status) {

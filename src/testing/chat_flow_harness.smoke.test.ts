@@ -23,8 +23,8 @@ vi.mock("electron", async () => {
 });
 
 import {
-  setupChatFlowHarness,
   type ChatFlowHarness,
+  setupChatFlowHarness,
 } from "@/testing/chat_flow_harness";
 
 describe("chat flow harness (smoke)", () => {

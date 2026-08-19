@@ -1,10 +1,10 @@
-import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 import { useSummarizeInNewChat } from "./SummarizeInNewChatButton";
 
 const CONTEXT_LIMIT_THRESHOLD = 40_000;

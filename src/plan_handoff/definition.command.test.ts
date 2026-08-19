@@ -53,8 +53,8 @@ vi.mock("@/paths/paths", () => ({
 }));
 
 import { planHandoffDefinition } from "./definition";
-import { serializePlanDocument, type PlanHandoffIntent } from "./transport";
 import type { PlanHandoffHostEvent } from "./host_state";
+import { type PlanHandoffIntent, serializePlanDocument } from "./transport";
 
 function intent(): PlanHandoffIntent {
   const plan = { title: "Ship it", content: "Implement it" };

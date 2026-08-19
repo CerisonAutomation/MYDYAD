@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  getAppPort,
-  getAppProxyPort,
-  getProxyFallbackPortStart,
   PROXY_FALLBACK_PORT_START,
   PROXY_PORT_BASE,
   PROXY_PORT_RANGE,
+  getAppPort,
+  getAppProxyPort,
+  getProxyFallbackPortStart,
 } from "../../shared/ports";
 
 describe("ports", () => {

@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export function useGithubRepos({ enabled }: { enabled: boolean }) {
   const { data, isLoading, error } = useQuery({

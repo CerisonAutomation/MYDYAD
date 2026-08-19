@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { useCheckName } from "@/hooks/useCheckName";
 import { useDebounce } from "@/hooks/useDebounce";
+import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface AppBlueprintNameConflictDialogProps {
   /** The rejected app name that is already in use, pre-filled into the input. */

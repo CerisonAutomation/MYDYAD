@@ -150,7 +150,7 @@ export function quickFuzzySearch<T>(
   data: ReadonlyArray<T>,
   query: string,
   options: IFuseOptions<T>,
-  limit: number = 20,
+  limit = 20,
 ): Array<{ item: T; score: number }> {
   const fuse = new Fuse(data, options);
   const results = fuse.search(query, { limit });

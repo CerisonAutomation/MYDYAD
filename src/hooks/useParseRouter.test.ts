@@ -1,14 +1,14 @@
-import { describe, it, expect } from "vitest";
 import {
   buildRouteLabel,
   getReactRouterCandidateFiles,
+  isTanStackStartAppFile,
+  parseRoutesFromAstroFiles,
+  parseRoutesFromNextFiles,
   parseRoutesFromRouterFile,
   parseRoutesFromRouterFiles,
-  parseRoutesFromNextFiles,
-  parseRoutesFromAstroFiles,
   parseRoutesFromTanStackStartFiles,
-  isTanStackStartAppFile,
 } from "@/hooks/useParseRouter";
+import { describe, expect, it } from "vitest";
 
 describe("buildRouteLabel", () => {
   it("should return 'Home' for root path", () => {

@@ -1,5 +1,5 @@
 import { act, render } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import { describe, expect, it, vi } from "vitest";
 import { ScreenshotProvider } from "./ScreenshotProvider";
 import { ScreenshotManager } from "./manager";

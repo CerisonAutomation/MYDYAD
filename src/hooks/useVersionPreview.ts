@@ -1,26 +1,26 @@
-import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import {
   useDistributedMachine,
   useRemoteMachineClient,
 } from "@/distributed_machines/react";
 import { showError } from "@/lib/toast";
+import { useVersionPreviewPresentationStore } from "@/version_preview/VersionPreviewProvider";
+import { useVersionPreviewWindowInterestClient } from "@/version_preview/VersionPreviewProvider";
+import { versionPreviewClientDefinition } from "@/version_preview/client_definition";
+import { combineVersionPreviewState } from "@/version_preview/presentation_store";
+import {
+  type VersionPreviewProjection,
+  projectVersionPreview,
+} from "@/version_preview/projection";
 import {
   CLOSED_STATE,
   type PreviewEvent,
   type PreviewState,
 } from "@/version_preview/state";
 import {
-  projectVersionPreview,
-  type VersionPreviewProjection,
-} from "@/version_preview/projection";
-import { versionPreviewClientDefinition } from "@/version_preview/client_definition";
-import { combineVersionPreviewState } from "@/version_preview/presentation_store";
-import { useVersionPreviewPresentationStore } from "@/version_preview/VersionPreviewProvider";
-import { useVersionPreviewWindowInterestClient } from "@/version_preview/VersionPreviewProvider";
-import {
-  versionPreviewKey,
   type VersionPreviewIntentEvent,
+  versionPreviewKey,
 } from "@/version_preview/transport";
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 
 const NULL_APP_ID = 0;
 

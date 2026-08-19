@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parseLdconfig } from "./linux_libcurl_shim";
 
 const execFileSyncMock = vi.fn();

@@ -1,11 +1,11 @@
 import { z } from "zod";
+import { SafeGitRefSchema } from "../../shared/git_refs";
 import {
-  defineContract,
   createClient,
   createEventClient,
+  defineContract,
   defineEvent,
 } from "../contracts/core";
-import { SafeGitRefSchema } from "../../shared/git_refs";
 
 // =============================================================================
 // Version Schemas

@@ -1,11 +1,11 @@
-import { BrowserWindow } from "electron";
-import log from "electron-log";
 import {
   DyadError,
   isDyadErrorKindFilteredFromTelemetry,
 } from "@/errors/dyad_error";
+import type { TelemetryEventPayload } from "@/ipc/types";
 import { isGenericFetchFailedError } from "@/lib/posthogTelemetry";
-import { TelemetryEventPayload } from "@/ipc/types";
+import { BrowserWindow } from "electron";
+import log from "electron-log";
 
 const logger = log.scope("telemetry");
 const FILTERED_EXCEPTION_MESSAGES = new Set([

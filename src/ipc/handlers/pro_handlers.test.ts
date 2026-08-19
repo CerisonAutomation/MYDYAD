@@ -1,14 +1,14 @@
 // @vitest-environment node
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
 import { unwrapIpcEnvelope } from "@/ipc/contracts/core";
 import { configureTrustedRenderer } from "@/ipc/utils/renderer_security";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  audioContracts,
   MAX_AUDIO_FILENAME_LENGTH,
   MAX_AUDIO_RECORDING_BYTES,
   MAX_AUDIO_REQUEST_ID_LENGTH,
+  audioContracts,
 } from "../types/audio";
 
 const mocks = vi.hoisted(() => ({

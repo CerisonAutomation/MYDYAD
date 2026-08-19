@@ -1,15 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import type {
-  CustomTheme,
   CreateCustomThemeParams,
-  UpdateCustomThemeParams,
+  CustomTheme,
+  GenerateThemeFromUrlParams,
   GenerateThemePromptParams,
   GenerateThemePromptResult,
-  GenerateThemeFromUrlParams,
   ThemeGenerationModelOption,
+  UpdateCustomThemeParams,
 } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Hook to fetch all custom themes.

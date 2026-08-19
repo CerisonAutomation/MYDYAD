@@ -1,15 +1,15 @@
 import { createHash } from "node:crypto";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readPlanFromDisk } from "@/ipc/handlers/planPersistence";
 import { remoteMachineHost } from "@/ipc/services/distributed_machine_actor_host";
 import { planHandoffDefinition } from "@/plan_handoff/definition";
 import {
+  type PlanHandoffIntent,
   planHandoffKey,
   serializePlanDocument,
-  type PlanHandoffIntent,
 } from "@/plan_handoff/transport";
 import { uuidIdSource } from "@/state_machines/clock";
 import { windowRegistry } from "@/window_infrastructure/main/window_registry";
-import { readPlanFromDisk } from "@/ipc/handlers/planPersistence";
 import { assertChatActorAdmissionOpen } from "./chat_actor_deletion_fence";
 
 type PlanDocument = PlanHandoffIntent["plan"];

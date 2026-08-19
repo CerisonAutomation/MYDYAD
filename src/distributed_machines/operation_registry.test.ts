@@ -1,19 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
 import { TransactionalDispatcher } from "@/state_machines/dispatcher";
 import type { InvocationRef } from "@/state_machines/invocation_ref";
 import { change } from "@/state_machines/types";
+import { describe, expect, it, vi } from "vitest";
 import {
+  type CorrelatedOperationOutcome,
+  type OperationAdmissionIdentity,
+  OperationCapacityError,
+  type OperationDisposalCause,
+  OperationIdentityConflictError,
+  type OperationReceiptMetadata,
+  OperationRegistry,
   bindOperationRegistryLifetimes,
   createOperationOutcomePublisher,
   finalizeOperationAdmission,
-  OperationCapacityError,
-  OperationIdentityConflictError,
-  OperationRegistry,
-  type CorrelatedOperationOutcome,
-  type OperationAdmissionIdentity,
-  type OperationDisposalCause,
-  type OperationReceiptMetadata,
 } from "./operation_registry";
 import type { RequestId } from "./request_identity";
 

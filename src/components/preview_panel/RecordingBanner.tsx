@@ -1,4 +1,3 @@
-import { useEffect, useState, type ReactNode } from "react";
 import {
   ChevronRight,
   CircleDot,
@@ -7,6 +6,7 @@ import {
   Square,
   X,
 } from "lucide-react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import type { TestRecorderController } from "@/hooks/useTestRecorder";
 import { draftTitle } from "@/lib/test_recorder/draft";

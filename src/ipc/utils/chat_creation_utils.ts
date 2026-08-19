@@ -1,17 +1,17 @@
-import { db } from "../../db";
-import { apps, chats } from "../../db/schema";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { eq } from "drizzle-orm";
 import log from "electron-log";
+import { db } from "../../db";
+import { apps, chats } from "../../db/schema";
 import type { ChatMode } from "../../lib/schemas";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { getDyadAppPath } from "../../paths/paths";
-import { getCurrentCommitHash } from "./git_utils";
 import { getInitialChatModeForNewChat } from "../handlers/chat_mode_resolution";
 import { assertAppChatCreationOpen } from "../services/app_chat_creation_fence";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
+import { getCurrentCommitHash } from "./git_utils";
 
 const logger = log.scope("chat_creation_utils");
 

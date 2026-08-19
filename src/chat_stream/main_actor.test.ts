@@ -1,28 +1,28 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createStore } from "jotai";
 import { ActorHost } from "@/distributed_machines/actor_host";
 import { RemoteMachineClient } from "@/distributed_machines/remote_client";
 import { createRemoteMachineManifest } from "@/distributed_machines/remote_manifest";
 import { RemoteMachineTransport } from "@/distributed_machines/remote_transport";
 import { FakeDuplexRemoteTransport } from "@/distributed_machines/testing";
+import type { ChatStreamExecutionObserver } from "@/ipc/handlers/chat_stream_handlers";
+import {
+  assertChatActorAdmissionOpen,
+  beginChatActorDeletion,
+} from "@/ipc/services/chat_actor_deletion_fence";
+import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
-import type { ChatStreamExecutionObserver } from "@/ipc/handlers/chat_stream_handlers";
-import {
-  beginChatActorDeletion,
-  assertChatActorAdmissionOpen,
-} from "@/ipc/services/chat_actor_deletion_fence";
-import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
+import { createStore } from "jotai";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { chatStreamDefinition } from "./definition";
 import { ChatStreamRemoteManager } from "./remote_manager";
 import {
-  chatStreamClientDefinition,
-  chatStreamKey,
   type ChatQueueEntry,
   type SerializableChatTurnIntent,
+  chatStreamClientDefinition,
+  chatStreamKey,
 } from "./transport";
 
 const execution = vi.hoisted(() => ({

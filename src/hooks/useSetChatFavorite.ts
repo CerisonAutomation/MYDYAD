@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
-import type { ChatSummary } from "@/lib/schemas";
 import { queryKeys } from "@/lib/queryKeys";
+import type { ChatSummary } from "@/lib/schemas";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type SetChatFavoriteVariables = {
   chatId: number;

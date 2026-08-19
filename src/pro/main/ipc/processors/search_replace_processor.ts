@@ -299,7 +299,7 @@ export function applySearchReplace(
     replaceContent = unescapeMarkers(replaceContent);
 
     let searchLines = searchContent === "" ? [] : searchContent.split(/\r?\n/);
-    let replaceLines =
+    const replaceLines =
       replaceContent === "" ? [] : replaceContent.split(/\r?\n/);
 
     if (searchLines.length === 0) {

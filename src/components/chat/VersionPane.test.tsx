@@ -1,13 +1,13 @@
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import type { Version } from "@/ipc/types";
+import { projectVersionPreview } from "@/version_preview/projection";
+import { type PreviewState, isPaneVisibleState } from "@/version_preview/state";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import type React from "react";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import type { Version } from "@/ipc/types";
-import { isPaneVisibleState, type PreviewState } from "@/version_preview/state";
-import { projectVersionPreview } from "@/version_preview/projection";
 import { VersionPane } from "./VersionPane";
 
 const mocks = vi.hoisted(() => ({

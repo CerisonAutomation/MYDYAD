@@ -1,5 +1,5 @@
-import { atom } from "jotai";
 import { SECTION_IDS } from "@/lib/settingsSearchIndex";
+import { atom } from "jotai";
 
 export const isPreviewOpenAtom = atom(true);
 export const isChatPanelHiddenAtom = atom(false);

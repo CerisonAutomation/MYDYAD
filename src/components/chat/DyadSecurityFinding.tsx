@@ -1,16 +1,17 @@
-import React, { useState } from "react";
-import { ShieldAlert } from "lucide-react";
 import {
+  type SecurityLevel,
+  SeverityBadge,
+} from "@/components/security/severity";
+import { ShieldAlert } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import {
+  type DyadAccentColor,
   DyadCard,
+  DyadCardContent,
   DyadCardHeader,
   DyadExpandIcon,
-  DyadCardContent,
-  type DyadAccentColor,
 } from "./DyadCardPrimitives";
-import {
-  SeverityBadge,
-  type SecurityLevel,
-} from "@/components/security/severity";
 import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 
 const VALID_LEVELS: readonly SecurityLevel[] = [

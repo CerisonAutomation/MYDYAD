@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  combineVersionPreviewState,
   VersionPreviewPresentationStore,
+  combineVersionPreviewState,
 } from "./presentation_store";
 
 describe("version preview presentation composition", () => {

@@ -1,11 +1,11 @@
-import { MessageSquare, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import { MessageSquare, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface FileAttachmentTypeDialogProps {

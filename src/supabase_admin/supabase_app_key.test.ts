@@ -3,12 +3,12 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getProjectApiKeys } from "./supabase_management_client";
 import { gitAdd, gitCommit, isGitPathClean } from "@/ipc/utils/git_utils";
 import {
   detectLegacyAppKey,
   switchAppToPublishableKey,
 } from "./supabase_app_key";
+import { getProjectApiKeys } from "./supabase_management_client";
 
 vi.mock("./supabase_management_client", () => ({
   getProjectApiKeys: vi.fn(),

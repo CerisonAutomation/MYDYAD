@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runCosim, type CosimResult } from "./cosim";
+import { type CosimResult, runCosim } from "./cosim";
 
 type ToyState =
   | { party: "sender"; phase: "idle" | "waiting" | "done" }

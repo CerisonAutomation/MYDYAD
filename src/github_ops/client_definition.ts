@@ -1,17 +1,17 @@
 import type { RemoteClientDefinition } from "@/distributed_machines/remote_client";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import type { GithubOpsIgnoreReason } from "./state";
+import { INITIAL_GITHUB_OPS_STATE } from "./state";
 import {
   GITHUB_OPS_MACHINE_ID,
+  type GithubOpsIntentEvent,
   GithubOpsIntentEventSchema,
+  type GithubOpsKey,
   GithubOpsKeySchema,
+  type GithubOpsRemoteSnapshot,
   GithubOpsRemoteSnapshotSchema,
   projectGithubOpsRemoteSnapshot,
-  type GithubOpsIntentEvent,
-  type GithubOpsKey,
-  type GithubOpsRemoteSnapshot,
 } from "./transport";
-import { INITIAL_GITHUB_OPS_STATE } from "./state";
 
 export const githubOpsClientDefinition = {
   id: GITHUB_OPS_MACHINE_ID,

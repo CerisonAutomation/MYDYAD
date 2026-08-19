@@ -1,6 +1,6 @@
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { fetchLMStudioModels } from "@/ipc/handlers/local_model_lmstudio_handler";
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
   vi.unstubAllGlobals();

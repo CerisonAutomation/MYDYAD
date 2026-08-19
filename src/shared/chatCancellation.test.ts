@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
 import {
-  isCancelledResponseContent,
   appendCancelledResponseNotice,
-  stripCancelledResponseNotice,
   applyCancellationNoticeToLastAssistantMessage,
+  isCancelledResponseContent,
+  stripCancelledResponseNotice,
 } from "@/shared/chatCancellation";
+import { describe, expect, it } from "vitest";
 
 describe("chatCancellation", () => {
   describe("isCancelledResponseContent", () => {

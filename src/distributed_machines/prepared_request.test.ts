@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  prepareRequest,
+  type PreparedDispatchResult,
   PreparedRequestIdentityConflictError,
   PreparedRequestScope,
-  type PreparedDispatchResult,
+  prepareRequest,
 } from "./prepared_request";
 import type {
   RequestId,
-  RequestIdentity,
   RequestIdempotencyKey,
+  RequestIdentity,
   RequestMessageId,
 } from "./request_identity";
 

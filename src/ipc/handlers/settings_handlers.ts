@@ -1,7 +1,7 @@
-import { createTypedHandler } from "./base";
-import { settingsContracts } from "../types/settings";
-import { writeSettings, readEffectiveSettings } from "../../main/settings";
+import { readEffectiveSettings, writeSettings } from "../../main/settings";
 import { validateProviderApiKey } from "../services/provider_api_key_validation_service";
+import { settingsContracts } from "../types/settings";
+import { createTypedHandler } from "./base";
 
 export function registerSettingsHandlers() {
   // Note: Settings handlers intentionally use createTypedHandler without logging

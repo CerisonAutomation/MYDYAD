@@ -1,10 +1,9 @@
-import { neon } from "@neondatabase/serverless";
-import log from "electron-log";
-import { getNeonClient } from "./neon_management_client";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import type { AppFrameworkType } from "@/lib/framework_constants";
 import { renderTestDatabaseSchema } from "@/lib/test_database_schema";
+import { neon } from "@neondatabase/serverless";
+import log from "electron-log";
 import {
   buildSchemaSnapshotSql,
   filterSchemaForTable,
@@ -12,6 +11,7 @@ import {
   missingPublicTableComment,
   renderSchemaSql,
 } from "ts-pg-schema-diff";
+import { getNeonClient } from "./neon_management_client";
 
 const logger = log.scope("neon_context");
 

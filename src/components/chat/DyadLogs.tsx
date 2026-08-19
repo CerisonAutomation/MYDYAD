@@ -1,18 +1,18 @@
+import { FileText } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useAutoCollapse } from "./useAutoCollapse";
-import { FileText } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadLogsProps {
   children?: ReactNode;

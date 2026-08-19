@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/ipc/processors/supabase_dependency_analysis", async () => {
   const { analyzeSupabaseDependencies } =
@@ -28,24 +28,24 @@ vi.mock("@/ipc/processors/supabase_dependency_analysis", async () => {
   };
 });
 import {
+  SUPABASE_ACTIVATING_DEPLOY_CONCURRENCY,
+  SUPABASE_BUNDLE_ONLY_DEPLOY_CONCURRENCY,
+  enqueueSupabaseDeploy,
+  resetSupabaseDeployQueuesForTests,
+} from "@/supabase_admin/supabase_deploy_queue";
+import {
+  type FileStatEntry,
+  buildSignature,
+  stripSupabaseFunctionsPrefix,
+  toPosixPath,
+} from "@/supabase_admin/supabase_management_client";
+import {
+  extractFunctionNameFromPath,
   getSupabaseFunctionsAffectedBySharedModules,
   isServerFunction,
   isSharedServerModule,
-  extractFunctionNameFromPath,
   mapSettledWithConcurrency,
 } from "@/supabase_admin/supabase_utils";
-import {
-  toPosixPath,
-  stripSupabaseFunctionsPrefix,
-  buildSignature,
-  type FileStatEntry,
-} from "@/supabase_admin/supabase_management_client";
-import {
-  enqueueSupabaseDeploy,
-  resetSupabaseDeployQueuesForTests,
-  SUPABASE_ACTIVATING_DEPLOY_CONCURRENCY,
-  SUPABASE_BUNDLE_ONLY_DEPLOY_CONCURRENCY,
-} from "@/supabase_admin/supabase_deploy_queue";
 
 const require = createRequire(import.meta.url);
 

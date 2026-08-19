@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import {
   shouldCreateWindowOnActivate,
+  shouldQuitAfterAllWindowsClosed,
   shouldRequestRelaunchOnActivate,
   shouldRetainClosedWindowForActivation,
-  shouldQuitAfterAllWindowsClosed,
 } from "@/main/window_lifecycle_policy";
+import { describe, expect, it } from "vitest";
 
 describe("window lifecycle policy", () => {
   it("does not retain explicitly closed peer windows or shutdown sessions", () => {

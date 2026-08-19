@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { showError } from "./toast";
 import { toast } from "sonner";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { showError } from "./toast";
 
 vi.mock("sonner", () => ({
   toast: {
@@ -33,7 +33,7 @@ describe("showError", () => {
     });
 
     expect(toast.custom).toHaveBeenCalledWith(expect.any(Function), {
-      duration: Infinity,
+      duration: Number.POSITIVE_INFINITY,
     });
   });
 

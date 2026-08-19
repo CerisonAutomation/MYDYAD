@@ -2,8 +2,8 @@ import crypto from "node:crypto";
 import log from "electron-log";
 
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { fetchWithRetry } from "@/ipc/utils/retryWithRateLimit";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 
 const logger = log.scope("neon_test_account");
 

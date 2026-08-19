@@ -1,7 +1,7 @@
 import { escapeXmlAttr, escapeXmlContent } from "../../../shared/xmlEscape";
 import {
-  AssertionProposalPayloadSchema,
   type AssertionProposalPayload,
+  AssertionProposalPayloadSchema,
 } from "./assertion_proposal";
 
 /**

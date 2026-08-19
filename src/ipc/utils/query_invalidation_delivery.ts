@@ -1,6 +1,6 @@
-import type { WebContents } from "electron";
 import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
 import type { QueryInvalidationScope } from "@/window_infrastructure/types";
+import type { WebContents } from "electron";
 
 export function publishQueryInvalidations(
   scopes: readonly QueryInvalidationScope[],

@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
-import {
-  parseAiMessagesJson,
-  getAiMessagesJsonIfWithinLimit,
-  MAX_AI_MESSAGES_SIZE,
-  sanitizeToolCallTranscript,
-  type DbMessageForParsing,
-} from "@/ipc/utils/ai_messages_utils";
 import { AI_MESSAGES_SDK_VERSION } from "@/db/schema";
+import {
+  type DbMessageForParsing,
+  MAX_AI_MESSAGES_SIZE,
+  getAiMessagesJsonIfWithinLimit,
+  parseAiMessagesJson,
+  sanitizeToolCallTranscript,
+} from "@/ipc/utils/ai_messages_utils";
 import type { ModelMessage } from "ai";
+import { describe, expect, it } from "vitest";
 
 describe("parseAiMessagesJson", () => {
   describe("current format (v5 envelope)", () => {

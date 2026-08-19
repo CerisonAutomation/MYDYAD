@@ -1,5 +1,5 @@
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Sparkles } from "lucide-react";
 
 // Official brand marks sourced from @lobehub/icons-static-svg and simple-icons.
 // All icons use a 24x24 viewBox.

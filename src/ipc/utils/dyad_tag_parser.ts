@@ -1,7 +1,7 @@
+import log from "electron-log";
 import { normalizePath } from "../../../shared/normalizePath";
 import { unescapeXmlAttr, unescapeXmlContent } from "../../../shared/xmlEscape";
-import log from "electron-log";
-import { SqlQuery } from "../../lib/schemas";
+import type { SqlQuery } from "../../lib/schemas";
 
 const logger = log.scope("dyad_tag_parser");
 

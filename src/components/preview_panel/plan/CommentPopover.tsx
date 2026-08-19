@@ -1,4 +1,6 @@
-import React, {
+import type { PlanAnnotation } from "@/atoms/planAtoms";
+import type React from "react";
+import {
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -6,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import { CommentCard } from "./CommentCard";
-import type { PlanAnnotation } from "@/atoms/planAtoms";
 import {
   ANNOTATION_ID_ATTRIBUTE,
   ANNOTATION_MARK_SELECTOR,

@@ -1,5 +1,3 @@
-import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
 import type {
@@ -8,7 +6,6 @@ import type {
 } from "@/distributed_machines/definition";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
 import { ignore } from "@/state_machines/types";
 import {
   CLOSED_STATE,
@@ -20,23 +17,26 @@ import { transition } from "@/version_preview/transition";
 import {
   VERSION_PREVIEW_INVOCATION_KIND,
   VERSION_PREVIEW_MACHINE_ID,
+  type VersionPreviewActorState,
+  type VersionPreviewIntentEvent,
   VersionPreviewIntentEventSchema,
+  type VersionPreviewInvocationRef,
+  type VersionPreviewKey,
   VersionPreviewKeySchema,
+  type VersionPreviewProducerEvent,
   VersionPreviewRemoteSnapshotSchema,
+  type VersionPreviewWireEvent,
   projectVersionPreviewRemoteSnapshot,
   toPreviewDomainEvent,
   versionPreviewKey,
-  type VersionPreviewActorState,
-  type VersionPreviewIntentEvent,
-  type VersionPreviewInvocationRef,
-  type VersionPreviewKey,
-  type VersionPreviewProducerEvent,
-  type VersionPreviewWireEvent,
 } from "@/version_preview/transport";
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { eq } from "drizzle-orm";
+import type { z } from "zod";
 import { appRunActorService } from "./app_run_actor_service";
+import { versionPreviewPersistence } from "./version_preview_persistence";
 import { versionPreviewPresentationService } from "./version_preview_presentation_service";
 import { versionPreviewService } from "./version_preview_service";
-import { versionPreviewPersistence } from "./version_preview_persistence";
 import { versionPreviewWindowInterestService } from "./version_preview_window_interest";
 
 interface VersionPreviewActorCommand {

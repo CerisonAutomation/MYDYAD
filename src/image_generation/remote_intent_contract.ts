@@ -1,19 +1,19 @@
-import type { z } from "zod";
 import {
   DEFAULT_REMOTE_INTENT_ENVELOPE_BYTES,
   DEFAULT_REMOTE_SNAPSHOT_ENVELOPE_BYTES,
   PROTOCOL_V1_REFUSAL_MAP,
   defineRemoteIntentContract,
 } from "@/distributed_machines/remote_intent_contract";
+import type { z } from "zod";
 import type { ImageGenerationEvent } from "./state";
+import type { ImageGenerationIntentEvent } from "./state";
 import {
   ImageGenerationIntentEventSchema,
-  ImageGenerationKeySchema,
-  ImageGenerationRemoteSnapshotSchema,
   type ImageGenerationKey,
+  ImageGenerationKeySchema,
   type ImageGenerationRemoteSnapshot,
+  ImageGenerationRemoteSnapshotSchema,
 } from "./transport";
-import type { ImageGenerationIntentEvent } from "./state";
 
 type ImageGenerationRendererIntent = z.infer<
   typeof ImageGenerationIntentEventSchema

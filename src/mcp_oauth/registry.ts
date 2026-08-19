@@ -10,26 +10,26 @@
 
 import type { Clock, IdSource } from "@/state_machines/clock";
 import { systemClock, uuidIdSource } from "@/state_machines/clock";
-import { PendingReceiptLedger } from "@/state_machines/pending_receipt_ledger";
 import {
-  createInvocationRef,
   InvocationRegistry,
+  createInvocationRef,
   invocationRegistryKey,
   sameInvocationRef,
 } from "@/state_machines/invocation_ref";
+import { PendingReceiptLedger } from "@/state_machines/pending_receipt_ledger";
 import { createTraceObserver } from "@/state_machines/trace";
 import type { TransitionObserver } from "@/state_machines/types";
 import {
   IDLE_MCP_OAUTH_STATE,
   MCP_OAUTH_INVOCATION_KIND,
-  identityOf,
-  isTerminalMcpOAuthState,
   type McpOAuthEvent,
   type McpOAuthFlowIdentity,
   type McpOAuthInvocationRef,
   type McpOAuthState,
+  identityOf,
+  isTerminalMcpOAuthState,
 } from "./state";
-import { transition, type IgnoreReason } from "./transition";
+import { type IgnoreReason, transition } from "./transition";
 
 export const MCP_OAUTH_TIMEOUT_MS = 5 * 60_000;
 const MESSAGE_DEDUPE_LIMIT = 128;

@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { and, desc, eq, like } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { chats, messages, security_fix_chats } from "../../db/schema";
-import { eq, and, like, desc } from "drizzle-orm";
-import { createTypedHandler } from "./base";
 import { securityContracts } from "../types/security";
 import type { SecurityFinding } from "../types/security";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { createChatForApp } from "../utils/chat_creation_utils";
-import log from "electron-log";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("security_handlers");
 

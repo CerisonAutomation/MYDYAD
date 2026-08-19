@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { createClient, defineContract } from "../contracts/core";
 import { McpCatalogEntrySchema } from "./mcp_catalog";
-import { defineContract, createClient } from "../contracts/core";
 
 // Arbitrary loopback port for the OAuth callback listener -- not from
 // the OAuth or MCP specs. Must stay stable: users pre-registering an

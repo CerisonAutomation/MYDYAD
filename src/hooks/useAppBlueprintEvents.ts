@@ -1,13 +1,13 @@
-import { useEffect } from "react";
-import { useSetAtom } from "jotai";
 import { appBlueprintStateAtom } from "@/atoms/appBlueprintAtoms";
 import {
-  appBlueprintEventClient,
-  type AppBlueprintUpdatePayload,
-  type AppBlueprintVisualsUpdatePayload,
   type AppBlueprintApprovedPayload,
   type AppBlueprintTimeoutPayload,
+  type AppBlueprintUpdatePayload,
+  type AppBlueprintVisualsUpdatePayload,
+  appBlueprintEventClient,
 } from "@/ipc/types/app_blueprint";
+import { useSetAtom } from "jotai";
+import { useEffect } from "react";
 
 /**
  * Hook to handle app blueprint IPC events.

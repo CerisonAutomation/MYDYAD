@@ -1,3 +1,4 @@
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   useCallback,
   useEffect,
@@ -6,36 +7,35 @@ import {
   useRef,
   useState,
 } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
 
-import { ipc } from "@/ipc/types";
-import { showError } from "@/lib/toast";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { previewIframeRefAtom } from "@/atoms/previewAtoms";
-import { useCurrentAppUrl } from "@/hooks/useAppRun";
 import {
+  MAX_RECORDED_ENTRIES,
+  RECORDING_REQUEST_TTL_MS,
+  type RecordingState,
   appendRecordedEntryAtom,
   clearRecordedEntriesForAppAtom,
   currentRecordedEntriesAtom,
   currentRecordingStateAtom,
-  MAX_RECORDED_ENTRIES,
   recordingStartRequestAtom,
-  RECORDING_REQUEST_TTL_MS,
   setRecordingStateForAppAtom,
-  type RecordingState,
 } from "@/atoms/recorderAtoms";
-import { collapseActions } from "@/lib/test_recorder/merge";
+import { useCurrentAppUrl } from "@/hooks/useAppRun";
+import { ipc } from "@/ipc/types";
+import type { RecordingAuth } from "@/ipc/types";
 import {
   actionToCodeLine,
   recordedBodyStatements,
 } from "@/lib/test_recorder/codegen";
 import {
-  normalizeTestName,
   RECORDED_TEST_DRAFT_VERSION,
   type RecordedTestDraft,
+  normalizeTestName,
 } from "@/lib/test_recorder/draft";
+import { collapseActions } from "@/lib/test_recorder/merge";
 import { parseRecorderAction } from "@/lib/test_recorder/types";
-import type { RecordingAuth } from "@/ipc/types";
+import { showError } from "@/lib/toast";
 
 const AUTH_READY_TIMEOUT_MS = 30_000;
 

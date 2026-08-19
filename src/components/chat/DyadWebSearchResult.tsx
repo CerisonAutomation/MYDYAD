@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
 import { Globe } from "lucide-react";
-import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
+import type React from "react";
+import { useEffect, useState } from "react";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
 
 interface DyadWebSearchResultProps {
   node?: DyadTagNode;

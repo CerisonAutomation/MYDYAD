@@ -1,3 +1,12 @@
+import { BackButton } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ipc } from "@/ipc/types";
 import {
   ArrowUp,
   Circle,
@@ -5,15 +14,6 @@ import {
   GiftIcon,
   KeyRound,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { BackButton } from "@/components/ui/back-button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ipc } from "@/ipc/types";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {} from "react";
 
 interface ProviderSettingsHeaderProps {

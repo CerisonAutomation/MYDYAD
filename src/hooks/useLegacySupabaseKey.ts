@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Whether an app's generated Supabase client still authenticates with the

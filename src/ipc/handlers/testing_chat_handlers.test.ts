@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { IpcMainInvokeEvent, WebContents } from "electron";
+import { describe, expect, it } from "vitest";
 
 import { streamTestResponse } from "./testing_chat_handlers";
 

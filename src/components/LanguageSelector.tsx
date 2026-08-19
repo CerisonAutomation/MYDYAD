@@ -1,7 +1,3 @@
-import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { useSettings } from "@/hooks/useSettings";
-import { Language, LanguageSchema } from "@/lib/schemas";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -10,6 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSettings } from "@/hooks/useSettings";
+import { type Language, LanguageSchema } from "@/lib/schemas";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_LANGUAGE: Language = "en";
 

@@ -1,14 +1,14 @@
+import type { HostedActorRef } from "@/distributed_machines/definition";
 import { versionPreviewKey } from "@/version_preview/transport";
 import type {
   VersionPreviewActorState,
   VersionPreviewWireEvent,
 } from "@/version_preview/transport";
-import type { HostedActorRef } from "@/distributed_machines/definition";
 import { remoteMachineHost } from "./distributed_machine_host";
 import { versionPreviewDefinition } from "./version_preview_definition";
-import { versionPreviewService } from "./version_preview_service";
 import { versionPreviewPersistence } from "./version_preview_persistence";
 import { versionPreviewPresentationService } from "./version_preview_presentation_service";
+import { versionPreviewService } from "./version_preview_service";
 import { versionPreviewWindowInterestService } from "./version_preview_window_interest";
 
 type Host = Pick<

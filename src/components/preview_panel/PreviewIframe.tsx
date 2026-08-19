@@ -1,6 +1,34 @@
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { CopyErrorMessage } from "@/components/CopyErrorMessage";
 import { useCurrentAppUrl } from "@/hooks/useAppRun";
-import { useAtomValue, useSetAtom, useAtom } from "jotai";
+import { ipc } from "@/ipc/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+  ChevronRight,
+  CircleDot,
+  Cloud,
+  Cog,
+  ExternalLink,
+  Lightbulb,
+  Loader2,
+  Monitor,
+  MonitorSmartphone,
+  MoreVertical,
+  MousePointerClick,
+  Pen,
+  Power,
+  RefreshCw,
+  Smartphone,
+  Sparkles,
+  Tablet,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -8,36 +36,17 @@ import {
   useRef,
   useState,
 } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ArrowRight,
-  RefreshCw,
-  ExternalLink,
-  Cloud,
-  Cog,
-  X,
-  Sparkles,
-  Lightbulb,
-  ChevronDown,
-  ChevronRight,
-  MousePointerClick,
-  Power,
-  MonitorSmartphone,
-  Monitor,
-  Tablet,
-  Smartphone,
-  Pen,
-  MoreVertical,
-  Trash2,
-  CircleDot,
-  Loader2,
-} from "lucide-react";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { CopyErrorMessage } from "@/components/CopyErrorMessage";
-import { ipc } from "@/ipc/types";
 
-import { useParseRouter } from "@/hooks/useParseRouter";
+import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
+import {
+  annotatorModeAtom,
+  currentComponentCoordinatesAtom,
+  pendingVisualChangesAtom,
+  previewIframeRefAtom,
+  screenshotDataUrlAtom,
+  selectedComponentsPreviewAtom,
+  visualEditingSelectedComponentAtom,
+} from "@/atoms/previewAtoms";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,18 +54,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import {
-  selectedComponentsPreviewAtom,
-  visualEditingSelectedComponentAtom,
-  currentComponentCoordinatesAtom,
-  previewIframeRefAtom,
-  annotatorModeAtom,
-  screenshotDataUrlAtom,
-  pendingVisualChangesAtom,
-} from "@/atoms/previewAtoms";
-import { ComponentSelection } from "@/ipc/types";
-import { mergePendingChange } from "@/ipc/types/visual-editing";
 import {
   Popover,
   PopoverContent,
@@ -65,52 +62,55 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAttachments } from "@/hooks/useAttachments";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { useParseRouter } from "@/hooks/useParseRouter";
 import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
 import { useSettings } from "@/hooks/useSettings";
 import { useShortcut } from "@/hooks/useShortcut";
-import { cn } from "@/lib/utils";
-import { normalizePath } from "../../../shared/normalizePath";
-import { showError, showSuccess } from "@/lib/toast";
+import { useStreamChat } from "@/hooks/useStreamChat";
 import type { TestRecorderController } from "@/hooks/useTestRecorder";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import type { DeviceMode } from "@/lib/schemas";
+import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import type { ComponentSelection } from "@/ipc/types";
+import { mergePendingChange } from "@/ipc/types/visual-editing";
 import {
   boundPreviewConsoleEntry,
   formatPreviewConsoleMessage,
   formatPreviewNetworkStatus,
 } from "@/lib/preview_console_buffer";
 import { queryKeys } from "@/lib/queryKeys";
-import { AnnotatorOnlyForPro } from "./AnnotatorOnlyForPro";
-import { useAttachments } from "@/hooks/useAttachments";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { Annotator } from "@/pro/ui/components/Annotator/Annotator";
-import { VisualEditingToolbar } from "./VisualEditingToolbar";
-import { recordingStatusMessage } from "./RecordingBanner";
-import { RecordingBannerHost } from "./RecordingBannerHost";
-import { RecordingStorageWarningDialog } from "./RecordingStorageWarningDialog";
-import { resolvePreviewBrowserUrl } from "./previewBrowserUrl";
-import { PreviewLoadingScreen } from "./PreviewLoadingScreen";
-import { useTranslation } from "react-i18next";
-import {
-  formatPreviewAddressPath,
-  normalizePreviewAddressPath,
-  sameOriginStartPath,
-} from "./previewAddressPath";
-import { getPreviewToolbarActionVisibility } from "./previewToolbarLayout";
-import { usePreviewIframe } from "@/preview_iframe/usePreviewIframe";
+import type { DeviceMode } from "@/lib/schemas";
+import { showError, showSuccess } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import {
   selectCanGoBack,
   selectCanGoForward,
   selectPreviewError,
 } from "@/preview_iframe/state";
+import { usePreviewIframe } from "@/preview_iframe/usePreviewIframe";
+import { Annotator } from "@/pro/ui/components/Annotator/Annotator";
 import {
-  useScreenshot,
   type ScreenshotAdapterEvent,
+  useScreenshot,
 } from "@/screenshot/useScreenshot";
-import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
+import { useTranslation } from "react-i18next";
+import { normalizePath } from "../../../shared/normalizePath";
+import { AnnotatorOnlyForPro } from "./AnnotatorOnlyForPro";
+import { PreviewLoadingScreen } from "./PreviewLoadingScreen";
+import { recordingStatusMessage } from "./RecordingBanner";
+import { RecordingBannerHost } from "./RecordingBannerHost";
+import { RecordingStorageWarningDialog } from "./RecordingStorageWarningDialog";
+import { VisualEditingToolbar } from "./VisualEditingToolbar";
+import {
+  formatPreviewAddressPath,
+  normalizePreviewAddressPath,
+  sameOriginStartPath,
+} from "./previewAddressPath";
+import { resolvePreviewBrowserUrl } from "./previewBrowserUrl";
+import { getPreviewToolbarActionVisibility } from "./previewToolbarLayout";
 
 interface ErrorBannerProps {
   error:
@@ -569,7 +569,7 @@ export const PreviewIframe = ({
 
     // Parse componentId to extract file path and line number
     const [filePath, lineStr] = componentId.split(":");
-    const lineNumber = parseInt(lineStr, 10);
+    const lineNumber = Number.parseInt(lineStr, 10);
 
     if (!filePath || isNaN(lineNumber)) {
       console.error("Invalid componentId format:", componentId);
@@ -1831,8 +1831,8 @@ function parseComponentSelection(data: any): ComponentSelection | null {
     return null;
   }
 
-  const lineNumber = parseInt(lineStr, 10);
-  const columnNumber = parseInt(columnStr, 10);
+  const lineNumber = Number.parseInt(lineStr, 10);
+  const columnNumber = Number.parseInt(columnStr, 10);
 
   if (isNaN(lineNumber) || isNaN(columnNumber)) {
     console.error(`Could not parse line/column from id: "${id}"`);

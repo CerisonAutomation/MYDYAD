@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 // Shared read of the curated MCP catalog. Every caller uses the same
 // query key, so TanStack dedups them into one fetch and one cache entry.

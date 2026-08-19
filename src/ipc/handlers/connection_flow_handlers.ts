@@ -1,23 +1,23 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { BrowserWindow, type WebContents } from "electron";
 import log from "electron-log";
-import { createTypedHandler } from "./base";
+import {
+  type ClaimReturnResult,
+  createConnectionFlowRegistry,
+} from "../../connection_flow/registry";
+import {
+  type ConnectionFlowFailureReason,
+  type ConnectionFlowInvocationRef,
+  type ConnectionFlowProvider,
+  isTerminalFlowState,
+} from "../../connection_flow/state";
 import {
   connectionFlowContracts,
   connectionFlowEvents,
 } from "../types/connection_flow";
-import {
-  createConnectionFlowRegistry,
-  type ClaimReturnResult,
-} from "../../connection_flow/registry";
-import {
-  isTerminalFlowState,
-  type ConnectionFlowFailureReason,
-  type ConnectionFlowInvocationRef,
-  type ConnectionFlowProvider,
-} from "../../connection_flow/state";
-import { safeSend } from "../utils/safe_sender";
 import { publishQueryInvalidations } from "../utils/query_invalidation_delivery";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { safeSend } from "../utils/safe_sender";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("connection_flow");
 

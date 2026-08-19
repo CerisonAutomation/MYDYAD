@@ -1,41 +1,41 @@
-import React, { useCallback, useEffect, useRef } from "react";
-import {
-  $getRoot,
-  $createParagraphNode,
-  $createTextNode,
-  EditorState,
-} from "lexical";
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import {
-  BeautifulMentionsPlugin,
-  BeautifulMentionNode,
-  $createBeautifulMentionNode,
-  type BeautifulMentionsTheme,
-  type BeautifulMentionsMenuItemProps,
-} from "lexical-beautiful-mentions";
-import { KEY_ENTER_COMMAND, COMMAND_PRIORITY_HIGH } from "lexical";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useAppMediaFiles } from "@/hooks/useAppMediaFiles";
+import { useLoadApp } from "@/hooks/useLoadApp";
 import { useLoadApps } from "@/hooks/useLoadApps";
 import { usePrompts } from "@/hooks/usePrompts";
-import { useAppMediaFiles } from "@/hooks/useAppMediaFiles";
-import { forwardRef } from "react";
-import { useAtomValue } from "jotai";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { slugForPrompt } from "@/ipc/utils/replaceSlashSkillReference";
 import {
   APP_MENTION_NAME_PATTERN,
-  formatKnownAppMentionsForPrompt,
   MENTION_REGEX,
+  formatKnownAppMentionsForPrompt,
   parseAppMentions,
   splitAppMentionTrailingDots,
 } from "@/shared/parse_mention_apps";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import { HistoryNavigation, HISTORY_TRIGGER } from "./HistoryNavigation";
-import { slugForPrompt } from "@/ipc/utils/replaceSlashSkillReference";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
+import { useAtomValue } from "jotai";
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  type EditorState,
+} from "lexical";
+import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
+import {
+  $createBeautifulMentionNode,
+  BeautifulMentionNode,
+  type BeautifulMentionsMenuItemProps,
+  BeautifulMentionsPlugin,
+  type BeautifulMentionsTheme,
+} from "lexical-beautiful-mentions";
+import React, { useCallback, useEffect, useRef } from "react";
+import { forwardRef } from "react";
+import { HISTORY_TRIGGER, HistoryNavigation } from "./HistoryNavigation";
 
 // Define the theme for mentions
 const beautifulMentionsTheme: BeautifulMentionsTheme = {

@@ -1,9 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("electron-log", () => ({
   default: {
@@ -19,18 +19,18 @@ vi.mock("electron-log", () => ({
 
 import { gitListFilesNative, gitLog } from "@/ipc/utils/git_utils";
 import {
-  classifyGitOperationError,
-  ensureGitLineEndingPolicy,
-  GitConflictError,
   GIT_ERROR_CODES,
-  gitStageToRevert,
+  GitConflictError,
+  classifyGitOperationError,
+  countChangedLines,
+  ensureGitLineEndingPolicy,
   getGitUncommittedFiles,
   getGitUncommittedFilesWithStatus,
-  countChangedLines,
-  unquoteGitPath,
+  gitStageToRevert,
   isGitPathClean,
   readGitIndexEntries,
   restoreGitIndexEntries,
+  unquoteGitPath,
 } from "@/ipc/utils/git_utils";
 
 const execFileAsync = promisify(execFile);

@@ -49,25 +49,25 @@ import {
   stopAppGarbageCollection,
 } from "@/ipc/utils/process_manager";
 import { configureTrustedRenderer } from "@/ipc/utils/renderer_security";
-import { writeSettings } from "@/main/settings";
 import type { UserSettings } from "@/lib/schemas";
+import { writeSettings } from "@/main/settings";
 import { asc, eq } from "drizzle-orm";
 
 import { generateAppFilesSnapshotData } from "../../e2e-tests/helpers/generateAppFilesSnapshotData";
 import {
-  createFakeIpcEvent,
+  type FakeLlmServerHandle,
+  startFakeLlmServer,
+} from "../../testing/fake-llm-server/index";
+import {
   type ElectronMockShared,
   type RendererEvent,
+  createFakeIpcEvent,
 } from "./electron_mock";
 import {
-  readServerDump,
   type ServerDumpOptions,
   type ServerDumpResult,
+  readServerDump,
 } from "./server_dump";
-import {
-  startFakeLlmServer,
-  type FakeLlmServerHandle,
-} from "../../testing/fake-llm-server/index";
 
 const REPO_ROOT = process.cwd();
 const FIXTURES_ROOT = path.join(REPO_ROOT, "e2e-tests", "fixtures");

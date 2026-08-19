@@ -2,8 +2,8 @@ import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ipc } from "@/ipc/types";
-import { setupHybridChatHarness } from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import { setupHybridChatHarness } from "@/testing/hybrid_chat_harness";
 
 type FlowStatePayload = {
   provider?: string;

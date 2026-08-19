@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { replacePromptReference } from "@/ipc/utils/replacePromptReference";
+import { describe, expect, it } from "vitest";
 
 describe("replacePromptReference", () => {
   it("returns original when no references present", () => {

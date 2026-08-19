@@ -8,9 +8,9 @@ import type {
   GitService,
   RemoveFileAndCommitResult,
 } from "@/ipc/services/git_service";
-import { DEFAULT_SETTINGS } from "@/main/settings";
 import type { UserSettings } from "@/lib/schemas";
-import { createInMemoryTestDb, type TestDb } from "./test_db";
+import { DEFAULT_SETTINGS } from "@/main/settings";
+import { type TestDb, createInMemoryTestDb } from "./test_db";
 
 /**
  * Recording stand-in for GitService. Returns deterministic fake hashes and

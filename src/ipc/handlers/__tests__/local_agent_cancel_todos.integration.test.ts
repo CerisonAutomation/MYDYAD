@@ -1,22 +1,22 @@
+import fs from "node:fs";
+import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 // Migrated from e2e-tests/local_agent_cancel_todos.spec.ts to the HYBRID
 // harness: real <ChatPanel>, real local-agent stream, real todo persistence,
 // and real renderer todo wiring.
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import fs from "node:fs";
-import path from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
 import { chats, messages } from "@/db/schema";
-import { getCurrentCommitHash } from "@/ipc/utils/git_utils";
 import { blockNewStreamsForApp } from "@/ipc/handlers/chat_stream_handlers";
 import { versionPreviewHandlerService } from "@/ipc/handlers/version_handlers";
+import { getCurrentCommitHash } from "@/ipc/utils/git_utils";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("local-agent cancel todos (integration)", () => {
   let harness: HybridChatHarness;

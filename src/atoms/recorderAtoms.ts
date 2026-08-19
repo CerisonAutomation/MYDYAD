@@ -1,8 +1,8 @@
-import { atom } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import type { RecordingAuth, TestIsolation } from "@/ipc/types";
 import type { RecordedTestDraft } from "@/lib/test_recorder/draft";
 import type { RecordedEntry } from "@/lib/test_recorder/types";
+import { atom } from "jotai";
 
 /**
  * Phases the preview recorder moves through for a given app:

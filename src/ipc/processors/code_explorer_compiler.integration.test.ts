@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { describe, expect, it, vi } from "vitest";
 import {
-  resolveCodeExplorerCompiler,
   type CodeExplorerCompilerLoaders,
+  resolveCodeExplorerCompiler,
 } from "../../../workers/code_explorer/code_explorer_worker";
 import { toCodeExplorerError } from "./code_explorer";
 

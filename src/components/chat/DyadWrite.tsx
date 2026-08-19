@@ -1,21 +1,21 @@
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useAtomValue } from "jotai";
+import { Edit, GitCompareArrows, Pencil, X } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
-import { useState, useMemo } from "react";
-import { Pencil, Edit, X, GitCompareArrows } from "lucide-react";
-import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
-import { useAutoCollapse } from "./useAutoCollapse";
+import { useMemo, useState } from "react";
 import { FileEditor } from "../preview_panel/FileEditor";
-import { useAtomValue } from "jotai";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { CodeHighlight } from "./CodeHighlight";
 import {
   DyadCard,
+  DyadCardContent,
   DyadCardHeader,
+  DyadDescription,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadDescription,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadWriteProps {
   children?: ReactNode;

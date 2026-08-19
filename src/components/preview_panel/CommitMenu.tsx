@@ -1,7 +1,15 @@
-import { useEffect } from "react";
-import { GitCommitVertical, ChevronDown } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { useSetAtom } from "jotai";
+import {
+  type CommitDialogOwner,
+  clearStagedDiffAtom,
+  closeCommitDialogAtom,
+  openCommitDialogAtom,
+  openStagedDiffAtom,
+} from "@/atoms/commitAtoms";
+import { CommitFileList } from "@/components/chat/CommitFileList";
+import {
+  LineStats,
+  getStatusIcon,
+} from "@/components/chat/uncommittedFileStatus";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +19,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,23 +27,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  clearStagedDiffAtom,
-  closeCommitDialogAtom,
-  openCommitDialogAtom,
-  openStagedDiffAtom,
-  type CommitDialogOwner,
-} from "@/atoms/commitAtoms";
-import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
+import { Input } from "@/components/ui/input";
 import { useCommitChanges } from "@/hooks/useCommitChanges";
 import { useCommitMessage } from "@/hooks/useCommitMessage";
-import { cn } from "@/lib/utils";
-import {
-  getStatusIcon,
-  LineStats,
-} from "@/components/chat/uncommittedFileStatus";
-import { CommitFileList } from "@/components/chat/CommitFileList";
+import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
 import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { cn } from "@/lib/utils";
+import { useSetAtom } from "jotai";
+import { ChevronDown, GitCommitVertical } from "lucide-react";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CommitMenuProps {
   appId: number;

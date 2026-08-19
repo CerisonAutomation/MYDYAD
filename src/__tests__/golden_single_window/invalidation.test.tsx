@@ -1,16 +1,16 @@
-import { act, renderHook } from "@testing-library/react";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useCreateApp } from "@/hooks/useCreateApp";
+import { useRenameBranch } from "@/hooks/useRenameBranch";
+import { queryKeys } from "@/lib/queryKeys";
 import {
   QueryClient,
   QueryClientProvider,
   type QueryKey,
 } from "@tanstack/react-query";
-import { createStore, Provider } from "jotai";
+import { act, renderHook } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { queryKeys } from "@/lib/queryKeys";
-import { useCreateApp } from "@/hooks/useCreateApp";
-import { useRenameBranch } from "@/hooks/useRenameBranch";
 
 const mocks = vi.hoisted(() => ({
   createApp: vi.fn(),
@@ -48,7 +48,7 @@ vi.mock("sonner", () => ({
 function setup() {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: false, gcTime: Infinity },
+      queries: { retry: false, gcTime: Number.POSITIVE_INFINITY },
       mutations: { retry: false },
     },
   });

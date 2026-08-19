@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useSetAtom } from "jotai";
-import { Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
+  type PlanAnnotation,
   planAnnotationsAtom,
   removePlanAnnotation,
   updatePlanAnnotation,
-  type PlanAnnotation,
 } from "@/atoms/planAtoms";
+import { Button } from "@/components/ui/button";
+import { useSetAtom } from "jotai";
+import { Pencil, Trash2 } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 interface CommentCardProps {
   annotation: PlanAnnotation;

@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { useSettings } from "@/hooks/useSettings";
 import { detectIsMac } from "@/hooks/useChatModeToggle";
+import { useSettings } from "@/hooks/useSettings";
+import { useCallback, useState } from "react";
 
 function sendTestNotification() {
   if (

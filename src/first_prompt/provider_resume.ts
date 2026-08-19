@@ -1,8 +1,8 @@
-import type { QueryClient } from "@tanstack/react-query";
-import { ipc, type FreeAgentQuotaStatus } from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
-import { hasDyadProKey, type ChatMode, type UserSettings } from "@/lib/schemas";
+import { type FreeAgentQuotaStatus, ipc } from "@/ipc/types";
 import { getHomeDefaultChatMode } from "@/lib/homeChatMode";
+import { queryKeys } from "@/lib/queryKeys";
+import { type ChatMode, type UserSettings, hasDyadProKey } from "@/lib/schemas";
+import type { QueryClient } from "@tanstack/react-query";
 
 export async function resolveFirstPromptDefaultChatMode({
   settings,

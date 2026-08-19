@@ -2,23 +2,23 @@
  * Shared file operations for both XML-based (Build mode) and Tool-based (Local Agent) processing
  */
 
-import log from "electron-log";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
-  gitCommit,
-  gitAddAll,
   getGitUncommittedFiles,
+  gitAddAll,
+  gitCommit,
 } from "@/ipc/utils/git_utils";
-import {
-  deployAffectedSupabaseFunctions,
-  type SupabaseDeployProgress,
-} from "../../../../../../supabase_admin/supabase_utils";
+import log from "electron-log";
 import { readSettings } from "../../../../../../main/settings";
 import {
+  type SupabaseDeployProgress,
+  deployAffectedSupabaseFunctions,
+} from "../../../../../../supabase_admin/supabase_utils";
+import {
+  type AgentContext,
   escapeXmlAttr,
   escapeXmlContent,
-  type AgentContext,
 } from "../tools/types";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("file_operations");
 

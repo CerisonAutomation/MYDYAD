@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Fetches the HEAD ("before") and working-tree ("after") contents of an

@@ -1,43 +1,43 @@
-import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ipc } from "@/ipc/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { showError, showSuccess, showWarning } from "@/lib/toast";
-import { Folder, X, Loader2, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ipc } from "@/ipc/types";
+import { showError, showSuccess, showWarning } from "@/lib/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Folder, Info, Loader2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import type { GithubRepository } from "@/ipc/types";
 import { useGithubRepos } from "@/hooks/useGithubRepos";
 import { useSelectChat } from "@/hooks/useSelectChat";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import type { GithubRepository } from "@/ipc/types";
 
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useSetAtom } from "jotai";
 import { useLoadApps } from "@/hooks/useLoadApps";
+import { useSetAtom } from "jotai";
 
+import { UnconnectedGitHubConnector } from "@/components/GitHubConnector";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSettings } from "@/hooks/useSettings";
+import { queryKeys } from "@/lib/queryKeys";
+import { slugifyAppFolderName } from "@/shared/app_names";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "./ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSettings } from "@/hooks/useSettings";
-import { UnconnectedGitHubConnector } from "@/components/GitHubConnector";
-import { queryKeys } from "@/lib/queryKeys";
-import { slugifyAppFolderName } from "@/shared/app_names";
 
 interface ImportAppDialogProps {
   isOpen: boolean;

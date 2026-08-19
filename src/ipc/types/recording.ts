@@ -1,4 +1,7 @@
 import { z } from "zod";
+// Relative import: this module is pulled into the preload bundle, which cannot
+// resolve the "@/" alias.
+import { RecordedTestDraftSchema } from "../../lib/test_recorder/draft";
 import {
   createClient,
   createEventClient,
@@ -6,9 +9,6 @@ import {
   defineEvent,
 } from "../contracts/core";
 import { TestIsolationSchema } from "./tests";
-// Relative import: this module is pulled into the preload bundle, which cannot
-// resolve the "@/" alias.
-import { RecordedTestDraftSchema } from "../../lib/test_recorder/draft";
 
 // =============================================================================
 // Recording Schemas

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { INITIAL_GITHUB_OPS_STATE } from "./state";
 import { projectGithubOps } from "./projection";
+import { INITIAL_GITHUB_OPS_STATE } from "./state";
 
 describe("projectGithubOps", () => {
   it("is reference-stable for the same immutable snapshot", () => {

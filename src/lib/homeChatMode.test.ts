@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { UserSettings } from "./schemas";
 import { getHomeDefaultChatMode } from "./homeChatMode";
+import type { UserSettings } from "./schemas";
 
 describe("getHomeDefaultChatMode", () => {
   it("uses local agent after Dyad Pro setup", () => {

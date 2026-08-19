@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 export function useLocalModels() {
   const { data, isFetching, error, refetch } = useQuery({

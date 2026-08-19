@@ -8,10 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 import { ipc } from "@/ipc/types";
 import type { ReleaseChannel } from "@/lib/schemas";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 export function ReleaseChannelSelector() {
   const { settings, updateSettings } = useSettings();

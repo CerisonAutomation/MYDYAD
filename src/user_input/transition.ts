@@ -1,5 +1,5 @@
 /** Pure, total transition function for the user-input round-trip machine. */
-import { change, ignore, type TransitionResult } from "../state_machines/types";
+import { type TransitionResult, change, ignore } from "../state_machines/types";
 import type { UserInputCommand } from "./commands";
 import type {
   UserInputDescriptor,

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { ChatTabTransferCoordinator } from "./chat_tab_transfer_coordinator";
-import { WindowRegistry, type WindowEndpoint } from "./window_registry";
 import type {
   ChatTabTransferPayload,
   TabInstanceId,
   WindowSessionId,
 } from "../types";
+import { ChatTabTransferCoordinator } from "./chat_tab_transfer_coordinator";
+import { type WindowEndpoint, WindowRegistry } from "./window_registry";
 
 const session = (suffix: number) =>
   `00000000-0000-4000-8000-${String(suffix).padStart(12, "0")}` as WindowSessionId;

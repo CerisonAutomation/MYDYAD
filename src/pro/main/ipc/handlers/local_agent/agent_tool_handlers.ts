@@ -2,16 +2,16 @@
  * IPC handlers for agent tool consent management
  */
 
-import {
-  getAllAgentToolConsents,
-  setAgentToolConsent,
-  TOOL_DEFINITIONS,
-  getDefaultConsent,
-  type AgentToolName,
-} from "./tool_definitions";
 import { createLoggedHandler } from "@/ipc/handlers/safe_handle";
-import log from "electron-log";
 import type { AgentTool, SetAgentToolConsentParams } from "@/ipc/types";
+import log from "electron-log";
+import {
+  type AgentToolName,
+  TOOL_DEFINITIONS,
+  getAllAgentToolConsents,
+  getDefaultConsent,
+  setAgentToolConsent,
+} from "./tool_definitions";
 
 const logger = log.scope("agent_tool_handlers");
 const handle = createLoggedHandler(logger);

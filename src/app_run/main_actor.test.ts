@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActorHost } from "@/distributed_machines/actor_host";
 import {
   RemoteMachineClient,
@@ -7,18 +6,19 @@ import {
 import { createRemoteMachineManifest } from "@/distributed_machines/remote_manifest";
 import { RemoteMachineTransport } from "@/distributed_machines/remote_transport";
 import { FakeDuplexRemoteTransport } from "@/distributed_machines/testing";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { AppRunActorService } from "@/ipc/services/app_run_actor_service";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { AppRunActorService } from "@/ipc/services/app_run_actor_service";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { appRunClientDefinition } from "./client_definition";
 import { appRunDefinition } from "./definition";
-import { appRunKey } from "./transport";
-import { AppRunRemoteManager } from "./remote_manager";
 import { appRunOperationRegistry } from "./operations";
+import { AppRunRemoteManager } from "./remote_manager";
+import { appRunKey } from "./transport";
 
 const runtime = vi.hoisted(() => ({
   start: vi.fn<() => Promise<void>>(),

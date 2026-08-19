@@ -1,8 +1,4 @@
-import { useState, useEffect, useRef } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +8,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Save, Edit2, Loader2 } from "lucide-react";
-import { showError } from "@/lib/toast";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { CustomTheme } from "@/ipc/types";
+import { showError } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { Edit2, Loader2, Save } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface EditThemeDialogProps {
   theme: CustomTheme;

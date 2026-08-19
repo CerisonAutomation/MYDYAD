@@ -1,3 +1,9 @@
+import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
 import {
   afterAll,
   afterEach,
@@ -7,25 +13,19 @@ import {
   expect,
   it,
 } from "vitest";
-import crypto from "node:crypto";
-import { execFileSync } from "node:child_process";
-import fs from "node:fs";
-import { createRequire } from "node:module";
-import os from "node:os";
-import path from "node:path";
 import {
+  InProcessKeychainPasswordReader,
+  type KeychainPasswordReader,
+  SecurityCliKeychainPasswordReader,
   clearRecoveryCacheForTesting,
   createDefaultKeychainPasswordReaderForTesting,
   decryptLegacyV10Ciphertext,
   deriveLegacyOsCryptKey,
   getRecoveryStatsForTesting,
-  InProcessKeychainPasswordReader,
   isDefaultKeychainLockedForSafeStorageRecovery,
-  KeychainPasswordReader,
   recoverLegacySafeStorageSecret,
   recoveryNeedsKeychainUnlock,
   retryRecoveryWithKeychainUnlock,
-  SecurityCliKeychainPasswordReader,
   setInProcessKeychainBindingLoaderForTesting,
 } from "./safe_storage_legacy";
 

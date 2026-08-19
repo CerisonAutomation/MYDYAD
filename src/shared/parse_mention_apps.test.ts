@@ -1,11 +1,11 @@
 import {
-  formatKnownAppMentionsForPrompt,
   MENTION_REGEX,
+  formatKnownAppMentionsForPrompt,
   parseAppMentions,
   parseKnownAppMentions,
   splitAppMentionTrailingDots,
 } from "@/shared/parse_mention_apps";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("parseAppMentions", () => {
   it("should parse basic app mentions", () => {

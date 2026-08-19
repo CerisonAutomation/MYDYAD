@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { createAppRelaunchRequest } from "@/main/app_relaunch_request";
+import { describe, expect, it, vi } from "vitest";
 
 describe("app relaunch request", () => {
   it("completes an uninterrupted quit without relaunching", () => {

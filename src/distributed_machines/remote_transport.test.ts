@@ -1,40 +1,40 @@
-import { describe, expect, it, vi } from "vitest";
-import { z } from "zod";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { InvocationRef } from "@/state_machines/invocation_ref";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { getTraceLog } from "@/state_machines/trace";
 import { change, ignore } from "@/state_machines/types";
-import type { InvocationRef } from "@/state_machines/invocation_ref";
+import { TwoWindowHarness } from "@/testing/two_window_harness";
+import { describe, expect, it, vi } from "vitest";
+import { z } from "zod";
 import { ActorHost, type ActorHostError } from "./actor_host";
 import {
+  OperationRegistry,
+  finalizeOperationAdmission,
+} from "./operation_registry";
+import {
+  type AnyRemoteMachineDefinition,
+  REMOTE_PROTOCOL_V1_COMPATIBILITY_INVENTORY,
   assertRemoteProtocolV1CompatibilityInventory,
   createRemoteMachineManifest,
   defineLegacyRemoteMachineCompatibility,
-  REMOTE_PROTOCOL_V1_COMPATIBILITY_INVENTORY,
-  type AnyRemoteMachineDefinition,
 } from "./remote_manifest";
 import {
-  REMOTE_MACHINE_PROTOCOL_VERSION,
   type MachineAddress,
   type MachineDispatchEnvelope,
   type MachineSnapshotEnvelope,
+  REMOTE_MACHINE_PROTOCOL_VERSION,
 } from "./remote_protocol";
 import { RemoteMachineTransport } from "./remote_transport";
-import {
-  finalizeOperationAdmission,
-  OperationRegistry,
-} from "./operation_registry";
 import type { RequestId } from "./request_identity";
 import {
-  createRemoteTestMachine,
   FakeDuplexRemoteTransport,
   FakeTransportDisconnectedError,
+  createRemoteTestMachine,
   remoteTestLifecycle,
 } from "./testing";
-import { TwoWindowHarness } from "@/testing/two_window_harness";
 
 const address = (
   key = "actor",

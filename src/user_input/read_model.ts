@@ -13,12 +13,12 @@
 import type { createStore } from "jotai";
 
 import { DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { ipc as defaultIpc } from "@/ipc/types";
 import type {
   PendingUserInputPayload,
   UserInputDescriptorPayload,
   UserInputResponsePayload,
 } from "@/ipc/types/user_input";
-import { ipc as defaultIpc } from "@/ipc/types";
 import { showError } from "@/lib/toast";
 import { SnapshotStore } from "@/state_machines/snapshot_store";
 import { TaskScope } from "@/state_machines/task_scope";

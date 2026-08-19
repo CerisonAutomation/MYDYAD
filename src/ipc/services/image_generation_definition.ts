@@ -1,42 +1,42 @@
-import { eq } from "drizzle-orm";
-import type { z } from "zod";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
 import {
-  defineFrameworkCoveredRemoteMachine,
   type DistributedMachineDefinition,
+  defineFrameworkCoveredRemoteMachine,
 } from "@/distributed_machines/definition";
-import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import {
   defineCorrelatedEffectHandlers,
   runCorrelatedEffect,
 } from "@/distributed_machines/one_shot_effects";
+import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { imageGenerationRemoteIntentContract } from "@/image_generation/remote_intent_contract";
+import type {
+  ImageGenerationActorState,
+  ImageGenerationCommand,
+  ImageGenerationCorrelatedOutcome,
+  ImageGenerationEvent,
+  ImageGenerationFailureKind,
+  ImageGenerationIgnoreReason,
+  ImageGenerationIntentEvent,
+} from "@/image_generation/state";
+import { isTerminal, transition } from "@/image_generation/transition";
 import {
   IMAGE_GENERATION_MACHINE_ID,
   ImageGenerationIntentEventSchema,
+  type ImageGenerationKey,
   ImageGenerationKeySchema,
   ImageGenerationRemoteSnapshotSchema,
   getImageGenerationKey,
   projectImageGenerationRemoteSnapshot,
   sameImageGenerationInvocation,
-  type ImageGenerationKey,
 } from "@/image_generation/transport";
-import {
-  type ImageGenerationActorState,
-  type ImageGenerationCommand,
-  type ImageGenerationEvent,
-  type ImageGenerationIgnoreReason,
-  type ImageGenerationIntentEvent,
-  type ImageGenerationCorrelatedOutcome,
-  type ImageGenerationFailureKind,
-} from "@/image_generation/state";
-import { isTerminal, transition } from "@/image_generation/transition";
-import { imageGenerationRemoteIntentContract } from "@/image_generation/remote_intent_contract";
 import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { eq } from "drizzle-orm";
+import type { z } from "zod";
+import { imageGenerationOperationService } from "./image_generation_operation_service";
 import { imageGenerationPresentationService } from "./image_generation_presentation_service";
 import { imageGenerationService } from "./image_generation_service";
-import { imageGenerationOperationService } from "./image_generation_operation_service";
 
 export const IMAGE_GENERATION_TERMINAL_RETENTION_MS = 30 * 60 * 1000;
 

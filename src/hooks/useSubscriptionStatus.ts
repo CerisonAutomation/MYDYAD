@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { ipc, type SubscriptionStatus } from "@/ipc/types";
+import { type SubscriptionStatus, ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export const SUBSCRIPTION_STATUS_REFRESH_INTERVAL_MS = 60 * 60 * 1000;
 

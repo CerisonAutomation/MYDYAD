@@ -1,19 +1,19 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import log from "electron-log/main";
-import { spawnStreaming } from "./spawn_streaming";
-import {
-  PNPM_INSTALL_POLICY_ARGS,
-  getPackageManagerCommandEnv,
-} from "./socket_firewall";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import log from "electron-log/main";
 import {
   clearNodeModuleCache,
   getNodeModuleEntryPath,
   resolveNodeModulePackageJsonPathSync,
 } from "../../../shared/node_module_resolution";
 import { E2E_TEST_DIR } from "../types/tests";
+import {
+  PNPM_INSTALL_POLICY_ARGS,
+  getPackageManagerCommandEnv,
+} from "./socket_firewall";
+import { spawnStreaming } from "./spawn_streaming";
 
 const logger = log.scope("playwright_bootstrap");
 

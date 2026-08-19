@@ -1,27 +1,27 @@
-import { createLoggedHandler } from "./safe_handle";
-import log from "electron-log";
-import { AppUpgrade } from "@/ipc/types";
-import { db } from "../../db";
-import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { getDyadAppPath } from "../../paths/paths";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import {
-  isComponentTaggerUpgradeNeeded,
-  applyComponentTagger,
-  simpleSpawnWithDeniedPnpmBuildSelfHeal,
-} from "../utils/app_upgrade_utils";
 import fs from "node:fs";
 import path from "node:path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { AppUpgrade } from "@/ipc/types";
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { db } from "../../db";
+import { apps } from "../../db/schema";
+import { getDyadAppPath } from "../../paths/paths";
+import {
+  applyComponentTagger,
+  isComponentTaggerUpgradeNeeded,
+  simpleSpawnWithDeniedPnpmBuildSelfHeal,
+} from "../utils/app_upgrade_utils";
 import { gitAddAll, gitCommit } from "../utils/git_utils";
-import { simpleSpawn } from "../utils/simpleSpawn";
-import { PNPM_PM_ON_FAIL_IGNORE_ARG } from "../utils/socket_firewall";
 import {
   applyPnpmVersionMigration,
   getManagedPnpmMajorVersion,
   isPnpmVersionMigrationNeeded,
 } from "../utils/pnpm_migration";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { simpleSpawn } from "../utils/simpleSpawn";
+import { PNPM_PM_ON_FAIL_IGNORE_ARG } from "../utils/socket_firewall";
+import { createLoggedHandler } from "./safe_handle";
 
 export const logger = log.scope("app_upgrade_handlers");
 const handle = createLoggedHandler(logger);

@@ -1,8 +1,8 @@
 import { db } from "@/db";
 import { messages } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
-import type { ModelMessage } from "ai";
 import { parseAiMessagesJson } from "@/ipc/utils/ai_messages_utils";
+import type { ModelMessage } from "ai";
+import { desc, eq } from "drizzle-orm";
 
 // Recent messages (~5 turns) fed to the consent classifier for intent.
 const RECENT_MESSAGE_LIMIT = 10;

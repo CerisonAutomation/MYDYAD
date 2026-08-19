@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { assertCapabilityTransitionConsistency } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import { selectGithubOpsCapabilities } from "./capabilities";
 import type { GithubOperation, GithubOpsEvent, GithubOpsState } from "./state";
 import { transition } from "./transition";

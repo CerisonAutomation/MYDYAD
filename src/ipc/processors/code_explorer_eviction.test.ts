@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  evictionPlan,
   type IndexCacheEntryStats,
+  evictionPlan,
 } from "../../../workers/code_explorer/eviction";
 
 const GB = 1024 * 1024 * 1024;

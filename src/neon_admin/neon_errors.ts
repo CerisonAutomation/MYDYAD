@@ -92,7 +92,7 @@ function formatGoDuration(raw: string): string | null {
     [match[3], "second"],
   ];
   for (const [value, unit] of units) {
-    const amount = value ? parseInt(value, 10) : 0;
+    const amount = value ? Number.parseInt(value, 10) : 0;
     if (amount > 0) {
       parts.push(`${amount} ${unit}${amount === 1 ? "" : "s"}`);
     }

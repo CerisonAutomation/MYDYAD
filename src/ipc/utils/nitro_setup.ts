@@ -2,18 +2,18 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import log from "electron-log";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
-  installPackages,
   ExecuteAddDependencyError,
+  installPackages,
 } from "@/ipc/processors/executeAddDependency";
 import { appendNitroRules, restoreAiRules } from "@/ipc/utils/ai_rules_patcher";
+import { detectFrameworkType } from "@/ipc/utils/framework_utils";
 import {
+  type ViteConfigBackup,
   addNitroToViteConfig,
   restoreViteConfig,
-  ViteConfigBackup,
 } from "@/ipc/utils/vite_config_patcher";
-import { detectFrameworkType } from "@/ipc/utils/framework_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("nitro_setup");
 

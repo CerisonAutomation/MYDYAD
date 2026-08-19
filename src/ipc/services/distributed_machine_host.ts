@@ -1,6 +1,5 @@
 import { appRunDefinition } from "@/app_run/definition";
 import { chatStreamDefinition } from "@/chat_stream/definition";
-import { planHandoffDefinition } from "@/plan_handoff/definition";
 import {
   assertRemoteProtocolV1CompatibilityInventory,
   createProductionRemoteMachineManifest,
@@ -10,6 +9,7 @@ import {
   RemoteMachineTransport,
   type RemoteTransportEndpoint,
 } from "@/distributed_machines/remote_transport";
+import { planHandoffDefinition } from "@/plan_handoff/definition";
 import { systemClock } from "@/state_machines/clock";
 import { windowRegistry } from "@/window_infrastructure/main/window_registry";
 import type { WindowSessionId } from "@/window_infrastructure/types";

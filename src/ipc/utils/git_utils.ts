@@ -1,26 +1,26 @@
-import { getGitAuthor } from "./git_author";
-import {
-  exec,
-  ExecError,
-  type IGitStringExecutionOptions,
-  type IGitStringResult,
-} from "dugite";
 import fs from "node:fs";
 import { promises as fsPromises } from "node:fs";
-import pathModule from "node:path";
 import { platform } from "node:os";
-import log from "electron-log";
-import { normalizePath } from "../../../shared/normalizePath";
-import { safeJoin } from "./path_utils";
-import { ensureLibcurlShimOnLinux } from "./linux_libcurl_shim";
-import { getPathEnvKey } from "./path_env";
-import type { UncommittedFile, UncommittedFileStatus } from "@/ipc/types";
+import pathModule from "node:path";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { UncommittedFile, UncommittedFileStatus } from "@/ipc/types";
 import {
   isDotenvFilePath,
   redactDotenvValues,
   selectTextLineRange,
 } from "@/utils/dotenv_redaction";
+import {
+  ExecError,
+  type IGitStringExecutionOptions,
+  type IGitStringResult,
+  exec,
+} from "dugite";
+import log from "electron-log";
+import { normalizePath } from "../../../shared/normalizePath";
+import { getGitAuthor } from "./git_author";
+import { ensureLibcurlShimOnLinux } from "./linux_libcurl_shim";
+import { getPathEnvKey } from "./path_env";
+import { safeJoin } from "./path_utils";
 const logger = log.scope("git_utils");
 
 function isUserVisibleGitPath(filePath: string) {
@@ -207,31 +207,31 @@ async function execGit(
   return exec(args, path, safeOptions);
 }
 import type {
-  GitBaseParams,
-  GitFileParams,
-  GitListFilesParams,
-  GitCheckoutParams,
-  GitBranchRenameParams,
-  GitCloneParams,
-  GitCommitParams,
-  GitLogParams,
-  GitFileAtCommitParams,
-  GitSetRemoteUrlParams,
-  GitStageToRevertParams,
-  GitInitParams,
-  GitPushParams,
-  GitCommit,
-  GitFetchParams,
-  GitPullParams,
-  GitMergeParams,
-  GitCreateBranchParams,
-  GitDeleteBranchParams,
   AgentGitDiffScope,
   AgentGitStatus,
   AgentGitTextResult,
+  GitBaseParams,
+  GitBranchRenameParams,
   GitChangedFile,
   GitChangedFileType,
+  GitCheckoutParams,
+  GitCloneParams,
+  GitCommit,
+  GitCommitParams,
+  GitCreateBranchParams,
+  GitDeleteBranchParams,
+  GitFetchParams,
+  GitFileAtCommitParams,
+  GitFileParams,
+  GitInitParams,
   GitListChangedFilesParams,
+  GitListFilesParams,
+  GitLogParams,
+  GitMergeParams,
+  GitPullParams,
+  GitPushParams,
+  GitSetRemoteUrlParams,
+  GitStageToRevertParams,
 } from "../git_types";
 
 /**
@@ -1103,7 +1103,7 @@ export function unquoteGitPath(raw: string): string {
         oct += body[j];
         j++;
       }
-      bytes.push(parseInt(oct, 8) & 0xff);
+      bytes.push(Number.parseInt(oct, 8) & 0xff);
       i = j - 1;
       continue;
     }

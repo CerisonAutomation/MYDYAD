@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { ipc, type LanguageModel } from "@/ipc/types";
+import { type LanguageModel, ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Fetches the list of available language models for a specific provider.

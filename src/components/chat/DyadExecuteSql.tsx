@@ -1,23 +1,23 @@
-import type React from "react";
-import type { ReactNode } from "react";
-import { Children, useMemo, useState } from "react";
-import { useAutoCollapse } from "./useAutoCollapse";
-import { AlertTriangle, Database } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
-import {
-  DyadCard,
-  DyadCardHeader,
-  DyadBadge,
-  DyadExpandIcon,
-  DyadStateIndicator,
-  DyadCardContent,
-} from "./DyadCardPrimitives";
 import {
   doesSqlDeleteData,
   doesSqlMutateSchema,
 } from "@/lib/sqlSchemaMutation";
+import { AlertTriangle, Database } from "lucide-react";
+import type React from "react";
+import type { ReactNode } from "react";
+import { Children, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { CodeHighlight } from "./CodeHighlight";
+import {
+  DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
+  DyadStateIndicator,
+} from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadExecuteSqlProps {
   children?: ReactNode;

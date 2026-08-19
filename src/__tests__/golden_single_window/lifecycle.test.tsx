@@ -1,10 +1,10 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { createMcpBeforeQuitHandler } from "@/ipc/utils/mcp_shutdown";
 import {
   useManagerLifecycle,
   useManagerPagehideDisposal,
 } from "@/state_machines/react";
-import { createMcpBeforeQuitHandler } from "@/ipc/utils/mcp_shutdown";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 function deferred(): { promise: Promise<void>; resolve: () => void } {
   let resolve!: () => void;

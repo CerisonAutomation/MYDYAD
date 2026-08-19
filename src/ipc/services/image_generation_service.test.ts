@@ -1,8 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { eq } from "drizzle-orm";
 import { apps } from "@/db/schema";
 import { DyadErrorKind } from "@/errors/dyad_error";
 import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
@@ -10,6 +8,8 @@ import {
   type HandlerTestHarness,
   setupHandlerTestHarness,
 } from "@/testing/handler_test_harness";
+import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageGenerationService } from "./image_generation_service";
 
 vi.mock("@/main/settings", async (importOriginal) => {

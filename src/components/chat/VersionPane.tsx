@@ -1,28 +1,28 @@
-import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useVersions } from "@/hooks/useVersions";
-import { formatDistanceToNow } from "date-fns";
-import {
-  RotateCcw,
-  X,
-  Database,
-  Loader2,
-  Search,
-  Star,
-  Pencil,
-} from "lucide-react";
-import type { Version } from "@/ipc/types";
-import { ipc, MAX_VERSION_NOTE_LENGTH } from "@/ipc/types";
-import { cn } from "@/lib/utils";
-import { queryKeys } from "@/lib/queryKeys";
-import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useVersions } from "@/hooks/useVersions";
+import type { Version } from "@/ipc/types";
+import { MAX_VERSION_NOTE_LENGTH, ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import { useAtomValue } from "jotai";
+import {
+  Database,
+  Loader2,
+  Pencil,
+  RotateCcw,
+  Search,
+  Star,
+  X,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import { useVersionPreview } from "@/hooks/useVersionPreview";

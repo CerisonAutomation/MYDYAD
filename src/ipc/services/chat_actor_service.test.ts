@@ -103,6 +103,11 @@ vi.mock("@/chat_stream/persistence", async (importOriginal) => ({
   getIntentAcceptance: persistence.getIntentAcceptance,
 }));
 
+import { assertAppChatCreationOpen } from "./app_chat_creation_fence";
+import {
+  assertChatActorAdmissionOpen,
+  beginChatActorMutation,
+} from "./chat_actor_deletion_fence";
 import {
   beginAppChatActorMutation,
   deleteOwnedChatAfterSettlingActors,
@@ -110,11 +115,6 @@ import {
   waitForAppChatActorsIdle,
   waitForChatActorIdle,
 } from "./chat_actor_service";
-import {
-  assertChatActorAdmissionOpen,
-  beginChatActorMutation,
-} from "./chat_actor_deletion_fence";
-import { assertAppChatCreationOpen } from "./app_chat_creation_fence";
 
 describe("waitForChatActorIdle", () => {
   beforeEach(() => {

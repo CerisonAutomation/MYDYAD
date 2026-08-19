@@ -1,6 +1,6 @@
+import type { UserSettings } from "@/lib/schemas";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { UserSettings } from "@/lib/schemas";
 import { AzureConfiguration } from "./AzureConfiguration";
 
 describe("AzureConfiguration", () => {

@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
-import { StrictMode, type PropsWithChildren } from "react";
+import { Provider, createStore } from "jotai";
+import { type PropsWithChildren, StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";

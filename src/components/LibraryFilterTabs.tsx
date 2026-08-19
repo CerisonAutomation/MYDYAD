@@ -1,5 +1,5 @@
-import { Palette, FileText, BookOpen, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BookOpen, FileText, Image, Palette } from "lucide-react";
 
 export type FilterType = "all" | "themes" | "prompts" | "media";
 

@@ -1,5 +1,5 @@
 import { cleanFullResponse } from "@/ipc/utils/cleanFullResponse";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("cleanFullResponse", () => {
   it("should replace < characters in dyad-write attributes", () => {

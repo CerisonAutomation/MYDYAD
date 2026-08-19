@@ -1,8 +1,8 @@
 // @vitest-environment node
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { MCPClient } from "@ai-sdk/mcp";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { MCPClient } from "@ai-sdk/mcp";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   rows: new Map<number, Record<string, unknown>>(),

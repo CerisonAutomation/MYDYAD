@@ -10,12 +10,12 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
 import { messages as messagesTable } from "@/db/schema";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import { eq } from "drizzle-orm";
 
 describe("reject (integration)", () => {

@@ -1,12 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useAtomValue, useSetAtom } from "jotai";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   Check,
   ChevronRight,
@@ -15,23 +8,31 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import type React from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import { selectedAppIdAtom, previewModeAtom } from "@/atoms/appAtoms";
+import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
 import { chatMessagesByIdAtom, selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { selectedFileAtom } from "@/atoms/viewAtoms";
 import { useChatStreamManager } from "@/chat_stream/ChatStreamProvider";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { ipc } from "@/ipc/types";
-import { cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryKeys";
-import { showError, showSuccess, showWarning } from "@/lib/toast";
 import { syncChatFromDb } from "@/lib/resyncChat";
 import {
+  type AssertionPlanItem,
   isAssertionItem,
   moveAssertion,
-  type AssertionPlanItem,
 } from "@/lib/test_recorder/assertion_proposal";
 import { parseAssertionsPayload } from "@/lib/test_recorder/assertion_tag";
+import { showError, showSuccess, showWarning } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import {
   useUserInputReadModel,
   useUserInputRequests,

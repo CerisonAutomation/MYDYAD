@@ -1,10 +1,10 @@
-import type { BrowserWindow } from "electron";
-import { describe, expect, it, vi } from "vitest";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
   sendTelemetryEventToWindow,
   shouldFilterTelemetryException,
 } from "@/ipc/utils/telemetry";
+import type { BrowserWindow } from "electron";
+import { describe, expect, it, vi } from "vitest";
 
 describe("shouldFilterTelemetryException", () => {
   it("filters the known Supabase auth noise message", () => {

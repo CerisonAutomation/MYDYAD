@@ -1,16 +1,16 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getDyadAppPath } from "@/paths/paths";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
 import {
-  runTypeScriptCheck,
   getTypeCheckPreconditionGuidance,
   getTypeCheckPreconditionKind,
+  runTypeScriptCheck,
 } from "../processors/tsc";
-import { getDyadAppPath } from "@/paths/paths";
-import log from "electron-log";
-import { createTypedHandler } from "./base";
 import { miscContracts } from "../types/misc";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("problems_handlers");
 

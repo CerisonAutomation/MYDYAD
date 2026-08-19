@@ -1,18 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActorHost } from "@/distributed_machines/actor_host";
 import { RemoteMachineClient } from "@/distributed_machines/remote_client";
 import { createRemoteMachineManifest } from "@/distributed_machines/remote_manifest";
 import { RemoteMachineTransport } from "@/distributed_machines/remote_transport";
 import { FakeDuplexRemoteTransport } from "@/distributed_machines/testing";
+import { versionPreviewDefinition } from "@/ipc/services/version_preview_definition";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
-import { versionPreviewDefinition } from "@/ipc/services/version_preview_definition";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { versionPreviewClientDefinition } from "./client_definition";
+import { type RestoreRecovery, isMutatingState } from "./state";
 import { versionPreviewKey } from "./transport";
-import { isMutatingState, type RestoreRecovery } from "./state";
 
 const service = vi.hoisted(() => ({
   resolveOriginBranch: vi.fn(),

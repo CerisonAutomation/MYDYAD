@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { EffortSettingsSchema } from "@/ipc/types/language-model";
+import { describe, expect, it } from "vitest";
 import {
   createModelSelection,
   formatEffortLevel,

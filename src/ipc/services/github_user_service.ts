@@ -1,3 +1,4 @@
+import log from "electron-log";
 /**
  * GitHub user service — extracted from github_handlers so utilities like
  * git_author can resolve the current user without importing a handler
@@ -5,10 +6,9 @@
  * github_handlers → git_utils).
  */
 import fetch from "node-fetch";
-import { writeSettings, readSettings } from "../../main/settings";
-import { IS_TEST_BUILD } from "../utils/test_utils";
-import log from "electron-log";
 import type { GithubUser } from "../../lib/schemas";
+import { readSettings, writeSettings } from "../../main/settings";
+import { IS_TEST_BUILD } from "../utils/test_utils";
 
 const logger = log.scope("github_user_service");
 

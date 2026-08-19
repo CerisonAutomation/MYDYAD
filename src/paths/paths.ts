@@ -1,6 +1,6 @@
-import path from "node:path";
-import os from "node:os";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { IS_TEST_BUILD } from "../ipc/utils/test_utils";
 import { readSettings } from "../main/settings";
 

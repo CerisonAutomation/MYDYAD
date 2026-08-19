@@ -1,12 +1,12 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import {
   assertMutationPathAllowed,
   prepareDeletePath,
   safeJoin,
 } from "@/ipc/utils/path_utils";
-import { describe, it, expect } from "vitest";
-import fs from "node:fs/promises";
-import path from "node:path";
-import os from "node:os";
+import { describe, expect, it } from "vitest";
 
 function toPosixPath(value: string): string {
   return value.replace(/\\/g, "/");

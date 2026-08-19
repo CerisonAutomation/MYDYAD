@@ -1,5 +1,5 @@
-import log from "electron-log";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import log from "electron-log";
 import {
   BufferedProcessSpawnError,
   DEFAULT_BUFFERED_PROCESS_TIMEOUT_MS,

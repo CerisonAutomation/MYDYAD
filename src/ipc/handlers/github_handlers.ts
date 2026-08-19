@@ -1,65 +1,62 @@
-import { IpcMainInvokeEvent } from "electron";
-import fetch from "node-fetch"; // Use node-fetch for making HTTP requests in main process
-import { writeSettings, readSettings } from "../../main/settings";
-import {
-  gitSetRemoteUrl,
-  gitPush,
-  gitClone,
-  gitPull,
-  gitRebaseAbort,
-  gitRebaseContinue,
-  gitRebase,
-  gitFetch,
-  gitCreateBranch,
-  gitCheckout,
-  gitGetMergeConflicts,
-  gitListBranches,
-  gitListRemoteBranches,
-  isGitStatusClean,
-  isGitMergeInProgress,
-  isGitRebaseInProgress,
-  GitStateError,
-  GIT_ERROR_CODES,
-  isMissingRemoteBranchError,
-} from "../utils/git_utils";
-import { gitService } from "../services/git_service";
-import * as schema from "../../db/schema";
 import fs from "node:fs";
-import { getDyadAppPath, isAppLocationAccessible } from "../../paths/paths";
-import { db } from "../../db";
-import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { GithubUser } from "../../lib/schemas";
-import log from "electron-log";
-import { IS_TEST_BUILD } from "../utils/test_utils";
-import {
-  getGithubUser,
-  getGitHubApiBase,
-  getGitHubTestServerBase,
-  isGitHubTestBuild,
-} from "../services/github_user_service";
 import path from "node:path";
-import { createTypedHandler } from "./base";
-import { githubContracts } from "../types/github";
-import type { CloneRepoParams, CloneRepoResult } from "../types/github";
+import type { ConnectionFlowInvocationRef } from "@/connection_flow/state";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
   sanitizeAppDisplayName,
   slugifyAppFolderName,
 } from "@/shared/app_names";
 import { slugifyAppPath } from "@/shared/slugify";
-import { resolveUniqueFolderName } from "../utils/app_name_resolution";
-import { withLock } from "../utils/lock_utils";
+import { eq } from "drizzle-orm";
+import type { IpcMainInvokeEvent } from "electron";
+import log from "electron-log";
+import fetch from "node-fetch"; // Use node-fetch for making HTTP requests in main process
+import { db } from "../../db";
+import * as schema from "../../db/schema";
+import { apps } from "../../db/schema";
+import { readSettings, writeSettings } from "../../main/settings";
+import { getDyadAppPath, isAppLocationAccessible } from "../../paths/paths";
+import { gitService } from "../services/git_service";
 import {
-  isComponentTaggerUpgradeNeeded,
+  getGitHubApiBase,
+  getGitHubTestServerBase,
+  isGitHubTestBuild,
+} from "../services/github_user_service";
+import { githubContracts } from "../types/github";
+import type { CloneRepoParams, CloneRepoResult } from "../types/github";
+import { resolveUniqueFolderName } from "../utils/app_name_resolution";
+import {
   applyComponentTagger,
+  isComponentTaggerUpgradeNeeded,
 } from "../utils/app_upgrade_utils";
+import {
+  GIT_ERROR_CODES,
+  GitStateError,
+  gitCheckout,
+  gitClone,
+  gitCreateBranch,
+  gitFetch,
+  gitGetMergeConflicts,
+  gitListBranches,
+  gitListRemoteBranches,
+  gitPull,
+  gitPush,
+  gitRebase,
+  gitRebaseAbort,
+  gitRebaseContinue,
+  gitSetRemoteUrl,
+  isGitMergeInProgress,
+  isGitRebaseInProgress,
+  isGitStatusClean,
+  isMissingRemoteBranchError,
+} from "../utils/git_utils";
+import { withLock } from "../utils/lock_utils";
+import { createTypedHandler } from "./base";
 import {
   connectionFlowRegistry,
   registerConnectionFlowProvider,
   runOAuthReturnExchange,
 } from "./connection_flow_handlers";
-import type { ConnectionFlowInvocationRef } from "@/connection_flow/state";
 
 const logger = log.scope("github_handlers");
 

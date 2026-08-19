@@ -1,15 +1,15 @@
+import { Copy } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
-import { Copy } from "lucide-react";
 import {
+  DyadBadge,
   DyadCard,
   DyadCardHeader,
-  DyadBadge,
-  DyadFilePath,
   DyadDescription,
+  DyadFilePath,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
 
 interface DyadCopyProps {
   children?: ReactNode;

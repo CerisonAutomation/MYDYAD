@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
+import { describe, expect, it } from "vitest";
 import {
   OperationRouteCapacityError,
+  type OperationRouteClaim,
   OperationRouteIdentityConflictError,
   OperationRouteRegistry,
-  type OperationRouteClaim,
 } from "./operation_route_registry";
 
 type Route = { readonly channel: string };

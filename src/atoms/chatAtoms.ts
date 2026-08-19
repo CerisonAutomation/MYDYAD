@@ -1,16 +1,16 @@
+import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
 import type {
+  AgentTodo,
   Chat,
+  ComponentSelection,
   FileAttachment,
   Message,
-  AgentTodo,
-  ComponentSelection,
 } from "@/ipc/types";
 import type { ListedApp } from "@/ipc/types/app";
+import { createChatTabSessionStorage } from "@/window_infrastructure/chat_tab_session_storage";
 import type { Getter, Setter } from "jotai";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
-import { createChatTabSessionStorage } from "@/window_infrastructure/chat_tab_session_storage";
 
 // Per-chat atoms implemented with maps keyed by chatId
 export const chatMessagesByIdAtom = atom<Map<number, Message[]>>(new Map());

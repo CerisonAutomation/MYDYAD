@@ -9,11 +9,11 @@ import { eq } from "drizzle-orm";
 
 import { apps, chats } from "@/db/schema";
 import type { PlanUpdatePayload } from "@/ipc/types/plan";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 // Expected plan values produced by the `local-agent/accept-plan` fixture's
 // `write_plan` tool call, which every plan test below streams to drive the real

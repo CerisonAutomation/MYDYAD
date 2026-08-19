@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { getSelectionCommentAnchorRect } from "@/components/preview_panel/plan/selectionCommentButtonPosition";
+import { describe, expect, it } from "vitest";
 
 describe("getSelectionCommentAnchorRect", () => {
   it("anchors multi-line selections to the last client rect", () => {

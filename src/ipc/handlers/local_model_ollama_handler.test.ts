@@ -3,7 +3,7 @@ import {
   fetchOllamaModels,
   parseOllamaHost,
 } from "@/ipc/handlers/local_model_ollama_handler";
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
   vi.unstubAllGlobals();

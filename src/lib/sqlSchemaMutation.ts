@@ -1,8 +1,8 @@
 import {
-  detectSqlDataDeletion,
-  detectSqlSchemaMutation,
   type SqlDataDeletionAnalysis,
   type SqlSchemaMutationAnalysis,
+  detectSqlDataDeletion,
+  detectSqlSchemaMutation,
 } from "pg-schema-classifier";
 
 export function getSqlSchemaMutationAnalysis(

@@ -1,6 +1,6 @@
-import { StrictMode } from "react";
 import { act, render } from "@testing-library/react";
 import { createStore } from "jotai";
+import { StrictMode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ChatStreamProvider } from "./ChatStreamProvider";

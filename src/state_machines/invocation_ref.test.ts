@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createSequentialIdSource } from "./testing";
 import {
   CancellationTombstones,
+  InvocationRegistry,
+  SupersededInvocationRefs,
   createInvocationRef,
   invocationRegistryKey,
-  InvocationRegistry,
   matchCompletionToActiveOperation,
   settleSupersededWaiter,
-  SupersededInvocationRefs,
 } from "./invocation_ref";
+import { createSequentialIdSource } from "./testing";
 
 describe("InvocationRef", () => {
   it("mints globally distinct operation IDs through the injected source", () => {

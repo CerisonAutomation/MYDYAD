@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import {
   assertAllCommandsProducible,
   assertAllStatesReachable,
@@ -7,14 +6,15 @@ import {
   exploreReachableStates,
   ignoreReasonOf,
 } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import {
   INITIAL_PREVIEW_IFRAME_STATE,
+  type PreviewIframeCommand,
+  type PreviewIframeEvent,
+  type PreviewIframeState,
   selectCanGoBack,
   selectCanGoForward,
   selectIframeSrc,
-  type PreviewIframeEvent,
-  type PreviewIframeCommand,
-  type PreviewIframeState,
 } from "./state";
 import { transition } from "./transition";
 

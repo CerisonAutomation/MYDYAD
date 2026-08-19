@@ -5,9 +5,9 @@ import type {
 } from "../types";
 import { queryInvalidationScopeKey } from "../types";
 import {
-  windowRegistry,
   type WindowEndpoint,
   type WindowRegistry,
+  windowRegistry,
 } from "./window_registry";
 
 const QUERY_INVALIDATION_CHANNEL = "window:query-invalidations";

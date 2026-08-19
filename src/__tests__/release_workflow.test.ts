@@ -16,11 +16,11 @@ describe("release workflow", () => {
         .replace(/\r?\n/g, lineEnding);
       const publishJob = workflow.slice(workflow.indexOf("  publish:"));
 
-      expect(publishJob).toMatch(/permissions:\r?\n      contents: write/);
+      expect(publishJob).toMatch(/permissions:\r?\n {6}contents: write/);
       expect(publishJob).toMatch(
         /Upload provenance manifests to draft release[\s\S]*Verify release tag still points to this workflow commit[\s\S]*Verify all release assets are uploaded/,
       );
-      expect(workflow).not.toMatch(/^  verify-assets:/m);
+      expect(workflow).not.toMatch(/^ {2}verify-assets:/m);
     },
   );
 });

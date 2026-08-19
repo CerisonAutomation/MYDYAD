@@ -1,12 +1,12 @@
-import { atom } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import type { TestSpec, TestResult, TestIsolation } from "@/ipc/types";
+import type { TestIsolation, TestResult, TestSpec } from "@/ipc/types";
 import type { RunAppTestsResult } from "@/ipc/types/tests";
 import {
   buildSingleTestFileResult,
   reconcileResultFile,
   testKey,
 } from "@/lib/testResultUtils";
+import { atom } from "jotai";
 
 /**
  * Apps for which the user dismissed the "move legacy tests to e2e-tests/" offer

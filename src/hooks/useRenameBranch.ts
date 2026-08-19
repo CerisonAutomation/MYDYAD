@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ipc } from "@/ipc/types";
-import { showError } from "@/lib/toast";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useAtomValue } from "jotai";
-import { queryKeys } from "@/lib/queryKeys";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { showError } from "@/lib/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 interface RenameBranchParams {
   appId: number;

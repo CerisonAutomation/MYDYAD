@@ -1,6 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
-import { rootRoute } from "./root";
 import SettingsPage from "../pages/settings";
+import { rootRoute } from "./root";
 
 export const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,

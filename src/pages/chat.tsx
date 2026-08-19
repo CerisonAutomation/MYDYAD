@@ -1,20 +1,20 @@
-import { useRef, useEffect, useCallback } from "react";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { isChatPanelHiddenAtom, isPreviewOpenAtom } from "@/atoms/viewAtoms";
+import { useChats } from "@/hooks/useChats";
+import { ipc } from "@/ipc/types";
+import { cn } from "@/lib/utils";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef } from "react";
 import {
-  Group as PanelGroup,
-  Panel,
-  Separator as PanelResizeHandle,
   type PanelImperativeHandle as ImperativePanelHandle,
+  Panel,
+  Group as PanelGroup,
+  Separator as PanelResizeHandle,
 } from "react-resizable-panels";
 import { ChatPanel } from "../components/ChatPanel";
 import { PreviewPanel } from "../components/preview_panel/PreviewPanel";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { cn } from "@/lib/utils";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { isPreviewOpenAtom, isChatPanelHiddenAtom } from "@/atoms/viewAtoms";
-import { useChats } from "@/hooks/useChats";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { ipc } from "@/ipc/types";
 
 const DEFAULT_CHAT_PANEL_SIZE = 50;
 

@@ -1,12 +1,12 @@
-import { useEffect } from "react";
-import { useSetAtom, useAtomValue } from "jotai";
-import { useQuery } from "@tanstack/react-query";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { planStateAtom } from "@/atoms/planAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { planStateAtom } from "@/atoms/planAtoms";
+import { usePlanDocument } from "@/hooks/usePlanDocument";
 import { planClient } from "@/ipc/types/plan";
 import { queryKeys } from "@/lib/queryKeys";
-import { usePlanDocument } from "@/hooks/usePlanDocument";
+import { useQuery } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect } from "react";
 
 /**
  * Loads a saved plan from disk and syncs it into memory state for the current chat.

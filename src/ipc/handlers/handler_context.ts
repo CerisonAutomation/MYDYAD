@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { readSettings, writeSettings } from "@/main/settings";
-import { gitService, GitService } from "../services/git_service";
+import { type GitService, gitService } from "../services/git_service";
 import { safeSend } from "../utils/safe_sender";
 
 /**

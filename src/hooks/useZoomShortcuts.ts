@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useIsMac } from "@/hooks/useChatModeToggle";
 import { useSettings } from "@/hooks/useSettings";
 import {
+  DEFAULT_ZOOM_LEVEL,
+  ZOOM_LEVELS,
   type ZoomLevel,
   ZoomLevelSchema,
-  ZOOM_LEVELS,
-  DEFAULT_ZOOM_LEVEL,
 } from "@/lib/schemas";
-import { useIsMac } from "@/hooks/useChatModeToggle";
+import { useCallback, useEffect, useMemo } from "react";
 
 export function useZoomShortcuts() {
   const { settings, updateSettings } = useSettings();

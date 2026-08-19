@@ -1,15 +1,15 @@
+import { and, eq } from "drizzle-orm";
 /** Main-process composition root for the user-input registry. */
 import { BrowserWindow, type WebContents } from "electron";
-import { and, eq } from "drizzle-orm";
 import log from "electron-log";
 import { db } from "../db";
 import { mcpToolConsents } from "../db/schema";
+import { safeSend } from "../ipc/utils/safe_sender";
 import { readSettings, writeSettings } from "../main/settings";
 import { systemClock, uuidIdSource } from "../state_machines/clock";
-import { safeSend } from "../ipc/utils/safe_sender";
-import { createUserInputRegistry } from "./registry";
 import type { UserInputCommand } from "./commands";
 import { dispatchDueFollowUp } from "./follow_up_dispatch";
+import { createUserInputRegistry } from "./registry";
 
 const subscribers = new Set<WebContents>();
 const logger = log.scope("user_input");

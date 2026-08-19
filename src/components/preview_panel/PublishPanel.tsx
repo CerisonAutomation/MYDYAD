@@ -1,13 +1,13 @@
-import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useLoadApp } from "@/hooks/useLoadApp";
 import { GitHubConnector } from "@/components/GitHubConnector";
-import { VercelConnector } from "@/components/VercelConnector";
-import { PortalMigrate } from "@/components/PortalMigrate";
-import { ipc } from "@/ipc/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GithubCollaboratorManager } from "@/components/GithubCollaboratorManager";
+import { PortalMigrate } from "@/components/PortalMigrate";
+import { VercelConnector } from "@/components/VercelConnector";
 import { DatabaseSection } from "@/components/preview_panel/DatabaseSection";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { ipc } from "@/ipc/types";
+import { useAtomValue } from "jotai";
 
 export const PublishPanel = () => {
   const selectedAppId = useAtomValue(selectedAppIdAtom);

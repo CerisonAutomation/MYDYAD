@@ -1,10 +1,10 @@
-import { useMemo } from "react";
-import { atom, useAtom } from "jotai";
 import { useMcp } from "@/hooks/useMcp";
 import { useMcpCatalog } from "@/hooks/useMcpCatalog";
 import type { McpServer } from "@/ipc/types";
 import { ipc } from "@/ipc/types";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
+import { atom, useAtom } from "jotai";
+import { useMemo } from "react";
 import { useOauthCallbackPort } from "./AddPluginDialog";
 
 // Produced by feedbackFor below; the summary card and detail page

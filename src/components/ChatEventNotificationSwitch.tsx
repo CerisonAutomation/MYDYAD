@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { MacNotificationGuideDialog } from "./MacNotificationGuideDialog";
 import { useEnableNotifications } from "@/hooks/useEnableNotifications";
+import { MacNotificationGuideDialog } from "./MacNotificationGuideDialog";
 
 export function ChatEventNotificationSwitch() {
   const { isEnabled, enable, disable, showMacGuide, setShowMacGuide } =

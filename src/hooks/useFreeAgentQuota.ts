@@ -1,9 +1,9 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ipc, type FreeAgentQuotaStatus } from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
-import { useSettings } from "./useSettings";
-import { isDyadProEnabled } from "@/lib/schemas";
+import { type FreeAgentQuotaStatus, ipc } from "@/ipc/types";
 import { FREE_AGENT_QUOTA_LIMIT } from "@/lib/free_agent_quota_limit";
+import { queryKeys } from "@/lib/queryKeys";
+import { isDyadProEnabled } from "@/lib/schemas";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "./useSettings";
 
 const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
 // In test mode, use very short staleTime for faster E2E tests

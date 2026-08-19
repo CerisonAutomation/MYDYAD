@@ -1,3 +1,10 @@
+import {
+  assertAllCommandsProducible,
+  assertAllStatesReachable,
+  assertReferenceStability,
+  commandsOf,
+  ignoreReasonOf,
+} from "@/state_machines/testing";
 import { describe, expect, it } from "vitest";
 import type {
   AppRunInvocationRef,
@@ -7,13 +14,6 @@ import type {
   RunUrl,
 } from "./state";
 import { ignore, projectRunState, transition } from "./transition";
-import {
-  assertReferenceStability,
-  assertAllCommandsProducible,
-  assertAllStatesReachable,
-  commandsOf,
-  ignoreReasonOf,
-} from "@/state_machines/testing";
 
 const APP_ID = 7;
 const makeRef = (operationId: string): AppRunInvocationRef => ({

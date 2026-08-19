@@ -1,35 +1,35 @@
 import fs from "node:fs";
 import { promises as fsPromises } from "node:fs";
 import path from "path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { ensureDyadGitignored } from "@/ipc/handlers/gitignoreUtils";
+import { registerTrustedIpcHandler } from "@/ipc/handlers/trusted_handle";
+import type {
+  AnalyseComponentParams,
+  ApplyVisualEditingChangesParams,
+} from "@/ipc/types";
+import { VALID_IMAGE_MIME_TYPES } from "@/ipc/types/visual-editing";
+import { queueCloudSandboxSnapshotSync } from "@/ipc/utils/cloud_sandbox_provider";
+import { DYAD_MEDIA_DIR_NAME } from "@/ipc/utils/media_path_utils";
+import { safeJoin } from "@/ipc/utils/path_utils";
+import { eq } from "drizzle-orm";
+import { normalizePath } from "../../../../../shared/normalizePath";
 import { db } from "../../../../db";
 import { apps } from "../../../../db/schema";
-import { eq } from "drizzle-orm";
-import { getDyadAppPath } from "../../../../paths/paths";
-import {
-  stylesToTailwind,
-  extractClassPrefixes,
-} from "../../../../utils/style-utils";
 import {
   gitAdd,
   gitCommit,
   gitResetFile,
 } from "../../../../ipc/utils/git_utils";
-import { safeJoin } from "@/ipc/utils/path_utils";
+import { getDyadAppPath } from "../../../../paths/paths";
 import {
-  AnalyseComponentParams,
-  ApplyVisualEditingChangesParams,
-} from "@/ipc/types";
-import { VALID_IMAGE_MIME_TYPES } from "@/ipc/types/visual-editing";
-import { DYAD_MEDIA_DIR_NAME } from "@/ipc/utils/media_path_utils";
-import { ensureDyadGitignored } from "@/ipc/handlers/gitignoreUtils";
+  extractClassPrefixes,
+  stylesToTailwind,
+} from "../../../../utils/style-utils";
 import {
-  transformContent,
   analyzeComponent,
+  transformContent,
 } from "../../utils/visual_editing_utils";
-import { normalizePath } from "../../../../../shared/normalizePath";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { queueCloudSandboxSnapshotSync } from "@/ipc/utils/cloud_sandbox_provider";
-import { registerTrustedIpcHandler } from "@/ipc/handlers/trusted_handle";
 
 // Client allows 7.5 MB raw; base64 expands by ~4/3 plus data URL prefix
 const MAX_IMAGE_SIZE = Math.ceil((7.5 * 1024 * 1024) / 3) * 4 + 100; // ~10,485,860
@@ -231,7 +231,7 @@ export function registerVisualEditingHandlers() {
       const { appId, componentId } = analyseComponentParams;
       try {
         const [filePath, lineStr] = componentId.split(":");
-        const line = parseInt(lineStr, 10);
+        const line = Number.parseInt(lineStr, 10);
 
         if (!filePath || isNaN(line)) {
           return { isDynamic: false, hasStaticText: false, hasImage: false };

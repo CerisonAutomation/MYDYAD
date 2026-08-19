@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { Template } from "@/shared/templates";
+import { describe, expect, it } from "vitest";
 import { getAppBlueprintTemplateOptions } from "./appBlueprintTemplateOptions";
 
 const templates: Template[] = [

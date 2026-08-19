@@ -1,37 +1,37 @@
+import { and, desc, eq, like } from "drizzle-orm";
 import { db } from "../../db";
 import { chats, messages } from "../../db/schema";
-import { desc, eq, and, like } from "drizzle-orm";
 import type { ChatSearchResult, ChatSummary } from "../../lib/schemas";
 
-import log from "electron-log";
+import { withChatQueueLock } from "@/chat_stream/queue_lock";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { createTypedHandler } from "./base";
-import { entityDisposalBus } from "@/window_infrastructure/main/entity_disposal_bus";
-import { chatContracts } from "../types/chat";
-import { normalizeStoredChatMode } from "./chat_mode_resolution";
-import {
-  blockNewStreamsForChat,
-  cancelActiveStreamsForChat,
-} from "./chat_stream_handlers";
-import type { WebContents } from "electron";
-import {
-  rendererMessageColumns,
-  toRendererMessage,
-} from "../utils/renderer_chat_message";
-import { createChatForApp } from "../utils/chat_creation_utils";
-import {
-  getReferencedAppsForDisplay,
-  readStoredReferencedAppIds,
-} from "../utils/mention_apps";
-import { firstPromptCreationRegistry } from "../services/first_prompt_creation_service";
-import { userInputRegistry } from "@/user_input/main";
+import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
 import {
   beginChatActorMutation,
   settleChatActorsForDeletion,
 } from "@/ipc/services/chat_actor_deletion_service";
 import { waitForChatActorIdle } from "@/ipc/services/chat_actor_service";
-import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
-import { withChatQueueLock } from "@/chat_stream/queue_lock";
+import { userInputRegistry } from "@/user_input/main";
+import { entityDisposalBus } from "@/window_infrastructure/main/entity_disposal_bus";
+import type { WebContents } from "electron";
+import log from "electron-log";
+import { firstPromptCreationRegistry } from "../services/first_prompt_creation_service";
+import { chatContracts } from "../types/chat";
+import { createChatForApp } from "../utils/chat_creation_utils";
+import {
+  getReferencedAppsForDisplay,
+  readStoredReferencedAppIds,
+} from "../utils/mention_apps";
+import {
+  rendererMessageColumns,
+  toRendererMessage,
+} from "../utils/renderer_chat_message";
+import { createTypedHandler } from "./base";
+import { normalizeStoredChatMode } from "./chat_mode_resolution";
+import {
+  blockNewStreamsForChat,
+  cancelActiveStreamsForChat,
+} from "./chat_stream_handlers";
 
 const logger = log.scope("chat_handlers");
 

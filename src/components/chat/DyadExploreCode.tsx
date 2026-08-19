@@ -1,10 +1,8 @@
+import { ScanSearch } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useAutoCollapse } from "./useAutoCollapse";
-import { ScanSearch } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
 import {
   DyadBadge,
   DyadCard,
@@ -13,6 +11,8 @@ import {
   DyadExpandIcon,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
+import type { CustomTagState } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadExploreCodeProps {
   children?: ReactNode;

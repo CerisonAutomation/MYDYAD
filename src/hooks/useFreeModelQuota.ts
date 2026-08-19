@@ -1,8 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ipc, type FreeModelQuotaStatus } from "@/ipc/types";
+import { type FreeModelQuotaStatus, ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
-import { useSettings } from "./useSettings";
 import { isDyadProEnabled } from "@/lib/schemas";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "./useSettings";
 import { useUserBudgetInfo } from "./useUserBudgetInfo";
 
 const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;

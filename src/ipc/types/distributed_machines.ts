@@ -1,9 +1,4 @@
-import {
-  createClient,
-  createEventClient,
-  defineContract,
-  defineEvent,
-} from "../contracts/core";
+import { z } from "zod";
 import {
   MachineAddressSchema,
   MachineDispatchEnvelopeSchema,
@@ -13,7 +8,12 @@ import {
   MachineProtocolMismatchSchema,
   MachineSnapshotEnvelopeSchema,
 } from "../../distributed_machines/remote_protocol";
-import { z } from "zod";
+import {
+  createClient,
+  createEventClient,
+  defineContract,
+  defineEvent,
+} from "../contracts/core";
 
 export const distributedMachineContracts = {
   subscribe: defineContract({

@@ -1,5 +1,5 @@
-import type { VersionChangedFile } from "@/ipc/types";
 import type { UncommittedFile } from "@/hooks/useUncommittedFiles";
+import type { VersionChangedFile } from "@/ipc/types";
 
 export function getDisplayedVersionDiffPath(
   changes: VersionChangedFile[] | null,

@@ -10,8 +10,8 @@
 import { systemClock, uuidIdSource } from "@/state_machines/clock";
 import type { Clock, IdSource } from "@/state_machines/clock";
 import {
-  createInvocationRef,
   InvocationRegistry,
+  createInvocationRef,
   sameInvocationRef,
 } from "@/state_machines/invocation_ref";
 import { createTraceObserver } from "@/state_machines/trace";
@@ -19,15 +19,15 @@ import type { TransitionObserver } from "@/state_machines/types";
 import {
   CONNECTION_FLOW_INVOCATION_KIND,
   CONNECTION_FLOW_PROVIDERS,
-  DISCONNECTED_FLOW_STATE,
   type ConnectionFlowEvent,
   type ConnectionFlowFailureReason,
   type ConnectionFlowInvocationRef,
   type ConnectionFlowProvider,
   type ConnectionFlowState,
+  DISCONNECTED_FLOW_STATE,
   isActiveFlowState,
 } from "./state";
-import { transition, type IgnoreReason } from "./transition";
+import { type IgnoreReason, transition } from "./transition";
 
 export const DEFAULT_FLOW_TIMEOUTS_MS: Record<
   ConnectionFlowProvider,

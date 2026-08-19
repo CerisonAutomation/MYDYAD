@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  type FirstPromptDeps,
   createFirstPromptCommandRunner,
   getRequestedChatModeForFirstPrompt,
-  type FirstPromptDeps,
 } from "./commands";
 import { FirstPromptController } from "./controller";
 import type { FirstPromptPayload } from "./state";

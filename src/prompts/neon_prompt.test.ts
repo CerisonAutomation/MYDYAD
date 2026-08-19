@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  APP_FRAMEWORK_TYPES,
+  type AppFrameworkType,
+} from "@/lib/framework_constants";
 import addAuthenticationGuide from "./guides/add-authentication.md?raw";
 import addEmailVerificationGuide from "./guides/add-email-verification.md?raw";
 import addPasswordResetGuide from "./guides/add-password-reset.md?raw";
 import { filterGuideByFramework } from "./guides/filter_guide_by_framework";
 import { getNeonAvailableSystemPrompt } from "./neon_prompt";
-import {
-  APP_FRAMEWORK_TYPES,
-  type AppFrameworkType,
-} from "@/lib/framework_constants";
 
 // Stand-in for the real Neon client code that the caller injects. Using a
 // constant placeholder keeps snapshots stable and focused on the prompt

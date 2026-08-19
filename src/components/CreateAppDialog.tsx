@@ -1,8 +1,4 @@
-import { useTranslation } from "react-i18next";
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -11,16 +7,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCreateApp } from "@/hooks/useCreateApp";
-import { useCheckName } from "@/hooks/useCheckName";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAppFolderPreview } from "@/hooks/useAppFolderPreview";
+import { useCheckName } from "@/hooks/useCheckName";
+import { useCreateApp } from "@/hooks/useCreateApp";
 import { useDebounce } from "@/hooks/useDebounce";
-import { NEON_TEMPLATE_IDS, Template } from "@/shared/templates";
 import { useSelectChat } from "@/hooks/useSelectChat";
+import { NEON_TEMPLATE_IDS, type Template } from "@/shared/templates";
+import type React from "react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { Loader2 } from "lucide-react";
 import { neonTemplateHook } from "@/client_logic/template_hook";
 import { showError } from "@/lib/toast";
+import { Loader2 } from "lucide-react";
 
 interface CreateAppDialogProps {
   open: boolean;

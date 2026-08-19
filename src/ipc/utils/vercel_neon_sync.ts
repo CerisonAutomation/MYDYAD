@@ -1,25 +1,25 @@
-import log from "electron-log";
-import { eq } from "drizzle-orm";
-import { Vercel } from "@vercel/sdk";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { NeonAuthSupportedAuthProvider } from "@neondatabase/api-client";
+import type { Vercel } from "@vercel/sdk";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
 import { readSettings } from "../../main/settings";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { createVercelClient } from "./vercel_utils";
 import { getNeonClient } from "../../neon_admin/neon_management_client";
 import {
+  type NeonBranchType,
   combineWarnings,
   getSelectedDeployBranchType,
   resolveNeonBranchEnvVars,
-  type NeonBranchType,
 } from "./neon_utils";
 import {
-  buildVercelEnvPayload,
-  reconcileTrustedDomains,
   VERCEL_ENV_TARGETS,
   type VercelEnvTarget,
+  buildVercelEnvPayload,
+  reconcileTrustedDomains,
 } from "./vercel_neon_sync_helpers";
+import { createVercelClient } from "./vercel_utils";
 
 export {
   buildVercelEnvPayload,

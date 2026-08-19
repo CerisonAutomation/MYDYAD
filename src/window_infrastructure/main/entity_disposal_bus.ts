@@ -1,7 +1,7 @@
-import log from "electron-log";
 import { EntityDisposalRegistry } from "@/state_machines/entity_disposal";
+import log from "electron-log";
 import type { EntityDisposalEvent, VisibleEntity } from "../types";
-import { windowRegistry, type WindowRegistry } from "./window_registry";
+import { type WindowRegistry, windowRegistry } from "./window_registry";
 
 const logger = log.scope("entity_disposal_bus");
 const ENTITY_DISPOSAL_CHANNEL = "window:entity-disposed";

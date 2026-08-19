@@ -1,10 +1,10 @@
 // @vitest-environment node
 
 import fs from "node:fs";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { apps, chats } from "@/db/schema";
 import { chatStreamDefinition } from "@/chat_stream/definition";
 import { chatStreamKey } from "@/chat_stream/transport";
+import { apps, chats } from "@/db/schema";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import "@/ipc/services/distributed_machine_host";
 import { remoteMachineHost } from "@/ipc/services/distributed_machine_actor_host";
 
@@ -20,8 +20,8 @@ vi.mock("electron", async () => {
 
 import { getActiveStreamCount } from "@/ipc/handlers/chat_stream_handlers";
 import {
-  setupChatFlowHarness,
   type ChatFlowHarness,
+  setupChatFlowHarness,
 } from "@/testing/chat_flow_harness";
 
 describe("chat flow harness disposal", () => {

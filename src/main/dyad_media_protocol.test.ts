@@ -8,16 +8,16 @@ import { pathToFileURL } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  buildDyadMediaUrlForApp,
-  buildDyadMediaThumbnailUrl,
-  buildDyadMediaUrl,
-} from "../lib/dyadMediaUrl";
-import {
-  createPlatformThumbnailFromPath,
-  getMediaThumbnailCacheDirectory,
   MAX_MEDIA_THUMBNAIL_OUTPUT_BYTES,
   MAX_MEDIA_THUMBNAIL_SOURCE_BYTES,
+  createPlatformThumbnailFromPath,
+  getMediaThumbnailCacheDirectory,
 } from "../ipc/utils/media_thumbnail";
+import {
+  buildDyadMediaThumbnailUrl,
+  buildDyadMediaUrl,
+  buildDyadMediaUrlForApp,
+} from "../lib/dyadMediaUrl";
 import { createDyadMediaProtocolHandler } from "./dyad_media_protocol";
 
 const IMAGE_FIXTURE_PATH = path.join(

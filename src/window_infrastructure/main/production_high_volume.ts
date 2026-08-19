@@ -1,7 +1,7 @@
-import type { WebContents } from "electron";
 import type { ChatResponseChunk } from "@/ipc/types/chat";
 import type { AppOutput } from "@/ipc/types/misc";
 import { safeSend } from "@/ipc/utils/safe_sender";
+import type { WebContents } from "electron";
 import { HighVolumeWindowInterests } from "./high_volume_interests";
 import { windowRegistry } from "./window_registry";
 

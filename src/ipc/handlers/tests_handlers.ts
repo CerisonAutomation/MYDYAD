@@ -1,14 +1,26 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { glob } from "glob";
-import log from "electron-log";
-import type { IpcMainInvokeEvent } from "electron";
+import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { broadcastToRegisteredWindows } from "@/ipc/utils/window_broadcast";
+import { readSettings } from "@/main/settings";
 import { eq } from "drizzle-orm";
+import type { IpcMainInvokeEvent } from "electron";
+import log from "electron-log";
+import { glob } from "glob";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
-import { createTypedHandler } from "./base";
+import {
+  appOperationCoordinator,
+  readAppResource,
+} from "../services/app_operation_coordinator";
+import { gitService } from "../services/git_service";
+import {
+  type PreparedIsolation,
+  prepareIsolatedTestDatabase,
+} from "../services/isolated_test_db";
+import { isRecordingActive } from "../services/recording_registry";
 import {
   E2E_TEST_DIR,
   TEST_SPEC_EXT_ALTERNATION,
@@ -22,44 +34,32 @@ import type {
   TestResult,
   TestsRunStatePayload,
 } from "../types/tests";
+import { queueCloudSandboxSnapshotSync } from "../utils/cloud_sandbox_provider";
+import { gitAdd, gitRemove } from "../utils/git_utils";
 import {
   detectLegacyPlaywrightSpecs,
   legacyToE2ePath,
   normalizeLegacyTestFile,
   planLegacyMigration,
 } from "../utils/legacy_test_migration";
+import { parseTestCases } from "../utils/parse_test_cases";
 import { assertMutationPathAllowed, safeJoin } from "../utils/path_utils";
-import { gitAdd, gitRemove } from "../utils/git_utils";
-import { gitService } from "../services/git_service";
-import { runningApps } from "../utils/process_manager";
 import {
-  appOperationCoordinator,
-  readAppResource,
-} from "../services/app_operation_coordinator";
-import { broadcastToRegisteredWindows } from "@/ipc/utils/window_broadcast";
-import { spawnStreaming } from "../utils/spawn_streaming";
-import {
-  ensurePlaywrightBootstrap,
   DYAD_CONFIG_FILENAME,
   TEST_BASE_URL_ENV,
   TEST_RESULTS_JSON,
+  ensurePlaywrightBootstrap,
 } from "../utils/playwright_bootstrap";
 import {
-  parsePlaywrightReport,
   PLAYWRIGHT_REPORT_ERROR_FILE,
+  parsePlaywrightReport,
 } from "../utils/playwright_report";
-import { parseTestCases } from "../utils/parse_test_cases";
+import { runningApps } from "../utils/process_manager";
 import { getPackageManagerCommandEnv } from "../utils/socket_firewall";
-import { queueCloudSandboxSnapshotSync } from "../utils/cloud_sandbox_provider";
+import { spawnStreaming } from "../utils/spawn_streaming";
 import { sendTelemetryEvent } from "../utils/telemetry";
-import {
-  prepareIsolatedTestDatabase,
-  type PreparedIsolation,
-} from "../services/isolated_test_db";
 import { readTestScreenshotDataUrl } from "../utils/test_screenshot";
-import { isRecordingActive } from "../services/recording_registry";
-import { readSettings } from "@/main/settings";
-import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("tests_handlers");
 

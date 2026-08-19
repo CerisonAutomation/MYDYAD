@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { usePromoMessage, PromoMessage } from "./PromoMessage";
+import { PromoMessage, usePromoMessage } from "./PromoMessage";
 
 describe("PromoMessage", () => {
   it("usePromoMessage always returns not visible", () => {

@@ -1,5 +1,5 @@
+import { Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
-import { X, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface LocalAgentNewChatToastProps {

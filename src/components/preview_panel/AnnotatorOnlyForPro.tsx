@@ -1,6 +1,6 @@
-import { Lock, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ipc } from "@/ipc/types";
+import { ArrowLeft, Lock } from "lucide-react";
 
 interface AnnotatorOnlyForProProps {
   onGoBack: () => void;

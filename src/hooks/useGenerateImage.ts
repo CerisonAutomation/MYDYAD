@@ -1,21 +1,21 @@
-import { useCallback, useRef } from "react";
-import { useMachineMutation } from "@/distributed_machines/use_machine_mutation";
+import type { PreparedRequest } from "@/distributed_machines/prepared_request";
 import type { RequestId } from "@/distributed_machines/request_identity";
-import { showError } from "@/lib/toast";
+import { useMachineMutation } from "@/distributed_machines/use_machine_mutation";
 import {
   useImageGenerationActor,
   useImageGenerationRequestActor,
+} from "@/image_generation/hooks";
+import type {
+  ImageGenerationAdmission,
+  ImageGenerationAdmissionRefusal,
 } from "@/image_generation/hooks";
 import type {
   ImageGenerationJobView,
   ImageGenerationOperationOutcome,
   StartImageGenerationParams,
 } from "@/image_generation/state";
-import type { PreparedRequest } from "@/distributed_machines/prepared_request";
-import type {
-  ImageGenerationAdmission,
-  ImageGenerationAdmissionRefusal,
-} from "@/image_generation/hooks";
+import { showError } from "@/lib/toast";
+import { useCallback, useRef } from "react";
 
 interface StartMutationInput {
   readonly params: StartImageGenerationParams;

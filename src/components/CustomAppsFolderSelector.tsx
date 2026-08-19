@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { showError, showSuccess } from "@/lib/toast";
+import { Label } from "@/components/ui/label";
 import { ipc } from "@/ipc/types";
+import { showError, showSuccess } from "@/lib/toast";
 import { FolderOpen, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function CustomAppsFolderSelector() {
   const [isSelectingPath, setIsSelectingPath] = useState(false);

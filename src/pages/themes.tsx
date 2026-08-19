@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useCustomThemes } from "@/hooks/useCustomThemes";
 import { CustomThemeDialog } from "@/components/CustomThemeDialog";
-import { Button } from "@/components/ui/button";
-import { Plus, Palette } from "lucide-react";
 import { LibraryCard } from "@/components/LibraryCard";
+import { Button } from "@/components/ui/button";
+import { useCustomThemes } from "@/hooks/useCustomThemes";
+import { Palette, Plus } from "lucide-react";
+import { useState } from "react";
 
 export default function ThemesPage() {
   const { customThemes, isLoading } = useCustomThemes();

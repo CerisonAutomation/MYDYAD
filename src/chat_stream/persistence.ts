@@ -1,5 +1,4 @@
 import { serialize } from "node:v8";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type * as schema from "@/db/schema";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
@@ -7,13 +6,14 @@ import {
   rejectDueFollowUp,
 } from "@/ipc/services/user_input_followup_service";
 import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import type { ChatStreamHostCommand } from "./host_state";
+import { withChatQueueLock } from "./queue_lock";
 import {
   CHAT_STREAM_MAX_QUEUE_BYTES,
   type ChatQueueEntry,
   type SerializableChatTurnIntent,
 } from "./transport";
-import type { ChatStreamHostCommand } from "./host_state";
-import { withChatQueueLock } from "./queue_lock";
 
 type ChatDatabase = BetterSQLite3Database<typeof schema>;
 

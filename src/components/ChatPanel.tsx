@@ -1,46 +1,24 @@
-import {
-  lazy,
-  Suspense,
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
-import { useTranslation } from "react-i18next";
+import { ipc } from "@/ipc/types";
+import { AnimatePresence, type Transition, motion } from "framer-motion";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { selectAtom } from "jotai/utils";
-import { AnimatePresence, motion, type Transition } from "framer-motion";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
 import {
   chatMessagesByIdAtom,
   scrollToBottomRequestedChatIdsAtom,
 } from "../atoms/chatAtoms";
-import { ipc } from "@/ipc/types";
 
-import { ChatHeader } from "./chat/ChatHeader";
-import { MessagesList } from "./chat/MessagesList";
-import { ChatInput } from "./chat/ChatInput";
-import { VersionPane } from "./chat/VersionPane";
-import { FreeAgentQuotaBanner } from "./chat/FreeAgentQuotaBanner";
-import { NotificationBanner } from "./chat/NotificationBanner";
-import { SupabaseLegacyKeyBanner } from "./chat/SupabaseLegacyKeyBanner";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-import { ArrowDown } from "lucide-react";
-import { useSettings } from "@/hooks/useSettings";
-import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
-import { useChatMode } from "@/hooks/useChatMode";
-import { isAgent2Enabled } from "@/lib/schemas";
-import { terminalOpenByChatIdAtom } from "@/atoms/terminalAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useReducedMotionPref } from "@/hooks/useReducedMotion";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { useVersionPreview } from "@/hooks/useVersionPreview";
-import { useChatStreamState } from "@/hooks/useChatStream";
+import { terminalOpenByChatIdAtom } from "@/atoms/terminalAtoms";
 import {
   useChatStreamManager,
   useStreamFinished,
@@ -50,11 +28,33 @@ import {
   selectStreamError,
   streamInvocationRef,
 } from "@/chat_stream/transition";
-import { automaticChatScrollReason } from "./chatPanelScroll";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useChatMessages,
   useChatMessagesLoaded,
 } from "@/hooks/useChatMessages";
+import { useChatMode } from "@/hooks/useChatMode";
+import { useChatStreamState } from "@/hooks/useChatStream";
+import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useReducedMotionPref } from "@/hooks/useReducedMotion";
+import { useSettings } from "@/hooks/useSettings";
+import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { isAgent2Enabled } from "@/lib/schemas";
+import { ArrowDown } from "lucide-react";
+import { ChatHeader } from "./chat/ChatHeader";
+import { ChatInput } from "./chat/ChatInput";
+import { FreeAgentQuotaBanner } from "./chat/FreeAgentQuotaBanner";
+import { MessagesList } from "./chat/MessagesList";
+import { NotificationBanner } from "./chat/NotificationBanner";
+import { SupabaseLegacyKeyBanner } from "./chat/SupabaseLegacyKeyBanner";
+import { VersionPane } from "./chat/VersionPane";
+import { automaticChatScrollReason } from "./chatPanelScroll";
 
 const TerminalPanel = lazy(() => import("./chat/TerminalPanel"));
 

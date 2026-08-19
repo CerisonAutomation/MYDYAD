@@ -1,6 +1,6 @@
-import { spawn, type ChildProcess } from "child_process";
-import treeKill from "tree-kill";
+import { type ChildProcess, spawn } from "child_process";
 import log from "electron-log/main";
+import treeKill from "tree-kill";
 import { buildWindowsCommandInvocation } from "./windows_command";
 
 const logger = log.scope("spawn_streaming");

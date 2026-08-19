@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
-import type { ImageGenerationJobView } from "@/image_generation/state";
+import type { RequestId } from "@/distributed_machines/request_identity";
 import {
   selectChatImageGenerationJobs,
   selectImageGenerationPendingCount,
 } from "@/image_generation/selectors";
-import type { RequestId } from "@/distributed_machines/request_identity";
+import type { ImageGenerationJobView } from "@/image_generation/state";
+import { describe, expect, it } from "vitest";
 
 const baseJob: ImageGenerationJobView = {
   id: "job-1",

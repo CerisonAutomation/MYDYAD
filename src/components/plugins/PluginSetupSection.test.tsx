@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
 import type { McpServer } from "@/ipc/types";
 import type { CatalogInput } from "@/ipc/types/mcp_catalog";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { PluginSetupSection } from "./PluginSetupSection";
 
 vi.mock("./AddPluginDialog", () => ({

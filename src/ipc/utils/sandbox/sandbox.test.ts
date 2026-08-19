@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   appendAttachmentManifestEntries,
   appendAttachmentManifestEntriesWithLogicalNames,
@@ -17,16 +16,17 @@ import {
   sandboxListFiles,
   sandboxReadFile,
 } from "@/ipc/utils/sandbox/capabilities";
-import {
-  isSandboxSupportedPlatform,
-  runSandboxScript,
-} from "@/ipc/utils/sandbox/runner";
 import { executeSandboxScriptInProcess } from "@/ipc/utils/sandbox/execution";
 import {
   SANDBOX_LLM_OUTPUT_LIMIT_BYTES,
   SANDBOX_READ_FILE_LIMIT_BYTES,
   SANDBOX_UI_OUTPUT_LIMIT_BYTES,
 } from "@/ipc/utils/sandbox/limits";
+import {
+  isSandboxSupportedPlatform,
+  runSandboxScript,
+} from "@/ipc/utils/sandbox/runner";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -9,13 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { showError, showSuccess } from "@/lib/toast";
 import { useAppCollections } from "@/hooks/useAppCollections";
-import { buildCollectionNameByAppId } from "@/lib/appCollections";
-import type { ListedApp } from "@/ipc/types/app";
 import type { AppCollection } from "@/hooks/useAppCollections";
+import type { ListedApp } from "@/ipc/types/app";
+import { buildCollectionNameByAppId } from "@/lib/appCollections";
+import { showError, showSuccess } from "@/lib/toast";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface AddAppsToCollectionDialogProps {
   open: boolean;

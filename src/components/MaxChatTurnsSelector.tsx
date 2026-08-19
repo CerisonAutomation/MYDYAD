@@ -1,5 +1,3 @@
-import React from "react";
-import { useSettings } from "@/hooks/useSettings";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -9,6 +7,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MAX_CHAT_TURNS_IN_CONTEXT } from "@/constants/settings_constants";
+import { useSettings } from "@/hooks/useSettings";
+import type React from "react";
 import { useTranslation } from "react-i18next";
 
 interface OptionInfo {
@@ -57,7 +57,7 @@ export const MaxChatTurnsSelector: React.FC = () => {
     if (value === "default") {
       updateSettings({ maxChatTurnsInContext: undefined });
     } else {
-      const numValue = parseInt(value, 10);
+      const numValue = Number.parseInt(value, 10);
       updateSettings({ maxChatTurnsInContext: numValue });
     }
   };

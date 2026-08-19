@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import {
   CommandExecutionError,
   SOCKET_FIREWALL_WARNING_MESSAGE,
 } from "@/ipc/utils/socket_firewall";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ExecuteAddDependencyError } from "./executeAddDependency";
 
 const mocks = vi.hoisted(() => ({
@@ -119,8 +119,8 @@ vi.mock("./executeAddDependency", async () => {
 
 import { db } from "../../db";
 import { gitAdd, gitCommit, hasStagedChanges } from "../utils/git_utils";
-import { processFullResponseActions } from "./response_processor";
 import { resolveSelfAlias } from "../utils/path_test_utils";
+import { processFullResponseActions } from "./response_processor";
 
 describe("processFullResponseActions add dependency errors", () => {
   beforeEach(() => {

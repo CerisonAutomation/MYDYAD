@@ -1,9 +1,9 @@
-import {
-  type UserSettings,
-  type VertexProviderSetting,
-  type AzureProviderSetting,
-} from "./schemas";
 import { PROVIDER_TO_ENV_VAR } from "../ipc/shared/language_model_constants";
+import type {
+  AzureProviderSetting,
+  UserSettings,
+  VertexProviderSetting,
+} from "./schemas";
 
 export interface ProviderCheckOptions {
   settings: UserSettings | null;

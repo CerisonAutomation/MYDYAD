@@ -1,18 +1,18 @@
-import React, { useState } from "react";
 import type { QueuedMessageItem } from "@/atoms/chatAtoms";
+import { cn } from "@/lib/utils";
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronDown,
   ChevronUp,
   ListOrdered,
-  Pencil,
-  Trash2,
-  ArrowUp,
-  ArrowDown,
   Paperclip,
-  PlayIcon,
   PauseIcon,
+  Pencil,
+  PlayIcon,
+  Trash2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface QueuedMessagesListProps {
   messages: QueuedMessageItem[];

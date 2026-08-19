@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import {
   getRouteSidebarPanel,
   getSelectedSidebarPanel,
   isSidebarItemActive,
   shouldShowSelectedAppChatList,
 } from "@/components/app-sidebar-state";
+import { describe, expect, it } from "vitest";
 
 describe("app sidebar state", () => {
   it("folds chat routes into the Apps panel", () => {

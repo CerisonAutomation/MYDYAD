@@ -1,23 +1,23 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, X, Sparkles, Lock, Link } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  useGenerateThemePrompt,
   useGenerateThemeFromUrl,
+  useGenerateThemePrompt,
   useThemeGenerationModelOptions,
 } from "@/hooks/useCustomThemes";
-import { ipc } from "@/ipc/types";
-import { showError } from "@/lib/toast";
-import { toast } from "sonner";
 import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { ipc } from "@/ipc/types";
 import type {
   ThemeGenerationMode,
   ThemeGenerationModel,
   ThemeInputSource,
 } from "@/ipc/types";
+import { showError } from "@/lib/toast";
+import { Link, Loader2, Lock, Sparkles, Upload, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 // Image upload constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per image (raw file size)

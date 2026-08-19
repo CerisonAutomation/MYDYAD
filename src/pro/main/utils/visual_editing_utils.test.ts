@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { transformContent, analyzeComponent } from "./visual_editing_utils";
+import { describe, expect, it } from "vitest";
+import { analyzeComponent, transformContent } from "./visual_editing_utils";
 
 describe("transformContent", () => {
   describe("className manipulation", () => {

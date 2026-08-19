@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useImageGenerationJobs,
   useImageGenerationPendingCount,
 } from "@/image_generation/hooks";
+import { Clock } from "lucide-react";
+import { useState } from "react";
 import { ImageGenerationProgressDialog } from "./ImageGenerationProgressDialog";
 
 export function ImageGenerationProgressButton() {

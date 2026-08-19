@@ -1,35 +1,5 @@
-import { type Message } from "@/ipc/types";
-import { DyadMarkdownParser } from "./DyadMarkdownParser";
-import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
-import { DyadAttachment, type AttachmentSize } from "./DyadAttachment";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { StreamingLoadingAnimation } from "./StreamingLoadingAnimation";
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  GitCommit,
-  Copy,
-  Check,
-  Info,
-  Bot,
-  Ban,
-  Undo2,
-  Loader2,
-} from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
-import { useVersions } from "@/hooks/useVersions";
-import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useChatStreamHasPreview } from "@/hooks/useChatStream";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,17 +12,47 @@ import {
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useChatStreamHasPreview } from "@/hooks/useChatStream";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { useVersions } from "@/hooks/useVersions";
+import type { Message } from "@/ipc/types";
+import {
   isCancelledResponseContent,
   stripCancelledResponseNotice,
 } from "@/shared/chatCancellation";
-import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { format, formatDistanceToNow } from "date-fns";
+import { useAtomValue } from "jotai";
+import {
+  Ban,
+  Bot,
+  Check,
+  CheckCircle,
+  Clock,
+  Copy,
+  GitCommit,
+  Info,
+  Loader2,
+  Undo2,
+  XCircle,
+} from "lucide-react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { type AttachmentSize, DyadAttachment } from "./DyadAttachment";
+import { DyadMarkdownParser } from "./DyadMarkdownParser";
+import { StreamingLoadingAnimation } from "./StreamingLoadingAnimation";
+import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
+import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 import {
   extractAttachments,
-  stripAttachmentInfo,
   extractToolCallSummary,
   formatToolCallSummary,
+  stripAttachmentInfo,
 } from "./chat-message-utils";
-import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
 
 // Format the message timestamp - defined outside component to avoid
 // recreation on every render.

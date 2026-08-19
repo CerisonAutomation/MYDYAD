@@ -1,21 +1,21 @@
-import { ipc } from "@/ipc/types";
-import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
-import { useFreeModelQuota } from "@/hooks/useFreeModelQuota";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { AI_STREAMING_ERROR_MESSAGE_PREFIX } from "@/shared/texts";
-import {
-  X,
-  ExternalLink as ExternalLinkIcon,
-  CircleArrowUp,
-  MessageSquarePlus,
-} from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
+import { useFreeModelQuota } from "@/hooks/useFreeModelQuota";
+import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { ipc } from "@/ipc/types";
+import { AI_STREAMING_ERROR_MESSAGE_PREFIX } from "@/shared/texts";
+import {
+  CircleArrowUp,
+  ExternalLink as ExternalLinkIcon,
+  MessageSquarePlus,
+  X,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export function ChatErrorBox({
   onDismiss,

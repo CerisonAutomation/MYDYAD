@@ -1,7 +1,7 @@
 import { SnapshotStore } from "@/state_machines/snapshot_store";
 import {
-  observeTransition,
   type TransitionObserver,
+  observeTransition,
 } from "@/state_machines/types";
 import {
   INITIAL_PREVIEW_IFRAME_STATE,

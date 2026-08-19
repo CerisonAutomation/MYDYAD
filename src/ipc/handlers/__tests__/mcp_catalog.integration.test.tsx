@@ -1,25 +1,25 @@
+import { type ChildProcess, spawn } from "node:child_process";
 // Drives the curated-catalog section of the Plugins page over the
 // real mcp:* IPC handlers: the catalog is served by a local HTTP
 // server, the entry points at a real fake MCP server, and adding it
 // goes through the real add-from-catalog flow.
 import http from "node:http";
 import path from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { ipc } from "@/ipc/types";
-import { clearMcpCatalogCacheForTests } from "@/ipc/shared/remote_mcp_catalog";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
-import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { mcpServers } from "@/db/schema";
+import { clearMcpCatalogCacheForTests } from "@/ipc/shared/remote_mcp_catalog";
+import { ipc } from "@/ipc/types";
 import { decryptFromString } from "@/ipc/utils/mcp_oauth_provider";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
+import { eq } from "drizzle-orm";
 
 describe("Plugins catalog (integration)", () => {
   let harness: HybridChatHarness;

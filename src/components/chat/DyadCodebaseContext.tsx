@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
 import { Code2, FileText } from "lucide-react";
-import { CustomTagState } from "./stateTypes";
+import type React from "react";
+import { useEffect, useState } from "react";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadCodebaseContextProps {
   children: React.ReactNode;

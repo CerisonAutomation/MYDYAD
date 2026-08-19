@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { ScreenshotPostMessage } from "./commands";
 import { useScreenshotManager } from "./ScreenshotProvider";
+import type { ScreenshotPostMessage } from "./commands";
 import type { ScreenshotEvent } from "./state";
 
 export type ScreenshotAdapterEvent =

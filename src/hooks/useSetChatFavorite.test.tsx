@@ -1,9 +1,9 @@
+import { queryKeys } from "@/lib/queryKeys";
+import type { ChatSummary } from "@/lib/schemas";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChatSummary } from "@/lib/schemas";
-import { queryKeys } from "@/lib/queryKeys";
 import { useSetChatFavorite } from "./useSetChatFavorite";
 
 const setChatFavoriteMock = vi.hoisted(() => vi.fn());

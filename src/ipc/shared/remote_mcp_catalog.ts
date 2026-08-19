@@ -1,9 +1,9 @@
+import {
+  type McpCatalogEntry,
+  McpCatalogEntrySchema,
+} from "@/ipc/types/mcp_catalog";
 import log from "electron-log";
 import { z } from "zod";
-import {
-  McpCatalogEntrySchema,
-  type McpCatalogEntry,
-} from "@/ipc/types/mcp_catalog";
 
 const logger = log.scope("remote_mcp_catalog");
 

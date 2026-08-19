@@ -1,13 +1,13 @@
-import { useCallback, useRef, useState } from "react";
-import { useSetAtom } from "jotai";
-import { useNavigate } from "@tanstack/react-router";
-import { ipc } from "@/ipc/types";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { useChatStreamManager } from "@/chat_stream/ChatStreamProvider";
-import { showError } from "@/lib/toast";
 import { useChats } from "@/hooks/useChats";
 import { useLoadApp } from "@/hooks/useLoadApp";
+import { ipc } from "@/ipc/types";
+import { showError } from "@/lib/toast";
+import { useNavigate } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
+import { useCallback, useRef, useState } from "react";
 
 interface UseResolveMergeConflictsWithAIProps {
   appId: number;

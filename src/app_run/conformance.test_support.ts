@@ -2,8 +2,8 @@ import {
   defineMachineConformance,
   defineVariantInventory,
 } from "@/distributed_machines/testing/machine_conformance";
-import type { AppRunWireEvent } from "./transport";
 import type { RunState } from "./state";
+import type { AppRunWireEvent } from "./transport";
 
 const appRunStateVariants = defineVariantInventory<RunState["type"]>()([
   "idle",

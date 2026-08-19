@@ -1,8 +1,8 @@
-import { FileText, X, MessageSquare, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
 import type { FileAttachment } from "@/ipc/types";
+import { FileText, MessageSquare, Upload, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface AttachmentsListProps {
   attachments: FileAttachment[];

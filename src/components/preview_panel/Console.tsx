@@ -1,15 +1,15 @@
+import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import type { ConsoleEntry } from "@/ipc/types";
-import { useAtomValue } from "jotai";
-import { ipc } from "@/ipc/types";
-import { useEffect, useRef, useState, useMemo, useCallback, memo } from "react";
-import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import { ConsoleEntryComponent } from "./ConsoleEntry";
-import { ConsoleFilters } from "./ConsoleFilters";
 import { useSettings } from "@/hooks/useSettings";
+import type { ConsoleEntry } from "@/ipc/types";
+import { ipc } from "@/ipc/types";
 import { showError } from "@/lib/toast";
 import { useConsoleEntries } from "@/preview_console/hooks";
-import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
+import { useAtomValue } from "jotai";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
+import { ConsoleEntryComponent } from "./ConsoleEntry";
+import { ConsoleFilters } from "./ConsoleFilters";
 
 // Placeholder component shown during fast scrolling
 const ScrollSeekPlaceholder = () => {

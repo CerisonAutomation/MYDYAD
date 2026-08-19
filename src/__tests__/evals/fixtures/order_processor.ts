@@ -2,8 +2,8 @@
 
 import { createLogger } from "./logger";
 import type {
-  Order,
   InventoryItem,
+  Order,
   PaymentMethod,
   ShippingAddress,
 } from "./types";

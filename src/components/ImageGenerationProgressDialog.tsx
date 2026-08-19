@@ -1,31 +1,31 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import {
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Ban,
-  ChevronDown,
-  ChevronUp,
-  ImageIcon,
-} from "lucide-react";
+import { ImageLightbox } from "@/components/chat/ImageLightbox";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useGenerateImage } from "@/hooks/useGenerateImage";
 import { useImageGenerationJobs } from "@/image_generation/hooks";
 import type {
   ImageGenerationJobView,
   ImageGenerationStatus,
 } from "@/image_generation/state";
 import { buildDyadMediaUrlForApp } from "@/lib/dyadMediaUrl";
-import { useGenerateImage } from "@/hooks/useGenerateImage";
-import { ImageLightbox } from "@/components/chat/ImageLightbox";
+import {
+  Ban,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ImageIcon,
+  Loader2,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 const THEME_LABELS: Record<string, string> = {
   plain: "Plain",

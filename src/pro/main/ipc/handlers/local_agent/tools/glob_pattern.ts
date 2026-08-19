@@ -6,6 +6,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { ToolDefinition, AgentContext } from "./types";
 import { resolveTargetAppPath } from "./resolve_app_context";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const globPatternSchema = z.object({
   pattern: z
@@ -96,7 +97,7 @@ export const globPatternTool: ToolDefinition<
     const { pattern, exclude = [] } = args;
 
     if (!pattern) {
-      throw new Error("pattern is required");
+      throw new DyadError("pattern is required", DyadErrorKind.Validation);
     }
 
     const matcher = globToRegex(pattern);

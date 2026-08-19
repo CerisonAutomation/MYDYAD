@@ -1,8 +1,8 @@
-import { Bell } from "lucide-react";
-import { SkippableBanner } from "./SkippableBanner";
-import { MacNotificationGuideDialog } from "../MacNotificationGuideDialog";
 import { useEnableNotifications } from "@/hooks/useEnableNotifications";
 import { useSettings } from "@/hooks/useSettings";
+import { Bell } from "lucide-react";
+import { MacNotificationGuideDialog } from "../MacNotificationGuideDialog";
+import { SkippableBanner } from "./SkippableBanner";
 
 export function NotificationBanner() {
   const { settings, updateSettings } = useSettings();

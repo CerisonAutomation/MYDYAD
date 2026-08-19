@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { parseSearchReplaceBlocks } from "@/pro/shared/search_replace_parser";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Create mock logger functions that we can spy on
 const mockError = vi.fn();

@@ -1,4 +1,4 @@
-import { hasDyadProKey, type UserSettings } from "@/lib/schemas";
+import { type UserSettings, hasDyadProKey } from "@/lib/schemas";
 
 type TelemetryProperties = Record<string, unknown> | undefined;
 

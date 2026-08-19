@@ -1,4 +1,3 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   PreviewCommand,
   PreviewEvent,
@@ -6,18 +5,19 @@ import type {
 } from "@/version_preview/state";
 import { CLOSED_STATE } from "@/version_preview/state";
 import { transition } from "@/version_preview/transition";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { replayTrace } from "./testing";
 import {
   createReplayTraceObserver,
   createTraceObserver,
   getTraceLog,
 } from "./trace";
 import {
+  type TransitionResult,
   change,
   observeTransition,
   stay,
-  type TransitionResult,
 } from "./types";
-import { replayTrace } from "./testing";
 
 let sequence = 0;
 

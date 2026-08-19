@@ -1,5 +1,3 @@
-import { describe, expect, it } from "vitest";
-import { createStore } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import {
   applyTestRunFinishedAtom,
@@ -13,6 +11,8 @@ import {
   testRunStateByAppIdAtom,
   testSpecsByAppIdAtom,
 } from "@/atoms/testRuntimeAtoms";
+import { createStore } from "jotai";
+import { describe, expect, it } from "vitest";
 
 describe("test runtime atoms", () => {
   it("clears specs and run state for one app", () => {

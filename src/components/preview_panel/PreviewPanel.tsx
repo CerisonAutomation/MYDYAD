@@ -1,13 +1,23 @@
-import { useAtomValue } from "jotai";
-import { previewModeAtom, selectedAppIdAtom } from "../../atoms/appAtoms";
 import { usePreviewReloadToken } from "@/hooks/useAppRun";
 import { usePreviewIframeManager } from "@/preview_iframe/PreviewIframeProvider";
+import { useAtomValue } from "jotai";
+import { previewModeAtom, selectedAppIdAtom } from "../../atoms/appAtoms";
 
-import { CodeView } from "./CodeView";
-import { PreviewIframe } from "./PreviewIframe";
-import { PreviewToolbar } from "./PreviewToolbar";
-import { Problems } from "./Problems";
-import { ConfigurePanel } from "./ConfigurePanel";
+import { Button } from "@/components/ui/button";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
+import { useSettings } from "@/hooks/useSettings";
+import { useSupabase } from "@/hooks/useSupabase";
+import { useTestRecorder } from "@/hooks/useTestRecorder";
+import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { showError } from "@/lib/toast";
+import { useLatestConsoleEntry } from "@/preview_console/hooks";
+import { selectPreviewError } from "@/preview_iframe/state";
+import { usePreviewIframeController } from "@/preview_iframe/usePreviewIframe";
+import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   ChevronDown,
@@ -20,34 +30,24 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  Group as PanelGroup,
   Panel,
+  Group as PanelGroup,
   Separator as PanelResizeHandle,
 } from "react-resizable-panels";
+import { CodeView } from "./CodeView";
+import { ConfigurePanel } from "./ConfigurePanel";
 import { Console } from "./Console";
-import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
+import { PackageManagerWarningBanner } from "./PackageManagerWarningBanner";
+import { PlanPanel } from "./PlanPanel";
+import { PreviewIframe } from "./PreviewIframe";
+import { PreviewToolbar } from "./PreviewToolbar";
+import { Problems } from "./Problems";
 import { PublishPanel } from "./PublishPanel";
+import { RecordingBannerHost } from "./RecordingBannerHost";
 import { SecurityPanel } from "./SecurityPanel";
 import { TestsPanel } from "./TestsPanel";
-import { PlanPanel } from "./PlanPanel";
-import { PackageManagerWarningBanner } from "./PackageManagerWarningBanner";
-import { useSupabase } from "@/hooks/useSupabase";
-import { useTranslation } from "react-i18next";
-import { ipc } from "@/ipc/types";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import { useQuery } from "@tanstack/react-query";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { Button } from "@/components/ui/button";
-import { useSettings } from "@/hooks/useSettings";
-import { showError } from "@/lib/toast";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { useLatestConsoleEntry } from "@/preview_console/hooks";
-import { usePreviewIframeController } from "@/preview_iframe/usePreviewIframe";
-import { selectPreviewError } from "@/preview_iframe/state";
-import { useTestRecorder } from "@/hooks/useTestRecorder";
-import { RecordingBannerHost } from "./RecordingBannerHost";
 
 interface ConsoleHeaderProps {
   isOpen: boolean;

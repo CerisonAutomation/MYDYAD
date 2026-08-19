@@ -1,17 +1,17 @@
 import {
+  LineStats,
+  getStatusBadgeClassName,
+  getStatusIcon,
+  getStatusLabel,
+} from "@/components/chat/uncommittedFileStatus";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import type { UncommittedFile } from "@/hooks/useUncommittedFiles";
-import {
-  getStatusIcon,
-  getStatusLabel,
-  getStatusBadgeClassName,
-  LineStats,
-} from "@/components/chat/uncommittedFileStatus";
+import { cn } from "@/lib/utils";
 
 interface CommitFileListProps {
   files: UncommittedFile[];

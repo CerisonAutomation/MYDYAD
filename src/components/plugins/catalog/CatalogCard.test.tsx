@@ -1,6 +1,6 @@
+import type { McpCatalogEntry } from "@/ipc/types/mcp_catalog";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { McpCatalogEntry } from "@/ipc/types/mcp_catalog";
 import { CatalogCard, type CatalogCardStatus } from "./CatalogCard";
 
 const entry: McpCatalogEntry = {

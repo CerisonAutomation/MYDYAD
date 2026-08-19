@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +8,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Save, Edit2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Edit2, Plus, Save } from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SLUG_REGEX = /^[a-zA-Z0-9-]*$/;
 

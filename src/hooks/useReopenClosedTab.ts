@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useSelectChat } from "./useSelectChat";
 import { closedTabHistoryAtom, popClosedTabAtom } from "@/atoms/chatAtoms";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useCallback } from "react";
+import { useSelectChat } from "./useSelectChat";
 
 export function useReopenClosedTab() {
   const closedTabHistory = useAtomValue(closedTabHistoryAtom);

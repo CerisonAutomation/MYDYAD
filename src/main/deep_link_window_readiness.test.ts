@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
 import { createDeepLinkQueue } from "@/main/deep_link_queue";
 import { DeepLinkWindowReadiness } from "@/main/deep_link_window_readiness";
+import { describe, expect, it, vi } from "vitest";
 
 describe("DeepLinkWindowReadiness", () => {
   it("waits for the targeted restored window rather than the first to load", () => {

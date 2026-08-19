@@ -1,9 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { bulkUpdateFunctions } from "@/supabase_admin/supabase_management_client";
 import {
   enqueueSupabaseDeploy,
   resetSupabaseDeployQueuesForTests,
 } from "@/supabase_admin/supabase_deploy_queue";
+import { bulkUpdateFunctions } from "@/supabase_admin/supabase_management_client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/main/settings", () => ({
   readSettings: vi.fn(() => ({

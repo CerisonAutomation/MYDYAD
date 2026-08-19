@@ -1,15 +1,15 @@
 import { z } from "zod";
+import type {
+  ImageGenerationOperationOutcome,
+  ImageGenerationResultView,
+  ImageThemeMode,
+} from "../../image_generation/state";
 import {
   createClient,
   createEventClient,
   defineContract,
   defineEvent,
 } from "../contracts/core";
-import type {
-  ImageGenerationOperationOutcome,
-  ImageGenerationResultView,
-  ImageThemeMode,
-} from "../../image_generation/state";
 
 export type { ImageGenerationResultView, ImageThemeMode };
 export type { ImageGenerationOperationOutcome };

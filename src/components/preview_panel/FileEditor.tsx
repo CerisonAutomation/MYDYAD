@@ -1,26 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
-import Editor, { OnMount } from "@monaco-editor/react";
-import type { editor as MonacoEditor } from "monaco-editor";
-import { useLoadAppFile } from "@/hooks/useLoadAppFile";
-import { useTheme } from "@/contexts/ThemeContext";
-import { ChevronRight, Circle, Save } from "lucide-react";
+import { editorCursorAtom } from "@/atoms/viewAtoms";
 import { beforeMonacoMount } from "@/components/chat/monaco";
-import { ipc } from "@/ipc/types";
-import { showError, showSuccess, showWarning } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
-import { getLanguage } from "@/utils/get_language";
-import { queryKeys } from "@/lib/queryKeys";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLoadAppFile } from "@/hooks/useLoadAppFile";
+import { useTrackUnsavedFile } from "@/hooks/useUnsavedFiles";
+import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { showError, showSuccess, showWarning } from "@/lib/toast";
+import { getLanguage } from "@/utils/get_language";
+import Editor, { type OnMount } from "@monaco-editor/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
+import { ChevronRight, Circle, Save } from "lucide-react";
+import type { editor as MonacoEditor } from "monaco-editor";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { enqueueFileSave, getFileSaveQueueKey } from "./fileSaveQueue";
-import { editorCursorAtom } from "@/atoms/viewAtoms";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useTrackUnsavedFile } from "@/hooks/useUnsavedFiles";
 
 interface FileEditorProps {
   appId: number | null;

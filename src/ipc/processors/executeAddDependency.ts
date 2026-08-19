@@ -1,11 +1,16 @@
-import { db } from "../../db";
-import { messages } from "../../db/schema";
-import { eq } from "drizzle-orm";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { Message } from "@/ipc/types";
-import { readEffectiveSettings } from "@/main/settings";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { Message } from "@/ipc/types";
+import {
+  choosePackageManagerFromSignal,
+  getPackageManagerSignal,
+  signalPrefersPnpm,
+} from "@/ipc/utils/package_manager_selection";
+import {
+  recordAndReportDeniedPnpmBuilds,
+  resolvePnpmIgnoredBuilds,
+} from "@/ipc/utils/pnpm_denied_builds";
 import {
   ADD_DEPENDENCY_INSTALL_TIMEOUT_MS,
   buildAddDependencyCommand,
@@ -17,17 +22,12 @@ import {
   getPnpmMinimumReleaseAgeSupport,
   runCommand,
 } from "@/ipc/utils/socket_firewall";
-import {
-  recordAndReportDeniedPnpmBuilds,
-  resolvePnpmIgnoredBuilds,
-} from "@/ipc/utils/pnpm_denied_builds";
-import {
-  choosePackageManagerFromSignal,
-  getPackageManagerSignal,
-  signalPrefersPnpm,
-} from "@/ipc/utils/package_manager_selection";
 import { shouldShowPnpmMinimumReleaseAgeWarning } from "@/lib/schemas";
+import { readEffectiveSettings } from "@/main/settings";
+import { eq } from "drizzle-orm";
 import { escapeXmlAttr, escapeXmlContent } from "../../../shared/xmlEscape";
+import { db } from "../../db";
+import { messages } from "../../db/schema";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

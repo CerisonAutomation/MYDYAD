@@ -1,6 +1,16 @@
-import type { IpcMainInvokeEvent } from "electron";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type { GithubOperation } from "@/github_ops/state";
+import type { IpcMainInvokeEvent } from "electron";
+import {
+  handleAbortMerge,
+  handleCreateBranch,
+  handleDeleteBranch,
+  handleFetchFromGithub,
+  handleMergeBranch,
+  handlePullFromGithub,
+  handleRenameBranch,
+  handleSwitchBranch,
+} from "../handlers/git_branch_handlers";
 import {
   handleAbortRebase,
   handleConnectToExistingRepo,
@@ -12,16 +22,6 @@ import {
   handlePushToGithub,
   handleRebaseFromGithub,
 } from "../handlers/github_handlers";
-import {
-  handleAbortMerge,
-  handleCreateBranch,
-  handleDeleteBranch,
-  handleFetchFromGithub,
-  handleMergeBranch,
-  handlePullFromGithub,
-  handleRenameBranch,
-  handleSwitchBranch,
-} from "../handlers/git_branch_handlers";
 import {
   appOperationCoordinator,
   readAppResource,

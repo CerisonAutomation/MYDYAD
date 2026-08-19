@@ -1,3 +1,4 @@
+import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
 import {
   MiniSelectTrigger,
   Select,
@@ -7,34 +8,33 @@ import {
 } from "@/components/ui/select";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSettings } from "@/hooks/useSettings";
+import { useChatMessageCount } from "@/hooks/useChatMessages";
 import { useChatMode } from "@/hooks/useChatMode";
+import { detectIsMac } from "@/hooks/useChatModeToggle";
 import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
-import type { ChatMode } from "@/lib/schemas";
-import { isAgent2Enabled as checkAgent2Enabled } from "@/lib/schemas";
+import { useSettings } from "@/hooks/useSettings";
 import {
-  getChatModeFallbackToastId,
   getChatModeDisplayName,
+  getChatModeFallbackToastId,
   showChatModeFallbackToast,
 } from "@/lib/chatModeToast";
-import { cn } from "@/lib/utils";
-import { detectIsMac } from "@/hooks/useChatModeToggle";
-import { useRouterState } from "@tanstack/react-router";
-import { toast } from "sonner";
-import { LocalAgentNewChatToast } from "./LocalAgentNewChatToast";
-import { useSetAtom } from "jotai";
-import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
-import { useChatMessageCount } from "@/hooks/useChatMessages";
-import { Hammer, Bot, MessageCircle, Lightbulb } from "lucide-react";
-import { useEffect, useRef } from "react";
 import {
   FREE_PRO_MODEL_FALLBACK_CHAT_MODE,
   isFreeProBuildModeCombination,
   isFreeProModel,
 } from "@/lib/freeProModel";
+import type { ChatMode } from "@/lib/schemas";
+import { isAgent2Enabled as checkAgent2Enabled } from "@/lib/schemas";
+import { cn } from "@/lib/utils";
+import { useRouterState } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
+import { Bot, Hammer, Lightbulb, MessageCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { LocalAgentNewChatToast } from "./LocalAgentNewChatToast";
 
 export function ChatModeSelector() {
   const { updateSettings } = useSettings();

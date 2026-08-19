@@ -1,27 +1,27 @@
 // @vitest-environment node
 
 import { randomUUID } from "node:crypto";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { z } from "zod";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
+  queryInvalidationBus,
+  queryInvalidationChannel,
+} from "@/window_infrastructure/main/query_invalidation_bus";
+import { windowRegistry } from "@/window_infrastructure/main/window_registry";
+import type {
+  QueryInvalidationBatch,
+  WindowSessionId,
+} from "@/window_infrastructure/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { z } from "zod";
+import {
+  type IpcInvokeEnvelope,
   defineContract,
   unwrapIpcEnvelope,
-  type IpcInvokeEnvelope,
 } from "../contracts/core";
 import {
   configureTrustedRenderer,
   isTrustedRendererUrl,
 } from "../utils/renderer_security";
-import { windowRegistry } from "@/window_infrastructure/main/window_registry";
-import {
-  queryInvalidationBus,
-  queryInvalidationChannel,
-} from "@/window_infrastructure/main/query_invalidation_bus";
-import type {
-  QueryInvalidationBatch,
-  WindowSessionId,
-} from "@/window_infrastructure/types";
 
 const mocks = vi.hoisted(() => ({
   handlers: new Map<string, (event: unknown, input: unknown) => unknown>(),

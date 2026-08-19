@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
 import type { AppCollectionDto } from "@/ipc/types/app_collections";
+import { queryKeys } from "@/lib/queryKeys";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type AppCollection = AppCollectionDto;
 

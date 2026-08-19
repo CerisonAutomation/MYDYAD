@@ -5,8 +5,8 @@
  * Only includes models from providers where an API key is configured.
  */
 
-import Fuse from "fuse.js";
 import type { LanguageModel, LocalModel } from "@/ipc/types";
+import Fuse from "fuse.js";
 
 export interface SearchableModel {
   /** Unique key */

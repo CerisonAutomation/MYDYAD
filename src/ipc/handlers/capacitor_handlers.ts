@@ -1,16 +1,16 @@
+import fs from "node:fs";
+import path from "node:path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
 import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
 import { getDyadAppPath } from "../../paths/paths";
-import fs from "node:fs";
-import path from "node:path";
+import { capacitorContracts } from "../types/capacitor";
 import { simpleSpawn } from "../utils/simpleSpawn";
+import { getPackageManagerCommandEnv } from "../utils/socket_firewall";
 import { IS_TEST_BUILD } from "../utils/test_utils";
 import { createTypedHandler } from "./base";
-import { capacitorContracts } from "../types/capacitor";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { getPackageManagerCommandEnv } from "../utils/socket_firewall";
 
 const logger = log.scope("capacitor_handlers");
 
@@ -46,7 +46,7 @@ export function registerCapacitorHandlers() {
 
     // check for the required Node.js version before running any commands
     const currentNodeVersion = process.version;
-    const majorVersion = parseInt(
+    const majorVersion = Number.parseInt(
       currentNodeVersion.slice(1).split(".")[0],
       10,
     );

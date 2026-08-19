@@ -1,7 +1,7 @@
-import log from "electron-log";
-import ignore, { type Ignore } from "ignore";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import log from "electron-log";
+import ignore, { type Ignore } from "ignore";
 
 const logger = log.scope("gitignore_utils");
 

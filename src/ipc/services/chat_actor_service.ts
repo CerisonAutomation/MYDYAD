@@ -1,29 +1,29 @@
-import { remoteMachineHost } from "@/ipc/services/distributed_machine_actor_host";
-import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
 import { chatStreamDefinition } from "@/chat_stream/definition";
-import { getIntentAcceptance } from "@/chat_stream/persistence";
-import {
-  chatStreamKey,
-  type ChatStreamWireEvent,
-  type SerializableChatTurnIntent,
-} from "@/chat_stream/transport";
 import type { ChatStreamHostState } from "@/chat_stream/host_state";
 import type { ChatStreamHostIgnoreReason } from "@/chat_stream/host_transition";
+import { getIntentAcceptance } from "@/chat_stream/persistence";
+import {
+  type ChatStreamWireEvent,
+  type SerializableChatTurnIntent,
+  chatStreamKey,
+} from "@/chat_stream/transport";
+import { db } from "@/db";
+import { chats } from "@/db/schema";
+import { remoteMachineHost } from "@/ipc/services/distributed_machine_actor_host";
+import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
+import {
+  PLAN_HANDOFF_MACHINE_ID,
+  planHandoffKey,
+} from "@/plan_handoff/transport";
+import { userInputRegistry } from "@/user_input/main";
+import { entityDisposalBus } from "@/window_infrastructure/main/entity_disposal_bus";
+import { eq } from "drizzle-orm";
+import { beginAppChatMutation } from "./app_chat_creation_fence";
 import {
   assertChatActorAdmissionOpen,
   beginChatActorDeletion,
   beginChatActorMutation,
 } from "./chat_actor_deletion_fence";
-import { beginAppChatMutation } from "./app_chat_creation_fence";
-import { userInputRegistry } from "@/user_input/main";
-import { db } from "@/db";
-import { chats } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import {
-  PLAN_HANDOFF_MACHINE_ID,
-  planHandoffKey,
-} from "@/plan_handoff/transport";
-import { entityDisposalBus } from "@/window_infrastructure/main/entity_disposal_bus";
 
 export async function settleChatActorsForDeletion(
   chatId: number,

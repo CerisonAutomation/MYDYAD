@@ -1,30 +1,30 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Circle,
-  MessageCircle,
-  ChevronDown,
-  ChevronRight,
-  Folder,
-  FolderOpen,
-  Loader2,
-  Search,
-  X,
-} from "lucide-react";
+import { chatInputValueAtom } from "@/atoms/chatAtoms";
 import { selectedFileAtom } from "@/atoms/viewAtoms";
-import { useSetAtom } from "jotai";
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { AppFileSearchResult } from "@/ipc/types";
 import { useSearchAppFiles } from "@/hooks/useSearchAppFiles";
 import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
 import { useUnsavedFiles } from "@/hooks/useUnsavedFiles";
-import { useTranslation } from "react-i18next";
-import { chatInputValueAtom } from "@/atoms/chatAtoms";
+import type { AppFileSearchResult } from "@/ipc/types";
 import { cn } from "@/lib/utils";
+import { useSetAtom } from "jotai";
+import {
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  Folder,
+  FolderOpen,
+  Loader2,
+  MessageCircle,
+  Search,
+  X,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface FileTreeProps {
   appId: number | null;

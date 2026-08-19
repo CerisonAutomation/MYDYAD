@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
 import {
-  assertReferenceStability,
   assertAllCommandsProducible,
   assertAllStatesReachable,
+  assertReferenceStability,
   commandsOf,
   driveTransitionMatrix,
   ignoreReasonOf,
 } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import type { VoiceCommand, VoiceEvent, VoiceState } from "./state";
 import { transition } from "./transition";
 

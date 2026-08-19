@@ -1,9 +1,9 @@
-import type { QueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Clock, IdSource } from "@/state_machines/clock";
 import { TaskScope } from "@/state_machines/task_scope";
 import { TimerLeaseScope } from "@/state_machines/timer_lease";
+import type { QueryClient } from "@tanstack/react-query";
 import type { ScreenshotCommandRunner } from "./controller";
 import type { ScreenshotEvent, ScreenshotState } from "./state";
 

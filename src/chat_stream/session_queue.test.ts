@@ -1,8 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apps, chats } from "@/db/schema";
 import { DyadErrorKind } from "@/errors/dyad_error";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
 import { acceptChatTurn } from "@/ipc/handlers/chat_turn_acceptance";
+import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   completeSessionQueueAcceptance,
   disposeSessionChatQueue,
@@ -14,7 +15,6 @@ import {
   persistSessionQueuedIntent,
   stageActiveIntent,
 } from "./persistence";
-import { computeChatTurnPayloadHash } from "@/ipc/utils/chat_turn_intent_hash";
 import type { SerializableChatTurnIntent } from "./transport";
 
 const liveOwner = vi.hoisted(() => ({

@@ -49,12 +49,10 @@ vi.mock("electron-log", () => ({
   },
 }));
 
-import { registerRecordingHandlers } from "./recording_handlers";
 import {
-  activeRecordings,
-  endRecordingForApp,
-  isRecordingActive,
-} from "../services/recording_registry";
+  RECORDED_TEST_DRAFT_VERSION,
+  type RecordedTestDraft,
+} from "@/lib/test_recorder/draft";
 import {
   appOperationCoordinator,
   readAppResource,
@@ -65,9 +63,11 @@ import {
   setRecordedTestDraft,
 } from "../services/recorded_test_drafts";
 import {
-  RECORDED_TEST_DRAFT_VERSION,
-  type RecordedTestDraft,
-} from "@/lib/test_recorder/draft";
+  activeRecordings,
+  endRecordingForApp,
+  isRecordingActive,
+} from "../services/recording_registry";
+import { registerRecordingHandlers } from "./recording_handlers";
 
 registerRecordingHandlers();
 const startHandler = mocks.handlers.get("recording:start")!;

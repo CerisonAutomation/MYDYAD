@@ -1,77 +1,43 @@
-import { spawn, type ChildProcess } from "node:child_process";
+import { type ChildProcess, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import util from "node:util";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import fixPath from "fix-path";
 import killPort from "kill-port";
-import log from "electron-log";
-import { eq } from "drizzle-orm";
 
-import { getAppPort, getAppProxyPort } from "../../../shared/ports";
+import type { AppRunInvocationRef } from "@/app_run/state";
+import { APP_RUN_INVOCATION_KIND } from "@/app_run/state";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
-import { readSettings } from "@/main/settings";
-import {
-  shouldShowPnpmMinimumReleaseAgeWarning,
-  type RuntimeMode2,
-} from "@/lib/schemas";
-import {
-  getFrameworkDevPortStrategy,
-  type AppFrameworkType,
-} from "@/lib/framework_constants";
-import { detectFrameworkType } from "@/ipc/utils/framework_utils";
-import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
-import type { AppRunInvocationRef } from "@/app_run/state";
-import {
-  CancellationTombstones,
-  createInvocationRef,
-  invocationRegistryKey,
-  sameInvocationRef,
-} from "@/state_machines/invocation_ref";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { addLog, clearLogs } from "@/lib/log_store";
-import { getDyadAppPath } from "@/paths/paths";
-import { startProxy } from "@/ipc/utils/start_proxy_server";
 import {
-  buildCloudSandboxFileMap,
+  type AppOperationRequest,
+  appOperationCoordinator,
+  readAppResource,
+} from "@/ipc/services/app_operation_coordinator";
+import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
+import {
   CloudSandboxApiError,
+  buildCloudSandboxFileMap,
   createCloudSandbox,
   destroyCloudSandbox,
   registerRunningCloudSandbox,
+  restartCloudSandbox,
   setCloudSandboxSyncUpdateListener,
   streamCloudSandboxLogs,
   uploadCloudSandboxFiles,
-  restartCloudSandbox,
 } from "@/ipc/utils/cloud_sandbox_provider";
-import {
-  processCounter,
-  removeAppIfCurrentProcess,
-  removeDockerVolumesForApp,
-  runningApps,
-  stopAppByInfo,
-  disposeProxyWorker,
-  type RunningAppInfo,
-} from "@/ipc/utils/process_manager";
-import {
-  appOperationCoordinator,
-  readAppResource,
-  type AppOperationRequest,
-} from "@/ipc/services/app_operation_coordinator";
-import { APP_RUN_INVOCATION_KIND } from "@/app_run/state";
-import {
-  ensurePnpmAllowBuildsConfigured,
-  getPackageManagerCommandEnv,
-  getPnpmMinimumReleaseAgeSupport,
-  isPnpmIgnoredBuildsError,
-  isPnpmFrozenLockfileError,
-  parsePnpmIgnoredBuildsFromOutput,
-  type PackageManager,
-  PNPM_PM_ON_FAIL_IGNORE_ARG,
-  PNPM_INSTALL_POLICY_ARGS,
-  getBestEffortPnpmRebuildCommand,
-} from "@/ipc/utils/socket_firewall";
+import { detectExistingDevServer } from "@/ipc/utils/dev_server_detector";
 import { parseCompilationError } from "@/ipc/utils/dev_server_error_parser";
+import { detectFrameworkType } from "@/ipc/utils/framework_utils";
+import {
+  choosePackageManagerFromSignal,
+  getPackageManagerSignal,
+  signalPrefersPnpm,
+} from "@/ipc/utils/package_manager_selection";
 import {
   recordAndReportDeniedPnpmBuilds,
   resolvePnpmIgnoredBuilds,
@@ -80,12 +46,46 @@ import {
   getManagedPnpmMajorVersion,
   isPnpmVersionMigrationNeeded,
 } from "@/ipc/utils/pnpm_migration";
-import { detectExistingDevServer } from "@/ipc/utils/dev_server_detector";
 import {
-  choosePackageManagerFromSignal,
-  getPackageManagerSignal,
-  signalPrefersPnpm,
-} from "@/ipc/utils/package_manager_selection";
+  type RunningAppInfo,
+  disposeProxyWorker,
+  processCounter,
+  removeAppIfCurrentProcess,
+  removeDockerVolumesForApp,
+  runningApps,
+  stopAppByInfo,
+} from "@/ipc/utils/process_manager";
+import {
+  PNPM_INSTALL_POLICY_ARGS,
+  PNPM_PM_ON_FAIL_IGNORE_ARG,
+  type PackageManager,
+  ensurePnpmAllowBuildsConfigured,
+  getBestEffortPnpmRebuildCommand,
+  getPackageManagerCommandEnv,
+  getPnpmMinimumReleaseAgeSupport,
+  isPnpmFrozenLockfileError,
+  isPnpmIgnoredBuildsError,
+  parsePnpmIgnoredBuildsFromOutput,
+} from "@/ipc/utils/socket_firewall";
+import { startProxy } from "@/ipc/utils/start_proxy_server";
+import {
+  type AppFrameworkType,
+  getFrameworkDevPortStrategy,
+} from "@/lib/framework_constants";
+import { addLog, clearLogs } from "@/lib/log_store";
+import {
+  type RuntimeMode2,
+  shouldShowPnpmMinimumReleaseAgeWarning,
+} from "@/lib/schemas";
+import { readSettings } from "@/main/settings";
+import { getDyadAppPath } from "@/paths/paths";
+import {
+  CancellationTombstones,
+  createInvocationRef,
+  invocationRegistryKey,
+  sameInvocationRef,
+} from "@/state_machines/invocation_ref";
+import { getAppPort, getAppProxyPort } from "../../../shared/ports";
 
 const logger = log.scope("app_runtime_service");
 const pnpmVersionMigrationNotifiedAppIds = new Set<number>();

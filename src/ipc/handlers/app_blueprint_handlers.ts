@@ -1,16 +1,16 @@
 import crypto from "node:crypto";
-import log from "electron-log";
-import { eq } from "drizzle-orm";
-import { createTypedHandler } from "./base";
-import {
-  appBlueprintContracts,
-  type AppBlueprintData,
-  type AppBlueprintVisual,
-} from "../types/app_blueprint";
-import { broadcastToRegisteredWindows } from "../utils/window_broadcast";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { apps, chats } from "../../db/schema";
+import {
+  type AppBlueprintData,
+  type AppBlueprintVisual,
+  appBlueprintContracts,
+} from "../types/app_blueprint";
+import { broadcastToRegisteredWindows } from "../utils/window_broadcast";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("app_blueprint_handlers");
 

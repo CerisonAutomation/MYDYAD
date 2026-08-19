@@ -1,21 +1,21 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { shouldFilterTelemetryException } from "@/ipc/utils/telemetry";
 import {
-  BufferedProcessSpawnError,
   type BufferedProcessResult,
+  BufferedProcessSpawnError,
 } from "@/ipc/utils/buffered_process";
+import { shouldFilterTelemetryException } from "@/ipc/utils/telemetry";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  TypeCheckPreconditionError,
   clearTypeScriptVersionCacheForTests,
-  parseTypeScriptDiagnostics,
   getTypeCheckPreconditionKind,
   isMissingPathError,
+  parseTypeScriptDiagnostics,
   runTypeScriptCheck,
   toProblemReportError,
-  TypeCheckPreconditionError,
 } from "./tsc";
 
 const { runBufferedProcessMock } = vi.hoisted(() => ({

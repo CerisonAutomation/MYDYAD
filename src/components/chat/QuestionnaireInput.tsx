@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { useAtomValue, useStore } from "jotai";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+import { usePendingQuestionnaires } from "@/user_input/hooks";
+import { getUserInputReadModel } from "@/user_input/read_model";
+import { useAtomValue, useStore } from "jotai";
 import {
-  Send,
   ArrowLeft,
   ArrowRight,
-  ClipboardList,
   ChevronDown,
   ChevronUp,
   Circle,
+  ClipboardList,
   LoaderCircle,
+  Send,
   X,
 } from "lucide-react";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { getUserInputReadModel } from "@/user_input/read_model";
-import { usePendingQuestionnaires } from "@/user_input/hooks";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 const MAX_DISPLAYED_OPTIONS = 3;
 

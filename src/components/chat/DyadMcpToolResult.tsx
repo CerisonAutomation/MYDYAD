@@ -1,15 +1,16 @@
-import React, { useMemo, useState } from "react";
-import { useAutoCollapse } from "./useAutoCollapse";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
 import { CheckCircle } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 import { CodeHighlight } from "./CodeHighlight";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
-  DyadExpandIcon,
+  DyadCard,
   DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
 } from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadMcpToolResultProps {
   node?: DyadTagNode;

@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
+import { describe, expect, it, vi } from "vitest";
 import { getRegisteredHandlerForTesting } from "./base";
 import { registerConnectionFlowHandlers } from "./connection_flow_handlers";
 

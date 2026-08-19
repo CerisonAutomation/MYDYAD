@@ -1,25 +1,25 @@
 import fs from "node:fs";
 import path from "node:path";
-import log from "electron-log";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { simpleSpawnWithDeniedPnpmBuildSelfHeal } from "@/ipc/utils/app_upgrade_utils";
 import { gitAdd, gitCommit } from "@/ipc/utils/git_utils";
 import {
-  ensurePnpmAllowBuildsConfigured,
-  getPnpmMinimumReleaseAgeSupport,
-  PNPM_GLOBAL_INSTALL_PACKAGE,
-  PNPM_INSTALL_POLICY_ARGS,
-} from "@/ipc/utils/socket_firewall";
-import { simpleSpawnWithDeniedPnpmBuildSelfHeal } from "@/ipc/utils/app_upgrade_utils";
+  getPackageManagerSignal,
+  signalPrefersPnpm,
+} from "@/ipc/utils/package_manager_selection";
 import {
   recordAndReportDeniedPnpmBuilds,
   resolvePnpmIgnoredBuilds,
 } from "@/ipc/utils/pnpm_denied_builds";
 import {
-  getPackageManagerSignal,
-  signalPrefersPnpm,
-} from "@/ipc/utils/package_manager_selection";
+  PNPM_GLOBAL_INSTALL_PACKAGE,
+  PNPM_INSTALL_POLICY_ARGS,
+  ensurePnpmAllowBuildsConfigured,
+  getPnpmMinimumReleaseAgeSupport,
+} from "@/ipc/utils/socket_firewall";
 import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
 import { isVersionAtLeast } from "@/shared/version_utils";
+import log from "electron-log";
 
 const logger = log.scope("pnpm_migration");
 

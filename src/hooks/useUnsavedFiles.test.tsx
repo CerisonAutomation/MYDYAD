@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { describe, expect, it } from "vitest";
 

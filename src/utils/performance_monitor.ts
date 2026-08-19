@@ -1,17 +1,17 @@
-import log from "electron-log";
-import { app } from "electron";
-import { writeSettings } from "../main/settings";
 import os from "node:os";
 import v8 from "node:v8";
-import {
-  isExtractCodebaseActive,
-  type ActivitySnapshot,
-} from "./memory_activity";
-import { getActiveStreamCount } from "../ipc/handlers/chat_stream_handlers";
-import { runningApps } from "../ipc/utils/process_manager";
-import { typescriptUtilityProcessScheduler } from "../ipc/processors/typescript_utility_process_scheduler";
-import { runHealthCheck } from "../ipc/handlers/health_check_handlers";
+import { app } from "electron";
+import log from "electron-log";
 import { db } from "../db";
+import { getActiveStreamCount } from "../ipc/handlers/chat_stream_handlers";
+import { runHealthCheck } from "../ipc/handlers/health_check_handlers";
+import { typescriptUtilityProcessScheduler } from "../ipc/processors/typescript_utility_process_scheduler";
+import { runningApps } from "../ipc/utils/process_manager";
+import { writeSettings } from "../main/settings";
+import {
+  type ActivitySnapshot,
+  isExtractCodebaseActive,
+} from "./memory_activity";
 
 const logger = log.scope("performance-monitor");
 

@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -7,8 +7,8 @@ import { attachmentsAtom } from "@/atoms/chatAtoms";
 import type { FileAttachment } from "@/ipc/types";
 import { showError } from "@/lib/toast";
 import {
-  MAX_CHAT_ATTACHMENT_BYTES,
   MAX_CHAT_ATTACHMENTS,
+  MAX_CHAT_ATTACHMENT_BYTES,
 } from "@/shared/chatAttachmentLimits";
 import { useAttachments } from "./useAttachments";
 

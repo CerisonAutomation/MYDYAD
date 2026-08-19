@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, FolderOpen } from "lucide-react";
-import type { MediaFile } from "@/ipc/types";
 import { Button } from "@/components/ui/button";
+import type { MediaFile } from "@/ipc/types";
+import { ArrowLeft, ChevronLeft, ChevronRight, FolderOpen } from "lucide-react";
+import { useEffect, useState } from "react";
 import { MediaFileThumbnail } from "./MediaFileThumbnail";
 
 export const MEDIA_LIBRARY_PAGE_SIZE = 48;

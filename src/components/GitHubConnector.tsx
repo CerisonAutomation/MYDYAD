@@ -1,15 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Clipboard,
-  Check,
-  CircleCheck,
   AlertTriangle,
+  Check,
   ChevronRight,
+  CircleCheck,
+  Clipboard,
   FileCode2,
   GitMerge,
   LoaderCircle,
 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -18,16 +18,7 @@ function GithubIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-import { ipc } from "@/ipc/types";
-import { useSettings } from "@/hooks/useSettings";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { GithubBranchManager } from "@/components/GithubBranchManager";
 import {
   Dialog,
   DialogContent,
@@ -38,14 +29,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GithubBranchManager } from "@/components/GithubBranchManager";
-import { useResolveMergeConflictsWithAI } from "@/hooks/useResolveMergeConflictsWithAI";
-import { useChatStreamState } from "@/hooks/useChatStream";
-import { slugifyAppPath } from "@/shared/slugify";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   isAppliedGithubOpsReceipt,
   useGithubOps,
 } from "@/github_ops/useGithubOps";
+import { useChatStreamState } from "@/hooks/useChatStream";
 import {
   acknowledgeConnectionFlow,
   cancelConnectionFlow,
@@ -53,6 +48,11 @@ import {
   useConnectionFlow,
   useUnsolicitedConnectionReturn,
 } from "@/hooks/useConnectionFlow";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { useResolveMergeConflictsWithAI } from "@/hooks/useResolveMergeConflictsWithAI";
+import { useSettings } from "@/hooks/useSettings";
+import { ipc } from "@/ipc/types";
+import { slugifyAppPath } from "@/shared/slugify";
 
 interface GitHubConnectorProps {
   appId: number | null;

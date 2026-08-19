@@ -1,16 +1,16 @@
-import { shell } from "electron";
-import log from "electron-log";
-import { eq } from "drizzle-orm";
 import type {
   OAuthClientInformation,
   OAuthClientMetadata,
   OAuthClientProvider,
   OAuthTokens,
 } from "@ai-sdk/mcp";
+import { eq } from "drizzle-orm";
+import { shell } from "electron";
+import log from "electron-log";
 import { db } from "../../db";
 import { mcpServers } from "../../db/schema";
 import { DEFAULT_OAUTH_CALLBACK_PORT } from "../types/mcp";
-import { encryptToString, decryptFromString } from "./secret_storage";
+import { decryptFromString, encryptToString } from "./secret_storage";
 
 export { encryptToString, decryptFromString } from "./secret_storage";
 

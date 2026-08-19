@@ -1,25 +1,25 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActorHost } from "@/distributed_machines/actor_host";
 import { RemoteMachineClient } from "@/distributed_machines/remote_client";
 import { createRemoteMachineManifest } from "@/distributed_machines/remote_manifest";
 import { RemoteMachineTransport } from "@/distributed_machines/remote_transport";
+import type { RequestId } from "@/distributed_machines/request_identity";
 import { FakeDuplexRemoteTransport } from "@/distributed_machines/testing";
-import {
-  createFakeClock,
-  createSequentialIdSource,
-} from "@/state_machines/testing";
-import { TwoWindowHarness } from "@/testing/two_window_harness";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
   IMAGE_GENERATION_TERMINAL_RETENTION_MS,
   imageGenerationDefinition,
 } from "@/ipc/services/image_generation_definition";
+import { imageGenerationOperationService } from "@/ipc/services/image_generation_operation_service";
+import {
+  createFakeClock,
+  createSequentialIdSource,
+} from "@/state_machines/testing";
+import { TwoWindowHarness } from "@/testing/two_window_harness";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getImageGenerationKey,
   imageGenerationClientDefinition,
 } from "./transport";
-import type { RequestId } from "@/distributed_machines/request_identity";
-import { imageGenerationOperationService } from "@/ipc/services/image_generation_operation_service";
 
 const service = vi.hoisted(() => ({
   generate: vi.fn(),

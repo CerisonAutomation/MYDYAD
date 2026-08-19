@@ -1,25 +1,25 @@
-import { dialog } from "electron";
-import fs from "fs/promises";
 import path from "path";
-import { createLoggedHandler } from "./safe_handle";
-import log from "electron-log";
-import { getDyadAppPath, isAppLocationAccessible } from "../../paths/paths";
-import { apps } from "@/db/schema";
 import { db } from "@/db";
+import { apps } from "@/db/schema";
 import { chats } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { dialog } from "electron";
+import log from "electron-log";
+import fs from "fs/promises";
+import { getDyadAppPath, isAppLocationAccessible } from "../../paths/paths";
+import { createLoggedHandler } from "./safe_handle";
 
-import { ImportAppParams, ImportAppResult } from "@/ipc/types";
-import { copyDirectoryRecursive } from "../utils/file_utils";
-import { gitService } from "../services/git_service";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { getInitialChatModeForNewChat } from "./chat_mode_resolution";
+import type { ImportAppParams, ImportAppResult } from "@/ipc/types";
 import {
   sanitizeAppDisplayName,
   slugifyAppFolderName,
 } from "@/shared/app_names";
-import { resolveUniqueFolderName } from "../utils/app_name_resolution";
 import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { gitService } from "../services/git_service";
+import { resolveUniqueFolderName } from "../utils/app_name_resolution";
+import { copyDirectoryRecursive } from "../utils/file_utils";
+import { getInitialChatModeForNewChat } from "./chat_mode_resolution";
 
 const logger = log.scope("import-handlers");
 const handle = createLoggedHandler(logger);

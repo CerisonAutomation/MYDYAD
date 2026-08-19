@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
 import { getLanguage } from "@/utils/get_language";
+import { useEffect, useRef, useState } from "react";
 import { unescapeXmlAttr, unescapeXmlContent } from "../../shared/xmlEscape";
 
 const CUSTOM_TAG_NAMES = [

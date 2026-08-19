@@ -1,5 +1,3 @@
-import { formatDistanceToNow } from "date-fns";
-import type { Version } from "@/ipc/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +9,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
+import type { Version } from "@/ipc/types";
+import { formatDistanceToNow } from "date-fns";
 
 export function ExtraCommitsRevertDialog({
   open,

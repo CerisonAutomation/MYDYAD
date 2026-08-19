@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
 import {
-  DISCONNECTED_FLOW_STATE,
   type ConnectionFlowState,
+  DISCONNECTED_FLOW_STATE,
 } from "@/connection_flow/state";
+import { describe, expect, it } from "vitest";
 import { mergeConnectionFlowSnapshots } from "./useConnectionFlow";
 
 describe("mergeConnectionFlowSnapshots", () => {

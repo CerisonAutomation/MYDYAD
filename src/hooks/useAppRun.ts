@@ -1,13 +1,13 @@
-import { useCallback, useSyncExternalStore } from "react";
 import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
+import { NO_APP_RUN_REMOTE_SNAPSHOT } from "@/app_run/remote_manager";
 import {
-  selectRemoteAppExit,
-  selectRemoteAppUrl,
   type AppExit,
   type AppUrlState,
+  selectRemoteAppExit,
+  selectRemoteAppUrl,
 } from "@/app_run/selectors";
 import type { AppRunRemoteSnapshot } from "@/app_run/transport";
-import { NO_APP_RUN_REMOTE_SNAPSHOT } from "@/app_run/remote_manager";
+import { useCallback, useSyncExternalStore } from "react";
 
 /**
  * Subscribes to the run-state machine snapshot for an app. Returns the

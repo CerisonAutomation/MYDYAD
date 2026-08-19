@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
-import { Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useMcp } from "@/hooks/useMcp";
 import { useMcpCatalog } from "@/hooks/useMcpCatalog";
+import { Star } from "lucide-react";
+import { useMemo, useState } from "react";
 import { CatalogCard } from "./CatalogCard";
-import { catalogCardStatus } from "./catalogCardStatus";
 import { StdioCatalogConsentDialog } from "./StdioCatalogConsentDialog";
+import { catalogCardStatus } from "./catalogCardStatus";
 import { useAddFromCatalog } from "./useAddFromCatalog";
 
 export function CatalogSection() {

@@ -42,12 +42,12 @@ vi.mock("../services/recording_registry", () => ({
 import type { ChildProcess } from "node:child_process";
 
 import {
+  type RunningAppInfo,
   getRunningAppProcessPids,
   removeAppIfCurrentProcess,
   runningApps,
-  stopAppByInfo,
   stopAllAppsSync,
-  type RunningAppInfo,
+  stopAppByInfo,
 } from "./process_manager";
 
 describe("stopAppByInfo", () => {

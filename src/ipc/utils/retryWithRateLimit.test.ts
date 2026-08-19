@@ -1,10 +1,10 @@
 import {
-  isRateLimitError,
-  retryWithRateLimit,
   RateLimitError,
   fetchWithRetry,
+  isRateLimitError,
+  retryWithRateLimit,
 } from "@/ipc/utils/retryWithRateLimit";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("RateLimitError", () => {
   it("should be an instance of Error", () => {

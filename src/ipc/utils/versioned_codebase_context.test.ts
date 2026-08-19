@@ -1,11 +1,11 @@
+import crypto from "node:crypto";
 import {
   parseFilesFromMessage,
   processChatMessagesWithVersionedFiles,
 } from "@/ipc/utils/versioned_codebase_context";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ModelMessage } from "@ai-sdk/provider-utils";
 import type { CodebaseFile } from "@/utils/codebase";
-import crypto from "node:crypto";
+import type { ModelMessage } from "@ai-sdk/provider-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock git_utils
 vi.mock("@/ipc/utils/git_utils", () => ({

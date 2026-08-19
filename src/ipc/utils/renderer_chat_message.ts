@@ -1,4 +1,4 @@
-import { messages } from "@/db/schema";
+import type { messages } from "@/db/schema";
 import type { Message } from "@/ipc/types/chat";
 
 /**

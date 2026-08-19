@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
 import { generateText } from "ai";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import type { UserSettings } from "../../lib/schemas";
 import {

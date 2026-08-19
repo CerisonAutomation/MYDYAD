@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
 import {
-  parseMcpToolKey,
-  buildMcpToolKey,
-  sanitizeMcpName,
   MCP_TOOL_KEY_SEPARATOR,
+  buildMcpToolKey,
+  parseMcpToolKey,
+  sanitizeMcpName,
 } from "@/ipc/utils/mcp_tool_utils";
+import { describe, expect, it } from "vitest";
 
 describe("parseMcpToolKey", () => {
   describe("valid tool keys", () => {

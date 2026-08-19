@@ -2,13 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import log from "electron-log";
 import { z } from "zod";
-import { getDyadAppPath } from "../paths/paths";
 import { getDb } from "../db";
 import { apps, chats } from "../db/schema";
 import {
-  PersistedQueuedMessageSchema,
   type PersistedQueue,
+  PersistedQueuedMessageSchema,
 } from "../ipc/types/queue";
+import { getDyadAppPath } from "../paths/paths";
 
 const logger = log.scope("queue_store");
 

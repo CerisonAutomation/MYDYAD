@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { Database, GitBranch } from "lucide-react";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { NeonDisconnectButton } from "@/components/NeonDisconnectButton";
 import { useLoadApp } from "@/hooks/useLoadApp";
 import { ipc } from "@/ipc/types";
 import type { GetNeonProjectResponse, NeonBranch } from "@/ipc/types";
-import { NeonDisconnectButton } from "@/components/NeonDisconnectButton";
 import { queryKeys } from "@/lib/queryKeys";
+import { Database, GitBranch } from "lucide-react";
 
 const getBranchTypeColor = (type: NeonBranch["type"]) => {
   switch (type) {

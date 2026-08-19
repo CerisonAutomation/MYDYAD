@@ -1,10 +1,10 @@
-import type { ChatMode, UserSettings } from "./schemas";
-import { isDyadProEnabled } from "./schemas";
 import type { ChatModeFallbackReason } from "./chatMode";
 import {
   getChatModeFallbackToastId,
   showChatModeFallbackToast,
 } from "./chatModeToast";
+import type { ChatMode, UserSettings } from "./schemas";
+import { isDyadProEnabled } from "./schemas";
 
 export function handleEffectiveChatModeChunk(
   chunk: {

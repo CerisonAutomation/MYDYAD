@@ -1,17 +1,17 @@
-import { useEffect, useRef } from "react";
-import { useSetAtom } from "jotai";
-import { useQueryClient } from "@tanstack/react-query";
 import {
+  type TestRunPhase,
   appendTestRunOutputAtom,
   applyTestRunFinishedAtom,
   applyTestRunStartedAtom,
   clearTestRunOutputForAppAtom,
   setTestRunStateForAppAtom,
   setTestSpecsForAppAtom,
-  type TestRunPhase,
 } from "@/atoms/testRuntimeAtoms";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
+import { useEffect, useRef } from "react";
 
 const OUTPUT_FLUSH_INTERVAL_MS = 100;
 

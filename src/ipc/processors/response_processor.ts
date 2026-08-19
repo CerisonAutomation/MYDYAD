@@ -1,61 +1,61 @@
+import fs from "node:fs";
+import path from "node:path";
+import { and, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { chats, messages } from "../../db/schema";
-import { and, eq } from "drizzle-orm";
-import fs from "node:fs";
 import { getDyadAppPath } from "../../paths/paths";
-import path from "node:path";
 import {
+  type PreparedDeletePath,
   assertNotProjectRootPath,
   lstatIfExists,
   prepareDeletePath,
-  PreparedDeletePath,
   safeJoin,
 } from "../utils/path_utils";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { doesSqlMutateSchema } from "@/lib/sqlSchemaMutation";
+import { readSettings } from "@/main/settings";
 import log from "electron-log";
-import {
-  executeAddDependency,
-  ExecuteAddDependencyError,
-} from "./executeAddDependency";
+import { escapeXmlAttr, escapeXmlContent } from "../../../shared/xmlEscape";
+import type { UserSettings } from "../../lib/schemas";
+import { executeNeonSql } from "../../neon_admin/neon_context";
+import { applySearchReplace } from "../../pro/main/ipc/processors/search_replace_processor";
 import {
   deleteSupabaseFunction,
   deploySupabaseFunction,
   executeSupabaseSql,
 } from "../../supabase_admin/supabase_management_client";
 import {
-  isServerFunction,
-  isSharedServerModule,
   deployAffectedSupabaseFunctions,
   extractFunctionNameFromPath,
+  isServerFunction,
+  isSharedServerModule,
 } from "../../supabase_admin/supabase_utils";
-import { UserSettings } from "../../lib/schemas";
+import { queueCloudSandboxSnapshotSync } from "../utils/cloud_sandbox_provider";
+import { executeCopyFile } from "../utils/copy_file_utils";
 import {
-  gitCommit,
-  gitAdd,
-  gitRemove,
-  gitAddAll,
-  getGitUncommittedFiles,
-  hasStagedChanges,
-} from "../utils/git_utils";
-import { readSettings } from "@/main/settings";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+  getDyadAddDependencyTags,
+  getDyadCopyTags,
+  getDyadDeleteTags,
+  getDyadExecuteSqlTags,
+  getDyadRenameTags,
+  getDyadSearchReplaceTags,
+  getDyadWriteTags,
+} from "../utils/dyad_tag_parser";
 import { writeMigrationFile } from "../utils/file_utils";
 import {
-  getDyadWriteTags,
-  getDyadRenameTags,
-  getDyadDeleteTags,
-  getDyadAddDependencyTags,
-  getDyadExecuteSqlTags,
-  getDyadSearchReplaceTags,
-  getDyadCopyTags,
-} from "../utils/dyad_tag_parser";
-import { applySearchReplace } from "../../pro/main/ipc/processors/search_replace_processor";
+  getGitUncommittedFiles,
+  gitAdd,
+  gitAddAll,
+  gitCommit,
+  gitRemove,
+  hasStagedChanges,
+} from "../utils/git_utils";
 import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
-import { executeNeonSql } from "../../neon_admin/neon_context";
-import { executeCopyFile } from "../utils/copy_file_utils";
-import { escapeXmlAttr, escapeXmlContent } from "../../../shared/xmlEscape";
-import { queueCloudSandboxSnapshotSync } from "../utils/cloud_sandbox_provider";
-import { doesSqlMutateSchema } from "@/lib/sqlSchemaMutation";
+import {
+  ExecuteAddDependencyError,
+  executeAddDependency,
+} from "./executeAddDependency";
 const readFile = fs.promises.readFile;
 const logger = log.scope("response_processor");
 

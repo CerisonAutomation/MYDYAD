@@ -1,4 +1,6 @@
-import { StrictMode } from "react";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
   fireEvent,
@@ -6,13 +8,11 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getDefaultStore } from "jotai";
+import { StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useVersionPreview } from "@/hooks/useVersionPreview";
-import { CLOSED_STATE, type PreviewState } from "./state";
 import { VersionPreviewProvider } from "./VersionPreviewProvider";
+import { CLOSED_STATE, type PreviewState } from "./state";
 
 let remoteState: PreviewState = CLOSED_STATE;
 const actorListeners = new Set<() => void>();

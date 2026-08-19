@@ -1,14 +1,14 @@
+import { useSearchChats } from "@/hooks/useSearchChats";
+import type { ChatSearchResult, ChatSummary } from "@/lib/schemas";
+import { useEffect, useState } from "react";
 import {
   CommandDialog,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
 } from "./ui/command";
-import { useState, useEffect } from "react";
-import { useSearchChats } from "@/hooks/useSearchChats";
-import type { ChatSummary, ChatSearchResult } from "@/lib/schemas";
 
 type ChatSearchDialogProps = {
   open: boolean;

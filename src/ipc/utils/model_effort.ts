@@ -1,9 +1,9 @@
+import { createModelSelection, getModelPreferenceKey } from "@/lib/modelEffort";
 import type {
   LargeLanguageModel,
   ModelSelection,
   UserSettings,
 } from "@/lib/schemas";
-import { createModelSelection, getModelPreferenceKey } from "@/lib/modelEffort";
 import { findLanguageModel } from "./findLanguageModel";
 
 export async function resolveModelSelection({

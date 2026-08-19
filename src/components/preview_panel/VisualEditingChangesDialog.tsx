@@ -1,11 +1,11 @@
-import { useAtom, useAtomValue } from "jotai";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { pendingVisualChangesAtom } from "@/atoms/previewAtoms";
 import { Button } from "@/components/ui/button";
 import { ipc } from "@/ipc/types";
-import { Check, X } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
 import { showError, showSuccess } from "@/lib/toast";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useAtom, useAtomValue } from "jotai";
+import { Check, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface VisualEditingChangesDialogProps {
   onReset?: () => void;

@@ -1,6 +1,6 @@
-import { PROVIDERS_THAT_SUPPORT_THINKING as GEMINI_PROVIDERS } from "../shared/language_model_constants";
 import type { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import type { ModelSelection, UserSettings } from "../../lib/schemas";
+import { PROVIDERS_THAT_SUPPORT_THINKING as GEMINI_PROVIDERS } from "../shared/language_model_constants";
 
 export function getModelEffort(modelSelection: ModelSelection): string {
   return modelSelection.effortLevel;

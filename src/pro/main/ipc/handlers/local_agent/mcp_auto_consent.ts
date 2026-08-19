@@ -1,16 +1,16 @@
-import { streamText } from "ai";
-import { z } from "zod";
-import log from "electron-log";
+import { extractJson } from "@/ipc/utils/extract_json";
 import { getModelClient } from "@/ipc/utils/get_model_client";
-import type { LargeLanguageModel, UserSettings } from "@/lib/schemas";
-import { buildMcpConsentSystemPrompt } from "@/prompts/mcp_consent_policy";
 import type { McpAutoApproveResult } from "@/ipc/utils/mcp_consent";
 import { fastTextOutput } from "@/ipc/utils/stream_text_utils";
-import { extractJson } from "@/ipc/utils/extract_json";
+import type { LargeLanguageModel, UserSettings } from "@/lib/schemas";
+import { buildMcpConsentSystemPrompt } from "@/prompts/mcp_consent_policy";
+import { streamText } from "ai";
+import log from "electron-log";
+import { z } from "zod";
 import {
+  type RecentTurn,
   formatRecentTurns,
   getRecentTurnsForConsent,
-  type RecentTurn,
 } from "./mcp_consent_context";
 
 const logger = log.scope("mcp-auto-consent");

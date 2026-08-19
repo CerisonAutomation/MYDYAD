@@ -269,8 +269,9 @@ export const domSnapshotTool: ToolDefinition<DomSnapshotArgs> = {
           if (selector) {
             const found = document.querySelector(selector);
             if (!found) {
-              throw new Error(
+              throw new DyadError(
                 `Selector "${selector}" did not match any element on the page.`,
+                DyadErrorKind.Validation,
               );
             }
             root = found;

@@ -1,9 +1,9 @@
-import { EventEmitter } from "node:events";
 import type { ChildProcess } from "node:child_process";
-import type { Worker } from "node:worker_threads";
+import { EventEmitter } from "node:events";
 import { mkdir, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import type { Worker } from "node:worker_threads";
 import type { IpcMainInvokeEvent, WebContents } from "electron";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -142,15 +142,15 @@ vi.mock("@/ipc/utils/start_proxy_server", () => ({
   startProxy: (...args: unknown[]) => startProxyMock(...args),
 }));
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { streamCloudSandboxLogs } from "@/ipc/utils/cloud_sandbox_provider";
+import { processCounter, runningApps } from "@/ipc/utils/process_manager";
 import {
+  type AppRuntimeOutput,
   ensureProxyForRunningApp,
   executeApp,
   startCloudSandboxLogStream,
-  type AppRuntimeOutput,
 } from "./app_runtime_service";
-import { streamCloudSandboxLogs } from "@/ipc/utils/cloud_sandbox_provider";
-import { processCounter, runningApps } from "@/ipc/utils/process_manager";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 class FakeChildProcess extends EventEmitter {
   pid: number;

@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useSettings } from "@/hooks/useSettings";
 import type { UserSettings, VertexProviderSetting } from "@/lib/schemas";
+import { CheckCircle2, Info } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function VertexConfiguration() {
   const { settings, updateSettings } = useSettings();

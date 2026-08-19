@@ -1,43 +1,43 @@
-import { afterEach, describe, it, expect, vi } from "vitest";
-import { createStore } from "jotai";
 import {
-  recentViewedChatIdsAtom,
+  type ChatTabSession,
+  addSessionOpenedChatIdAtom,
+  chatTabSessionStorageAtom,
+  closeMultipleTabsAtom,
   closedChatIdsAtom,
   closedTabHistoryAtom,
-  pushRecentViewedChatIdAtom,
-  removeRecentViewedChatIdAtom,
-  pruneClosedChatIdsAtom,
-  sessionOpenedChatIdsAtom,
-  addSessionOpenedChatIdAtom,
-  closeMultipleTabsAtom,
-  popClosedTabAtom,
-  chatTabSessionStorageAtom,
   hydrateChatTabSessionAtom,
   persistChatTabSessionAtom,
+  popClosedTabAtom,
+  pruneClosedChatIdsAtom,
+  pushRecentViewedChatIdAtom,
+  recentViewedChatIdsAtom,
+  removeRecentViewedChatIdAtom,
   selectedChatIdAtom,
-  type ChatTabSession,
+  sessionOpenedChatIdsAtom,
 } from "@/atoms/chatAtoms";
 import {
-  applySelectionToOrderedChatIds,
   addFinishedChatNotification,
+  applySelectionToOrderedChatIds,
   consumePreNavigationPresentationCapture,
+  getFallbackChatIdAfterClose,
   getOrderedRecentChatIds,
   getVisibleTabCapacity,
-  matchesPreNavigationPresentationCapture,
-  getFallbackChatIdAfterClose,
   groupChatIdsByApp,
+  matchesPreNavigationPresentationCapture,
   partitionChatsByVisibleCount,
   reorderVisibleChatIds,
   restoreLocalStorageSnapshot,
   restoreMessagesScrollTop,
   restoreOrderedIdAfterRollback,
-  shouldPrepareCrossWindowTransfer,
   shouldCapturePresentationBeforeNavigation,
+  shouldPrepareCrossWindowTransfer,
   shouldRemoveTransferredChatFromRenderer,
   shouldRestorePriorNavigationAfterAdoption,
   shouldSkipChatSelection,
 } from "@/components/chat/ChatTabs";
 import type { ChatSummary } from "@/lib/schemas";
+import { createStore } from "jotai";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 function chat(id: number, appId = 1): ChatSummary {
   return {

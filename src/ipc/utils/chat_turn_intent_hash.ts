@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
 import { serializeImmutableChatTurnPayload } from "@/chat_stream/intent_payload";
+import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
 
 export function computeChatTurnPayloadHash(
   intent: Omit<SerializableChatTurnIntent, "payloadHash">,

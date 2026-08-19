@@ -1,39 +1,20 @@
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { normalizePath } from "../../shared/normalizePath";
-import {
-  sanitizeAppFolderNameInput,
-  slugifyAppFolderName,
-} from "@/shared/app_names";
-import { useSetAtom } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { ipc } from "@/ipc/types";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { useChats } from "@/hooks/useChats";
-import { useSelectChat } from "@/hooks/useSelectChat";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { AppUpgrades } from "@/components/AppUpgrades";
+import { AssignAppsToCollectionDialog } from "@/components/AssignAppsToCollectionDialog";
+import { CapacitorControls } from "@/components/CapacitorControls";
+import { GitHubConnector } from "@/components/GitHubConnector";
+import { GithubCollaboratorManager } from "@/components/GithubCollaboratorManager";
+import { NeonConnector } from "@/components/NeonConnector";
+import { SupabaseConnector } from "@/components/SupabaseConnector";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import {
-  MoreVertical,
-  MessageCircle,
-  Pencil,
-  Plus,
-  Folder,
-  Star,
-  Trash2,
-} from "lucide-react";
-import { BackButton } from "@/components/ui/back-button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input";
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -42,31 +23,50 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { GitHubConnector } from "@/components/GitHubConnector";
-import { SupabaseConnector } from "@/components/SupabaseConnector";
-import { NeonConnector } from "@/components/NeonConnector";
-import { showError, showSuccess } from "@/lib/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Info, Loader2 } from "lucide-react";
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { invalidateAppQuery } from "@/hooks/useLoadApp";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useCheckName } from "@/hooks/useCheckName";
-import { useAppFolderPreview } from "@/hooks/useAppFolderPreview";
-import { AppUpgrades } from "@/components/AppUpgrades";
-import { CapacitorControls } from "@/components/CapacitorControls";
-import { GithubCollaboratorManager } from "@/components/GithubCollaboratorManager";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAddAppToFavorite } from "@/hooks/useAddAppToFavorite";
 import { useAppCollections } from "@/hooks/useAppCollections";
-import { AssignAppsToCollectionDialog } from "@/components/AssignAppsToCollectionDialog";
-import { useTranslation } from "react-i18next";
+import { useAppFolderPreview } from "@/hooks/useAppFolderPreview";
+import { useChats } from "@/hooks/useChats";
+import { useCheckName } from "@/hooks/useCheckName";
+import { useDebounce } from "@/hooks/useDebounce";
+import { invalidateAppQuery } from "@/hooks/useLoadApp";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { showError, showSuccess } from "@/lib/toast";
+import {
+  sanitizeAppFolderNameInput,
+  slugifyAppFolderName,
+} from "@/shared/app_names";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
+import {
+  Folder,
+  MessageCircle,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Star,
+  Trash2,
+} from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { normalizePath } from "../../shared/normalizePath";
 
 function UnavailableIntegrationCard({
   provider,

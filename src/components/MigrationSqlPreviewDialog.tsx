@@ -1,12 +1,4 @@
-import { useId, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  AlertTriangle,
-  ChevronDown,
-  Loader2,
-  XCircle,
-  CheckCircle2,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,11 +7,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import type {
   DestructiveStatement,
   MigrationPreviewResponse,
 } from "@/ipc/types/migration";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
+  XCircle,
+} from "lucide-react";
+import { useId, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   open: boolean;

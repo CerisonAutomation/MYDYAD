@@ -13,14 +13,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { apps, chats } from "@/db/schema";
 import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
-import {
   getMediaThumbnailCacheDirectory,
   getMediaThumbnailCacheRoot,
 } from "@/ipc/utils/media_thumbnail";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 const IMAGE_FIXTURE_PATH = path.join(
   process.cwd(),

@@ -1,21 +1,21 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { lastLogTimestampAtom } from "@/atoms/supabaseAtoms";
+import {
+  type ConsoleEntry,
+  type DeleteSupabaseOrganizationParams,
+  type SetSupabaseAppProjectParams,
+  type SupabaseBranch,
+  type SupabaseOrganizationInfo,
+  type SupabaseProject,
+  ipc,
+} from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { isSupabaseConnected } from "@/lib/schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
-import { lastLogTimestampAtom } from "@/atoms/supabaseAtoms";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import {
-  ipc,
-  ConsoleEntry,
-  SetSupabaseAppProjectParams,
-  DeleteSupabaseOrganizationParams,
-  SupabaseOrganizationInfo,
-  SupabaseProject,
-  SupabaseBranch,
-} from "@/ipc/types";
 import { useSettings } from "./useSettings";
-import { isSupabaseConnected } from "@/lib/schemas";
-import { queryKeys } from "@/lib/queryKeys";
-import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
 
 const EDGE_LOGS_POLL_INTERVAL_MS = 5_000;
 

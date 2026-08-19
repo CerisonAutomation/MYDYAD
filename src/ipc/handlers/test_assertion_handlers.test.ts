@@ -70,29 +70,29 @@ vi.mock("../../paths/paths", () => ({
   getDyadAppPath: (appPath: string) => appRoots.get(appPath) ?? appPath,
 }));
 
-import { registerTestAssertionHandlers } from "./test_assertion_handlers";
-import { eq } from "drizzle-orm";
-import {
-  buildAssertionsTagContent,
-  readAssertionsTagAttribute,
-} from "@/lib/test_recorder/assertion_tag";
-import {
-  ASSERTION_PROPOSAL_VERSION,
-  buildPlanItems,
-  countAssertions,
-  type AssertionPlanItem,
-} from "@/lib/test_recorder/assertion_proposal";
-import {
-  RECORDED_TEST_DRAFT_VERSION,
-  type RecordedTestDraft,
-} from "@/lib/test_recorder/draft";
-import { recordedBodyStatements } from "@/lib/test_recorder/codegen";
+import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
 import {
   getRecordedTestDraft,
   resetRecordedTestDrafts,
   setRecordedTestDraft,
 } from "@/ipc/services/recorded_test_drafts";
-import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
+import {
+  ASSERTION_PROPOSAL_VERSION,
+  type AssertionPlanItem,
+  buildPlanItems,
+  countAssertions,
+} from "@/lib/test_recorder/assertion_proposal";
+import {
+  buildAssertionsTagContent,
+  readAssertionsTagAttribute,
+} from "@/lib/test_recorder/assertion_tag";
+import { recordedBodyStatements } from "@/lib/test_recorder/codegen";
+import {
+  RECORDED_TEST_DRAFT_VERSION,
+  type RecordedTestDraft,
+} from "@/lib/test_recorder/draft";
+import { eq } from "drizzle-orm";
+import { registerTestAssertionHandlers } from "./test_assertion_handlers";
 
 const SPEC_PATH = "e2e-tests/recorded-add-an-item.spec.ts";
 

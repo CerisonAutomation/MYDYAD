@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { constructLocalAgentPrompt } from "@/prompts/local_agent_prompt";
+import { describe, expect, it } from "vitest";
 
 describe("local_agent_prompt", () => {
   const expectGitContextGuidance = (prompt: string) => {

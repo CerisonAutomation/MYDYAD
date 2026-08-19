@@ -57,13 +57,13 @@ vi.mock("electron-log", () => ({
   },
 }));
 
-import { eq } from "drizzle-orm";
 import { chats } from "@/db/schema";
 import {
   persistReferencedAppIds,
   readStoredReferencedAppIds,
   resolveStickyReferencedApps,
 } from "@/ipc/utils/mention_apps";
+import { eq } from "drizzle-orm";
 
 const FOO_APP = { id: 1, name: "foo.app.com", path: "foo-app" };
 const BAR_APP = { id: 2, name: "bar", path: "bar-app" };

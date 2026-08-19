@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import fs from "node:fs";
-import path from "node:path";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
+import path from "node:path";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   ensurePnpmAllowBuildsConfiguredMock,
@@ -54,6 +54,7 @@ vi.mock("@/ipc/utils/telemetry", () => ({
   sendTelemetryEvent: sendTelemetryEventMock,
 }));
 
+import { DyadErrorKind } from "@/errors/dyad_error";
 import {
   applyPnpmVersionMigration,
   getManagedPnpmMajorVersion,
@@ -61,7 +62,6 @@ import {
   parsePinnedPnpmMajorVersion,
   parsePnpmLockfileVersion,
 } from "./pnpm_migration";
-import { DyadErrorKind } from "@/errors/dyad_error";
 
 async function createTempAppDir(): Promise<string> {
   return mkdtemp(path.join(os.tmpdir(), "dyad-pnpm-migration-"));

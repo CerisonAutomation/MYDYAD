@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import type { TabInstanceId, WindowSessionId } from "../types";
-import { WindowRegistry, type WindowEndpoint } from "./window_registry";
+import { type WindowEndpoint, WindowRegistry } from "./window_registry";
 
 function endpoint(id: number): WindowEndpoint & { destroy(): void } {
   let destroyed = false;

@@ -1,21 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
-import { z } from "zod";
-import { withLock } from "../ipc/utils/lock_utils";
-import { readSettings, writeSettings } from "../main/settings";
+import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
 import {
   SupabaseManagementAPI,
   SupabaseManagementAPIError,
 } from "@dyad-sh/supabase-management-js";
 import log from "electron-log";
-import { IS_TEST_BUILD } from "../ipc/utils/test_utils";
-import type { SupabaseOrganizationCredentials } from "../lib/schemas";
+import { z } from "zod";
+import { withLock } from "../ipc/utils/lock_utils";
 import {
-  fetchWithRetry,
   RateLimitError,
+  fetchWithRetry,
   retryWithRateLimit,
 } from "../ipc/utils/retryWithRateLimit";
-import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { IS_TEST_BUILD } from "../ipc/utils/test_utils";
+import type { SupabaseOrganizationCredentials } from "../lib/schemas";
+import { readSettings, writeSettings } from "../main/settings";
 import { enqueueSupabaseDeploy } from "./supabase_deploy_queue";
 
 const fsPromises = fs.promises;

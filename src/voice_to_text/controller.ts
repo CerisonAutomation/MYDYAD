@@ -1,9 +1,9 @@
+import type { IdSource } from "@/state_machines/clock";
 import {
-  TransactionalDispatcher,
   type DispatcherError,
+  TransactionalDispatcher,
 } from "@/state_machines/dispatcher";
 import type { TransitionObserver } from "@/state_machines/types";
-import type { IdSource } from "@/state_machines/clock";
 import type {
   VoiceCommand,
   VoiceEvent,

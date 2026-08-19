@@ -32,7 +32,7 @@ export function parseRetryAfter(
   if (!headerValue) return undefined;
   const trimmed = headerValue.trim();
   if (/^\d+$/.test(trimmed)) {
-    return parseInt(trimmed, 10) * 1000;
+    return Number.parseInt(trimmed, 10) * 1000;
   }
   const dateMs = Date.parse(trimmed);
   if (!Number.isNaN(dateMs)) {

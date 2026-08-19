@@ -1,15 +1,3 @@
-import { useEffect, useId, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { ipc } from "@/ipc/types";
-import { Button } from "@/components/ui/button";
-import {
-  Database,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  ChevronDown,
-  AlertTriangle,
-} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,11 +8,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
-import { getErrorMessage } from "@/lib/errors";
 import { useLoadApp } from "@/hooks/useLoadApp";
 import { useNeon } from "@/hooks/useNeon";
+import { ipc } from "@/ipc/types";
+import { getErrorMessage } from "@/lib/errors";
+import { useMutation } from "@tanstack/react-query";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Database,
+  Loader2,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MigrationSqlPreviewDialog } from "./MigrationSqlPreviewDialog";
 
 interface MigrationPanelProps {

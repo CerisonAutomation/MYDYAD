@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { createDeepLinkQueue } from "@/main/deep_link_queue";
+import { describe, expect, it, vi } from "vitest";
 
 describe("createDeepLinkQueue", () => {
   it("queues deep links until the app is marked ready", () => {

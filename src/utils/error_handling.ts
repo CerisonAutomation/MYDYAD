@@ -8,8 +8,8 @@
  *   • Recovery strategies
  */
 
-import { logger } from "./structured_logger";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { logger } from "./structured_logger";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

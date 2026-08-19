@@ -1,8 +1,8 @@
-import { session } from "electron";
 import fs from "node:fs/promises";
 import { getTypeScriptCachePath } from "@/paths/paths";
-import { createTypedHandler } from "./base";
+import { session } from "electron";
 import { systemContracts } from "../types/system";
+import { createTypedHandler } from "./base";
 
 export const registerSessionHandlers = () => {
   createTypedHandler(systemContracts.clearSessionData, async () => {

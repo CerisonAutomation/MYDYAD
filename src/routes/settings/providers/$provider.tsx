@@ -1,6 +1,6 @@
-import { createRoute } from "@tanstack/react-router";
-import { rootRoute } from "@/routes/root";
 import { ProviderSettingsPage } from "@/components/settings/ProviderSettingsPage";
+import { rootRoute } from "@/routes/root";
+import { createRoute } from "@tanstack/react-router";
 
 interface ProviderSettingsParams {
   provider: string;

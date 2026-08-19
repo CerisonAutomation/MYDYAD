@@ -56,13 +56,13 @@ vi.mock("electron-log", () => ({
   },
 }));
 
+import { DyadErrorKind } from "@/errors/dyad_error";
 import {
   checkRls,
   createTempTestUser,
   deleteTempTestUser,
   reconcileOrphanTestUsers,
 } from "./supabase_test_user";
-import { DyadErrorKind } from "@/errors/dyad_error";
 
 type AppRow = any;
 

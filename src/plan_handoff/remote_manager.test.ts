@@ -1,4 +1,3 @@
-import { describe, expect, it, vi } from "vitest";
 import type {
   MachineAddress,
   MachineDispatchEnvelope,
@@ -6,9 +5,10 @@ import type {
   MachineSnapshotEnvelope,
 } from "@/distributed_machines/remote_protocol";
 import { createSequentialIdSource } from "@/state_machines/testing";
+import { describe, expect, it, vi } from "vitest";
 import {
-  PlanHandoffRemoteManager,
   type PlanHandoffRemoteConnection,
+  PlanHandoffRemoteManager,
 } from "./remote_manager";
 
 function createFailingConnection(error: Error): PlanHandoffRemoteConnection {

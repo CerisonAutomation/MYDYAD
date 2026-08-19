@@ -1,16 +1,16 @@
-import { describe, expect, it, vi } from "vitest";
-import type { QueryClient } from "@tanstack/react-query";
 import type { DispatcherError } from "@/state_machines/dispatcher";
 import {
+  type ControllerConformanceAdapter,
   createFakeClock,
   createSequentialIdSource,
   runControllerConformanceSuite,
-  type ControllerConformanceAdapter,
 } from "@/state_machines/testing";
 import type {
   TransitionObserver,
   TransitionResult,
 } from "@/state_machines/types";
+import type { QueryClient } from "@tanstack/react-query";
+import { describe, expect, it, vi } from "vitest";
 import { createScreenshotCommandAdapter } from "./commands";
 import { ScreenshotController } from "./controller";
 import type {

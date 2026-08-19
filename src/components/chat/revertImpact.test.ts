@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { Version } from "@/ipc/types";
+import { describe, expect, it } from "vitest";
 import { getExtraRevertedCommits } from "./revertImpact";
 
 const version = (oid: string): Version => ({

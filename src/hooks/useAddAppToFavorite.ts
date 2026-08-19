@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import type { ListedApp } from "@/ipc/types/app";
-import { showError, showSuccess } from "@/lib/toast";
 import { queryKeys } from "@/lib/queryKeys";
+import { showError, showSuccess } from "@/lib/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useAddAppToFavorite() {
   const queryClient = useQueryClient();

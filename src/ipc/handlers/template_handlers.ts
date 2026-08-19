@@ -1,25 +1,25 @@
-import os from "node:os";
-import path from "node:path";
 import fs from "node:fs";
 import { promises as fsPromises } from "node:fs";
-import log from "electron-log";
-import { eq } from "drizzle-orm";
+import os from "node:os";
+import path from "node:path";
 import { db } from "@/db";
 import { apps, chats } from "@/db/schema";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { getAllTemplates } from "../utils/template_utils";
-import { localTemplatesData } from "../../shared/templates";
-import { createTypedHandler } from "./base";
-import { templateContracts } from "../types/templates";
-import { getDyadAppPath } from "../../paths/paths";
-import { appOperationCoordinator } from "../services/app_operation_coordinator";
-import { runningApps, stopAppByInfo } from "../utils/process_manager";
-import { createFromTemplate } from "./createFromTemplate";
-import { ensureDyadGitignored } from "./gitignoreUtils";
 import { slugifyAppFolderName } from "@/shared/app_names";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { getDyadAppPath } from "../../paths/paths";
+import { localTemplatesData } from "../../shared/templates";
+import { appOperationCoordinator } from "../services/app_operation_coordinator";
+import { gitService } from "../services/git_service";
+import { templateContracts } from "../types/templates";
 import { resolveUniqueFolderName } from "../utils/app_name_resolution";
 import { getGitUncommittedFiles } from "../utils/git_utils";
-import { gitService } from "../services/git_service";
+import { runningApps, stopAppByInfo } from "../utils/process_manager";
+import { getAllTemplates } from "../utils/template_utils";
+import { createTypedHandler } from "./base";
+import { createFromTemplate } from "./createFromTemplate";
+import { ensureDyadGitignored } from "./gitignoreUtils";
 
 const logger = log.scope("template_handlers");
 
@@ -190,7 +190,7 @@ export function registerTemplateHandlers() {
         // the user picked that folder location intentionally.
         const useInPlace = path.isAbsolute(appRecord.path);
 
-        let workingPath = oldAbsPath;
+        const workingPath = oldAbsPath;
         let newSlug: string | null = null;
         let newAbsPath: string | null = null;
         let didPathSwap = false;

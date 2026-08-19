@@ -1,16 +1,22 @@
-import type { PackageManagerWarning } from "@/package_manager_warnings/store";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ipc } from "@/ipc/types";
-import { useSettings } from "@/hooks/useSettings";
 import { useRebuildAppAfterPnpmInstall, useRunApp } from "@/hooks/useRunApp";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "@/hooks/useSettings";
+import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import {
+  usePackageManagerWarning,
+  usePackageManagerWarningStore,
+} from "@/package_manager_warnings/PackageManagerWarningProvider";
+import type { PackageManagerWarning } from "@/package_manager_warnings/store";
 import { isVersionAtLeast } from "@/shared/version_utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import {
   Download,
   ExternalLink,
@@ -20,12 +26,6 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  usePackageManagerWarning,
-  usePackageManagerWarningStore,
-} from "@/package_manager_warnings/PackageManagerWarningProvider";
-import { useAtomValue } from "jotai";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
 
 type InstallStatus = "idle" | "installing" | "success" | "error";
 

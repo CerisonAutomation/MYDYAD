@@ -1,7 +1,7 @@
 import {
-  collectDisposalError,
-  TaskScope,
   type TaskCleanup,
+  TaskScope,
+  collectDisposalError,
 } from "./task_scope";
 
 export interface LifecycleHooks {

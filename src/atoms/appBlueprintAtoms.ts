@@ -1,5 +1,5 @@
-import { atom } from "jotai";
 import type { AppBlueprintData } from "@/ipc/types/app_blueprint";
+import { atom } from "jotai";
 
 export interface AppBlueprintState {
   plansByChatId: Map<number, AppBlueprintData>;

@@ -1,12 +1,12 @@
-import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { applySearchReplace } from "@/pro/main/ipc/processors/search_replace_processor";
 import {
-  parseDslTestCases,
-  isPassingTestCase,
   isFailingTestCase,
+  isPassingTestCase,
+  parseDslTestCases,
 } from "@/pro/main/ipc/processors/search_replace_dsl_test_runner";
+import { applySearchReplace } from "@/pro/main/ipc/processors/search_replace_processor";
+import { describe, expect, it } from "vitest";
 
 // Load test case files
 const passesContent = readFileSync(

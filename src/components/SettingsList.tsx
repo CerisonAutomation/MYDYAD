@@ -1,12 +1,12 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useScrollAndNavigateTo } from "@/hooks/useScrollAndNavigateTo";
-import { useAtom } from "jotai";
 import { activeSettingsSectionAtom } from "@/atoms/viewAtoms";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useScrollAndNavigateTo } from "@/hooks/useScrollAndNavigateTo";
 import { SECTION_IDS, SETTINGS_SEARCH_INDEX } from "@/lib/settingsSearchIndex";
+import { cn } from "@/lib/utils";
 import Fuse from "fuse.js";
+import { useAtom } from "jotai";
 import { SearchIcon, XIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type SettingsSection = {
   id: string;

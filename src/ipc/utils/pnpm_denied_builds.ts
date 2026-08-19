@@ -1,8 +1,8 @@
 import {
+  type PnpmIgnoredBuild,
   parsePnpmIgnoredBuildsFromOutput,
   readPnpmIgnoredBuilds,
   recordDeniedPnpmBuilds,
-  type PnpmIgnoredBuild,
 } from "@/ipc/utils/socket_firewall";
 import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
 

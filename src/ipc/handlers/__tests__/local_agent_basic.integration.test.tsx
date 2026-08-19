@@ -13,11 +13,11 @@ import {
   getAppBlueprintForChat,
 } from "@/ipc/handlers/app_blueprint_handlers";
 import { ensureGitLineEndingPolicy } from "@/ipc/utils/git_utils";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("local-agent basic flows (integration)", () => {
   let harness: HybridChatHarness;

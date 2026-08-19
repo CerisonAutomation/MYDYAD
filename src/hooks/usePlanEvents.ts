@@ -1,13 +1,13 @@
-import { useEffect } from "react";
-import { useSetAtom } from "jotai";
-import { useNavigate } from "@tanstack/react-router";
+import { previewModeAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import {
   planAcceptInNewChatByChatIdAtom,
   planStateAtom,
 } from "@/atoms/planAtoms";
-import { previewModeAtom } from "@/atoms/appAtoms";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { planEventClient, type PlanUpdatePayload } from "@/ipc/types/plan";
+import { type PlanUpdatePayload, planEventClient } from "@/ipc/types/plan";
+import { useNavigate } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
+import { useEffect } from "react";
 
 /**
  * Hook to handle plan mode IPC events.

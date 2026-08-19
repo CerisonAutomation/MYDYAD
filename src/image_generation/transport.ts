@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { RequestIdSchema } from "@/distributed_machines/request_identity";
-import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import type { RemoteClientDefinition } from "@/distributed_machines/remote_client";
+import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
+import { RequestIdSchema } from "@/distributed_machines/request_identity";
 import { ImageThemeModeSchema } from "@/ipc/types/image_generation";
+import { z } from "zod";
 import {
   IMAGE_GENERATION_INVOCATION_KIND,
   type ImageGenerationActorState,

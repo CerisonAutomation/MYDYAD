@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { FileText, Eye, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { useSetAtom } from "jotai";
 import { previewModeAtom } from "@/atoms/appAtoms";
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
-import { CustomTagState } from "./stateTypes";
 import { usePlan } from "@/hooks/usePlan";
+import { useSetAtom } from "jotai";
+import { ChevronDown, ChevronUp, Eye, FileText, Loader2 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadWritePlanProps {
   node: {

@@ -1,19 +1,19 @@
+import { Zap } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Zap } from "lucide-react";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
-import { useAutoCollapse } from "./useAutoCollapse";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
+  DyadDescription,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadDescription,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadEditProps {
   children?: ReactNode;

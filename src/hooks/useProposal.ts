@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
-import type { ProposalResult } from "@/lib/schemas";
 import { queryKeys } from "@/lib/queryKeys";
+import type { ProposalResult } from "@/lib/schemas";
+import { useQuery } from "@tanstack/react-query";
 
 export function useProposal(chatId?: number | undefined) {
   const {

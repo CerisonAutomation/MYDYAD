@@ -7,12 +7,12 @@
  * active invocation. Provider settlements are host-only.
  */
 
-import type { InvocationRef } from "@/state_machines/invocation_ref";
 import type {
   CorrelatedOperationOutcome,
   OperationDisposalCause,
 } from "@/distributed_machines/operation_registry";
 import type { RequestId } from "@/distributed_machines/request_identity";
+import type { InvocationRef } from "@/state_machines/invocation_ref";
 
 export const IMAGE_GENERATION_INVOCATION_KIND = "image-generation";
 

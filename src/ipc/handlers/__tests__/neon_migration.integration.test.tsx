@@ -20,11 +20,11 @@ import { eq } from "drizzle-orm";
 
 import { apps } from "@/db/schema";
 import { writeSettings } from "@/main/settings";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("Neon migration actions (integration)", () => {
   let harness: HybridChatHarness;

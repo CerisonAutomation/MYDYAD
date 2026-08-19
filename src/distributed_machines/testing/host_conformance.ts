@@ -1,9 +1,9 @@
-import { change, ignore, stay } from "@/state_machines/types";
 import {
+  type FakeClock,
   createFakeClock,
   createSequentialIdSource,
-  type FakeClock,
 } from "@/state_machines/testing";
+import { change, ignore, stay } from "@/state_machines/types";
 import {
   ActorHost,
   type ActorHostError,

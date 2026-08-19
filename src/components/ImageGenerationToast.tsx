@@ -1,11 +1,11 @@
+import { ImageLightbox } from "@/components/chat/ImageLightbox";
+import { Button } from "@/components/ui/button";
+import type { ImageGenerationResultView } from "@/ipc/types";
+import { buildDyadMediaUrlForApp } from "@/lib/dyadMediaUrl";
+import { CheckCircle2, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ImageLightbox } from "@/components/chat/ImageLightbox";
-import { buildDyadMediaUrlForApp } from "@/lib/dyadMediaUrl";
-import type { ImageGenerationResultView } from "@/ipc/types";
 
 const GENERATING_TOAST_ID = "image-gen-progress";
 const SUCCESS_TOAST_ID = "image-gen-success";
@@ -128,7 +128,7 @@ export function showImageGeneratingToast(
   toast.dismiss(SUCCESS_TOAST_ID);
   return toast.custom(
     (t) => <ImageGeneratingToast pendingCount={pendingCount} toastId={t} />,
-    { id: GENERATING_TOAST_ID, duration: Infinity },
+    { id: GENERATING_TOAST_ID, duration: Number.POSITIVE_INFINITY },
   );
 }
 

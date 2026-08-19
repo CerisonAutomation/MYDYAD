@@ -1,20 +1,20 @@
-import type React from "react";
-import { useEffect, useState, type ReactNode } from "react";
-import { useAutoCollapse } from "./useAutoCollapse";
-import { Eye, ImageIcon } from "lucide-react";
-import { useAtomValue } from "jotai";
-import { CustomTagState } from "./stateTypes";
-import {
-  DyadCard,
-  DyadCardHeader,
-  DyadBadge,
-  DyadExpandIcon,
-  DyadStateIndicator,
-  DyadCardContent,
-} from "./DyadCardPrimitives";
-import { ImageLightbox } from "./ImageLightbox";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { useLoadApp } from "@/hooks/useLoadApp";
+import { useAtomValue } from "jotai";
+import { Eye, ImageIcon } from "lucide-react";
+import type React from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import {
+  DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
+  DyadStateIndicator,
+} from "./DyadCardPrimitives";
+import { ImageLightbox } from "./ImageLightbox";
+import type { CustomTagState } from "./stateTypes";
+import { useAutoCollapse } from "./useAutoCollapse";
 
 interface DyadImageGenerationNode {
   properties: {

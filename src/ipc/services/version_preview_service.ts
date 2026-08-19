@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import fs from "node:fs";
 import path from "node:path";
 import { db } from "@/db";
@@ -7,12 +6,13 @@ import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type { VersionCommandResult } from "@/ipc/types";
 import { getDyadAppPath } from "@/paths/paths";
 import type { PreviewCommand, RestoreRecovery } from "@/version_preview/state";
+import { eq } from "drizzle-orm";
+import { versionPreviewHandlerService } from "../handlers/version_handlers";
 import {
   getCurrentCommitHash,
   getGitUncommittedFilesWithStatus,
   gitCurrentBranch,
 } from "../utils/git_utils";
-import { versionPreviewHandlerService } from "../handlers/version_handlers";
 import { versionPreviewPresentationService } from "./version_preview_presentation_service";
 
 const NO_BRANCH = "<no-branch>";

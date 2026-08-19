@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Fetches the list of files changed in a specific version (commit), along with
@@ -21,7 +21,7 @@ export function useVersionChanges(
       });
     },
     enabled: appId !== null && versionId !== null,
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   return {

@@ -1,10 +1,10 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { change } from "@/state_machines/types";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
+import { change } from "@/state_machines/types";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { ActorHost } from "./actor_host";
 import type { DistributedMachineDefinition } from "./definition";
 import { useActorSelector } from "./react";

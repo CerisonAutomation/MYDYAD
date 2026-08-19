@@ -1,9 +1,9 @@
-import { createStore, Provider } from "jotai";
-import { act, renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ReactNode } from "react";
 import type { McpListToolsResult, McpServer } from "@/ipc/types";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   listServers: vi.fn(),

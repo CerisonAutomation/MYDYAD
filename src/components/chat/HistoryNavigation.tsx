@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef } from "react";
-import { $getRoot, $createParagraphNode, $createTextNode } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 import {
+  COMMAND_PRIORITY_CRITICAL,
   KEY_ARROW_UP_COMMAND,
   KEY_ESCAPE_COMMAND,
-  COMMAND_PRIORITY_CRITICAL,
 } from "lexical";
+import { useCallback, useEffect, useRef } from "react";
 
 export const HISTORY_TRIGGER = "\u200B";
 

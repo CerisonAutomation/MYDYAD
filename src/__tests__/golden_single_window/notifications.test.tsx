@@ -1,6 +1,6 @@
+import { useNotificationHandler } from "@/hooks/useNotificationHandler";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useNotificationHandler } from "@/hooks/useNotificationHandler";
 
 const mocks = vi.hoisted(() => ({
   classifiedListener: undefined as

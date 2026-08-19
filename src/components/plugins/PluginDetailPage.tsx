@@ -1,9 +1,6 @@
-import { useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,18 +8,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { useMcp } from "@/hooks/useMcp";
 import { useMcpCatalog } from "@/hooks/useMcpCatalog";
 import type { McpToolConsent } from "@/ipc/types";
+import { useNavigate } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 import { useOauthStorageEncrypted } from "./AddPluginDialog";
 import { CatalogBadge } from "./CatalogBadge";
-import { OauthPlaintextStorageAlert } from "./OauthPlaintextStorageAlert";
 import { KeyValueEditor, arrayToJsonObject } from "./KeyValueEditor";
+import { OauthPlaintextStorageAlert } from "./OauthPlaintextStorageAlert";
 import { PluginSetupSection } from "./PluginSetupSection";
 import { serverNeedsSetup } from "./pluginSetup";
-import { usePluginConnect, type ConnectFeedback } from "./usePluginConnect";
+import { type ConnectFeedback, usePluginConnect } from "./usePluginConnect";
 
 // Keyed on the full kind union so adding a feedback kind forces a
 // title here instead of silently reusing another kind's.

@@ -1,13 +1,13 @@
-import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  looksLikePackageSpec,
   type McpCatalogEntry,
+  looksLikePackageSpec,
 } from "@/ipc/types/mcp_catalog";
+import { Check, Loader2 } from "lucide-react";
 import {
-  catalogEntryCanConnect,
   type CatalogCardStatus,
+  catalogEntryCanConnect,
 } from "./catalogCardStatus";
 
 // The schema already validates url, but parse defensively so one bad

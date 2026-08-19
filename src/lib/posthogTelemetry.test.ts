@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import {
   createExceptionFromTelemetry,
   getExceptionTelemetryContext,
@@ -8,6 +7,7 @@ import {
   shouldFilterPostHogExceptionEvent,
 } from "@/lib/posthogTelemetry";
 import type { UserSettings } from "@/lib/schemas";
+import { describe, expect, it } from "vitest";
 
 function makeSettings(overrides: Partial<UserSettings> = {}): UserSettings {
   return {

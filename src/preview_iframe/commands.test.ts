@@ -1,6 +1,6 @@
+import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
 import { createStore } from "jotai";
 import { describe, expect, it, vi } from "vitest";
-import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
 import {
   PREVIEW_IFRAME_MESSAGE_ROUTES,
   createPreviewIframeCommandAdapter,

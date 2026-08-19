@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   BufferedProcessSpawnError,
   DEFAULT_BUFFERED_PROCESS_TIMEOUT_MS,

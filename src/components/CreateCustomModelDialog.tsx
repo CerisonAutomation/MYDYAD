@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ipc } from "@/ipc/types";
-import { useMutation } from "@tanstack/react-query";
 import { showError, showSuccess } from "@/lib/toast";
+import { useMutation } from "@tanstack/react-query";
+import type React from "react";
+import { useState } from "react";
 
 interface CreateCustomModelDialogProps {
   isOpen: boolean;
@@ -41,17 +42,17 @@ export function CreateCustomModelDialog({
         providerId,
         description: description || undefined,
         maxOutputTokens: maxOutputTokens
-          ? parseInt(maxOutputTokens, 10)
+          ? Number.parseInt(maxOutputTokens, 10)
           : undefined,
-        contextWindow: contextWindow ? parseInt(contextWindow, 10) : undefined,
+        contextWindow: contextWindow ? Number.parseInt(contextWindow, 10) : undefined,
       };
 
       if (!params.apiName) throw new Error("Model API name is required");
       if (!params.displayName)
         throw new Error("Model display name is required");
-      if (maxOutputTokens && isNaN(params.maxOutputTokens ?? NaN))
+      if (maxOutputTokens && isNaN(params.maxOutputTokens ?? Number.NaN))
         throw new Error("Max Output Tokens must be a valid number");
-      if (contextWindow && isNaN(params.contextWindow ?? NaN))
+      if (contextWindow && isNaN(params.contextWindow ?? Number.NaN))
         throw new Error("Context Window must be a valid number");
 
       await ipc.languageModel.createCustomModel({

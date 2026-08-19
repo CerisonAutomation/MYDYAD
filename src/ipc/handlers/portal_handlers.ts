@@ -1,13 +1,13 @@
-import { createLoggedHandler } from "./safe_handle";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
 import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
 import { getDyadAppPath } from "../../paths/paths";
 import { gitService } from "../services/git_service";
 import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { runPortalMigrationCommand } from "../utils/portal_migration";
+import { createLoggedHandler } from "./safe_handle";
 
 const logger = log.scope("portal_handlers");
 const handle = createLoggedHandler(logger);

@@ -1,14 +1,14 @@
 import { parse } from "@babel/parser";
-import * as recast from "recast";
 import traverse from "@babel/traverse";
 import type {
-  JSXOpeningElement,
   JSXAttribute,
   JSXElement,
   JSXIdentifier,
+  JSXOpeningElement,
   JSXText,
   Node,
 } from "@babel/types";
+import * as recast from "recast";
 
 interface ContentChange {
   classes: string[];
@@ -92,7 +92,7 @@ export function transformContent(
         // Update className if there are style changes
         if (change.classes.length > 0) {
           const attributes = path.node.openingElement.attributes;
-          let classNameAttr = attributes.find(
+          const classNameAttr = attributes.find(
             (attr: JSXAttribute | Node) =>
               attr.type === "JSXAttribute" &&
               (attr as JSXAttribute).name?.name === "className",

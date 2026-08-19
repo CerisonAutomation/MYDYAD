@@ -1,53 +1,53 @@
-import { useAtomValue, useSetAtom } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { isChatPanelHiddenAtom } from "@/atoms/viewAtoms";
-import { useSecurityReview } from "@/hooks/useSecurityReview";
-import { ipc } from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
-import { Card, CardContent } from "@/components/ui/card";
+import { VanillaMarkdownParser } from "@/components/chat/VanillaMarkdownParser";
+import { SeverityBadge, getSeverityIcon } from "@/components/security/severity";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
-import {
-  Shield,
-  ChevronDown,
-  ExternalLink,
-  Pencil,
-  Wrench,
-} from "lucide-react";
-import { getSeverityIcon, SeverityBadge } from "@/components/security/severity";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { showError } from "@/lib/toast";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type {
-  SecurityFinding,
-  SecurityReviewFinding,
-  SecurityReviewResult,
-} from "@/ipc/types/security";
-import { useState, useEffect, useRef } from "react";
-import { VanillaMarkdownParser } from "@/components/chat/VanillaMarkdownParser";
-import { showSuccess, showWarning, toast } from "@/lib/toast";
-import { useLoadAppFile } from "@/hooks/useLoadAppFile";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSelectChat } from "@/hooks/useSelectChat";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useLoadAppFile } from "@/hooks/useLoadAppFile";
+import { useSecurityReview } from "@/hooks/useSecurityReview";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { ipc } from "@/ipc/types";
+import type {
+  SecurityFinding,
+  SecurityReviewFinding,
+  SecurityReviewResult,
+} from "@/ipc/types/security";
+import { queryKeys } from "@/lib/queryKeys";
+import { showError } from "@/lib/toast";
+import { showSuccess, showWarning, toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  ChevronDown,
+  ExternalLink,
+  Pencil,
+  Shield,
+  Wrench,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const DESCRIPTION_PREVIEW_LENGTH = 150;
 

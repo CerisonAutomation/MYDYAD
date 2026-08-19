@@ -97,7 +97,7 @@ const MAX_NETWORK_ENTRIES = 500;
 const pageState = new WeakMap<Page, PageActivityState>();
 
 /** Attach console/network capture listeners to a freshly created page. */
-function attachPageListeners(page: Page): void {
+export function attachPageListeners(page: Page): void {
   const state: PageActivityState = {
     consoleLogs: [],
     networkEntries: [],
@@ -284,8 +284,9 @@ export async function getBrowser(): Promise<Browser> {
       }
     }
     if (!chromePath) {
-      throw new Error(
+      throw new DyadError(
         "No browser available. Install Playwright Chromium: npx playwright install chromium",
+        DyadErrorKind.External,
       );
     }
     browser = await playwright.chromium.launch({
@@ -348,6 +349,7 @@ export async function getPage(): Promise<Page> {
   for (const page of livePages) {
     const url = page.url();
     if (url === "about:blank" || url === "chrome://newtab/") {
+      if (!pageState.has(page)) attachPageListeners(page);
       touchActivity();
       return page;
     }
@@ -363,6 +365,7 @@ export async function getPage(): Promise<Page> {
   }
 
   const page = await ctx.newPage();
+  attachPageListeners(page);
   touchActivity();
   return page;
 }
@@ -530,7 +533,7 @@ export function resetPreviewProbeCache(): void {
  */
 async function probePreview(
   url: string,
-  timeoutMs = 2_500,
+  timeoutMs = 5_000,
 ): Promise<{ ok: boolean; status?: number; error?: string }> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -544,6 +547,20 @@ async function probePreview(
     return { ok: true, status: res.status };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const causeMessage =
+      error instanceof Error && error.cause instanceof Error
+        ? error.cause.message
+        : "";
+    const fullMessage = `${message} ${causeMessage}`;
+    // The proxy server may send both Content-Length and Transfer-Encoding
+    // headers, which violates HTTP/1.1 and causes Node's undici parser to
+    // throw. The server IS responding — treat this as a successful probe.
+    if (
+      fullMessage.includes("Content-Length can't be present with Transfer-Encoding") ||
+      fullMessage.includes("Response does not match the HTTP/1.1 protocol")
+    ) {
+      return { ok: true, status: 200 };
+    }
     return { ok: false, error: message };
   } finally {
     clearTimeout(timer);

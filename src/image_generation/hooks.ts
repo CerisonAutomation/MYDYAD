@@ -1,36 +1,36 @@
-import { useMemo } from "react";
-import { useDistributedMachine } from "@/distributed_machines/react";
-import { useRemoteMachineClient } from "@/distributed_machines/react";
-import { createCompletionAwareActor } from "@/distributed_machines/request_actor";
-import type { MachineDispatchReceipt } from "@/distributed_machines/remote_protocol";
-import { RemoteMachineTransportError } from "@/distributed_machines/remote_client";
 import type {
   PreparedDispatchResult,
   PreparedRequest,
 } from "@/distributed_machines/prepared_request";
+import { useDistributedMachine } from "@/distributed_machines/react";
+import { useRemoteMachineClient } from "@/distributed_machines/react";
+import { RemoteMachineTransportError } from "@/distributed_machines/remote_client";
+import type { ObservedRevisionToken } from "@/distributed_machines/remote_client";
+import type { MachineDispatchReceipt } from "@/distributed_machines/remote_protocol";
+import { createCompletionAwareActor } from "@/distributed_machines/request_actor";
 import type {
   RequestId,
   RequestIdempotencyKey,
   RequestMessageId,
 } from "@/distributed_machines/request_identity";
 import { ipc } from "@/ipc/types";
+import { useMemo } from "react";
+import { useImageGenerationRequestScope } from "./request_scope";
 import {
-  getImageGenerationKey,
-  imageGenerationClientDefinition,
-} from "./transport";
+  selectChatImageGenerationJobs,
+  selectImageGenerationPendingCount,
+} from "./selectors";
 import type {
   CancelImageGenerationEvent,
   ImageGenerationJobView,
   ImageGenerationOperationOutcome,
   SubmitImageGenerationEvent,
 } from "./state";
-import {
-  selectChatImageGenerationJobs,
-  selectImageGenerationPendingCount,
-} from "./selectors";
-import { useImageGenerationRequestScope } from "./request_scope";
 import type { ImageGenerationIgnoreReason } from "./state";
-import type { ObservedRevisionToken } from "@/distributed_machines/remote_client";
+import {
+  getImageGenerationKey,
+  imageGenerationClientDefinition,
+} from "./transport";
 
 const selectJobs = (snapshot: { jobs: readonly ImageGenerationJobView[] }) =>
   snapshot.jobs;

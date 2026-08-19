@@ -1,12 +1,12 @@
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+import { PackageManagerWarningStore } from "@/package_manager_warnings/store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { PackageManagerWarningBanner } from "./PackageManagerWarningBanner";
-import { PackageManagerWarningStore } from "@/package_manager_warnings/store";
-import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
 
 const {
   appRunState,

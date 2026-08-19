@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next";
-import React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type React from "react";
+import { useTranslation } from "react-i18next";
 
 interface CommunityCodeConsentDialogProps {
   isOpen: boolean;

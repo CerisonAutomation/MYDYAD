@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
 import type { InvocationRef } from "@/state_machines/invocation_ref";
+import { describe, expect, it } from "vitest";
 import { KeyedAdmissionGate } from "../keyed_admission_gate";
 import {
-  OperationIdentityConflictError,
-  OperationRegistry,
   type OperationAdmissionIdentity,
   type OperationDisposalCause,
+  OperationIdentityConflictError,
   type OperationReceiptMetadata,
+  OperationRegistry,
 } from "../operation_registry";
 import type { RequestId } from "../request_identity";
 import { assertNoOwnedResources } from "./machine_conformance";

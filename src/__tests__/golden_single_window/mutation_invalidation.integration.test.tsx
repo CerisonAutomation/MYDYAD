@@ -1,4 +1,10 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { queryKeys } from "@/lib/queryKeys";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
+import type { QueryKey } from "@tanstack/react-query";
 import {
   act,
   fireEvent,
@@ -6,13 +12,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import type { QueryKey } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 describe("golden single-window: production mutation invalidation", () => {
   let harness: HybridChatHarness;

@@ -1,15 +1,15 @@
-import { useState } from "react";
 import { useAtomValue } from "jotai";
+import { useState } from "react";
 
 import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { annotatorModeAtom } from "@/atoms/previewAtoms";
-import { AgentModeRequiredDialog } from "./AgentModeRequiredDialog";
 import { useChatMode } from "@/hooks/useChatMode";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import type { TestRecorderController } from "@/hooks/useTestRecorder";
 import { showError, showInfo } from "@/lib/toast";
 import { MAX_CHAT_PROMPT_CHARS } from "@/shared/chatAttachmentLimits";
+import { AgentModeRequiredDialog } from "./AgentModeRequiredDialog";
 import { RecordingBanner } from "./RecordingBanner";
 
 /**

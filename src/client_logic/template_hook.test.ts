@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { neonTemplateHook } from "./template_hook";
 
 const mocks = vi.hoisted(() => ({

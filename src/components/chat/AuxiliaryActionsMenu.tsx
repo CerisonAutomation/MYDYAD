@@ -1,42 +1,42 @@
-import { useState, useMemo } from "react";
-import {
-  Plus,
-  Paperclip,
-  ChartColumnIncreasing,
-  Palette,
-  Check,
-  Ban,
-  Brush,
-  PlusCircle,
-  MoreHorizontal,
-  ImageIcon,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { ContextFilesPicker } from "@/components/ContextFilesPicker";
+import { CustomThemeDialog } from "@/components/CustomThemeDialog";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ContextFilesPicker } from "@/components/ContextFilesPicker";
-import { FileAttachmentDropdown } from "./FileAttachmentDropdown";
-import { CustomThemeDialog } from "@/components/CustomThemeDialog";
-import { useThemes } from "@/hooks/useThemes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useCustomThemes } from "@/hooks/useCustomThemes";
 import { useSettings } from "@/hooks/useSettings";
+import { useThemes } from "@/hooks/useThemes";
 import { ipc } from "@/ipc/types";
-import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  Ban,
+  Brush,
+  ChartColumnIncreasing,
+  Check,
+  ImageIcon,
+  MoreHorizontal,
+  Palette,
+  Paperclip,
+  Plus,
+  PlusCircle,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { FileAttachmentDropdown } from "./FileAttachmentDropdown";
 
 interface AuxiliaryActionsMenuProps {
   onFileSelect: (

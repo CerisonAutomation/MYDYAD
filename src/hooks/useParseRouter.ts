@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { useQueries } from "@tanstack/react-query";
 import { useLoadApp } from "@/hooks/useLoadApp";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQueries } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 export interface ParsedRoute {
   path: string;

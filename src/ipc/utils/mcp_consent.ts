@@ -1,7 +1,7 @@
+import { and, eq } from "drizzle-orm";
+import type { IpcMainInvokeEvent } from "electron";
 import { db } from "../../db";
 import { mcpToolConsents } from "../../db/schema";
-import { and, eq } from "drizzle-orm";
-import { IpcMainInvokeEvent } from "electron";
 import {
   rememberUserInputSubscriber,
   userInputRegistry,

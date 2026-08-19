@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { MessageSquare, ChevronDown, ChevronUp, Paperclip } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, Paperclip } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface AppBlueprintUserPromptProps {
   prompt: string;

@@ -1,6 +1,6 @@
 import {
-  appOperationCoordinator,
   type AppOperationRequest,
+  appOperationCoordinator,
 } from "../services/app_operation_coordinator";
 
 /**

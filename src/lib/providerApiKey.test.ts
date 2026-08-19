@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import {
   findInvalidProviderApiKeyCharacter,
   formatInvalidProviderApiKeyMessage,
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
+import { describe, expect, it } from "vitest";
 
 describe("providerApiKey", () => {
   it("trims pasted API keys", () => {

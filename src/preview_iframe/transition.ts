@@ -1,4 +1,4 @@
-import { ignore, type TransitionResult } from "@/state_machines/types";
+import { type TransitionResult, ignore } from "@/state_machines/types";
 import type {
   PreviewIframeCommand,
   PreviewIframeEvent,

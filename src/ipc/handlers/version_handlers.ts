@@ -1,75 +1,75 @@
-import { db } from "../../db";
-import { apps, chats, messages, versions } from "../../db/schema";
-import { desc, eq, and, gt, gte } from "drizzle-orm";
-import type { GitCommit } from "../git_types";
 import fs from "node:fs";
 import path from "node:path";
+import { and, desc, eq, gt, gte } from "drizzle-orm";
+import log from "electron-log";
+import type { z } from "zod";
+import { db } from "../../db";
+import { apps, chats, messages, versions } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
+import type { GitCommit } from "../git_types";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
-import log from "electron-log";
-import { createTypedHandler } from "./base";
 import { versionContracts } from "../types/version";
 import type {
   CheckoutVersionParamsSchema,
-  RevertVersionParamsSchema,
   RestoreToMessageParamsSchema,
+  RevertVersionParamsSchema,
   VersionCommandResult,
 } from "../types/version";
-import type { z } from "zod";
 import type { SafeSender } from "../utils/safe_sender";
+import { createTypedHandler } from "./base";
 
-import { deployAllSupabaseFunctions } from "../../supabase_admin/supabase_utils";
 import { readSettings } from "../../main/settings";
+import { deployAllSupabaseFunctions } from "../../supabase_admin/supabase_utils";
 import {
+  getChangedFilesForCommit,
+  getCurrentCommitHash,
+  getFileAtCommit,
+  getGitUncommittedFilesWithStatus,
+  getOldFileContent,
   gitAddAll,
   gitCheckout,
   gitCommit,
-  getGitUncommittedFilesWithStatus,
-  gitStageToRevert,
-  getCurrentCommitHash,
   gitCommitExists,
   gitCurrentBranch,
   gitLog,
+  gitStageToRevert,
   isGitStatusClean,
-  getChangedFilesForCommit,
-  getFileAtCommit,
-  getOldFileContent,
 } from "../utils/git_utils";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import {
+  beginAppChatActorMutation,
+  waitForAppChatActorsIdle,
+} from "@/ipc/services/chat_actor_service";
+import {
+  DIFF_BINARY_PLACEHOLDER,
+  DIFF_TOO_LARGE_PLACEHOLDER,
+} from "@/shared/diff_placeholders";
+import type { RestoreRecovery } from "@/version_preview/state";
+import { getConnectionUri } from "../../neon_admin/neon_context";
 import {
   getNeonClient,
   getNeonErrorMessage,
   getRetentionWindowFromError,
   isRetentionWindowError,
 } from "../../neon_admin/neon_management_client";
-import { getConnectionUri } from "../../neon_admin/neon_context";
+import { blockRecordingStart } from "../services/recording_registry";
 import {
-  updatePostgresUrlEnvVar,
   updateDbPushEnvVar,
+  updatePostgresUrlEnvVar,
 } from "../utils/app_env_var_utils";
+import { syncCloudSandboxSnapshot } from "../utils/cloud_sandbox_provider";
+import { readStoredReferencedAppIds } from "../utils/mention_apps";
 import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
 import { retryOnLocked } from "../utils/retryOnLocked";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { syncCloudSandboxSnapshot } from "../utils/cloud_sandbox_provider";
-import {
-  DIFF_BINARY_PLACEHOLDER,
-  DIFF_TOO_LARGE_PLACEHOLDER,
-} from "@/shared/diff_placeholders";
 import {
   blockNewStreamsForApp,
   blockNewStreamsForChat,
   cancelActiveStreamsForApp,
 } from "./chat_stream_handlers";
-import {
-  beginAppChatActorMutation,
-  waitForAppChatActorsIdle,
-} from "@/ipc/services/chat_actor_service";
-import type { RestoreRecovery } from "@/version_preview/state";
-import { readStoredReferencedAppIds } from "../utils/mention_apps";
-import { blockRecordingStart } from "../services/recording_registry";
 
 const logger = log.scope("version_handlers");
 

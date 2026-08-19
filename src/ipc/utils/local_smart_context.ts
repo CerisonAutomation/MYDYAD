@@ -9,9 +9,9 @@
  * that works with any provider.
  */
 
-import log from "electron-log";
-import type { CodebaseFile } from "@/utils/codebase";
 import type { SmartContextMode } from "@/lib/schemas";
+import type { CodebaseFile } from "@/utils/codebase";
+import log from "electron-log";
 import { quickFuzzySearch } from "./fuse_search";
 
 const logger = log.scope("local_smart_context");

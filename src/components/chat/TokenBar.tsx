@@ -1,4 +1,5 @@
-import React from "react";
+
+import { chatInputValueAtom } from "@/atoms/chatAtoms";
 import {
   Tooltip,
   TooltipContent,
@@ -6,17 +7,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCountTokens } from "@/hooks/useCountTokens";
-import {
-  MessageSquare,
-  Code,
-  Bot,
-  AlignLeft,
-  ExternalLink,
-} from "lucide-react";
-import { chatInputValueAtom } from "@/atoms/chatAtoms";
-import { useAtom } from "jotai";
 import { useSettings } from "@/hooks/useSettings";
 import { ipc } from "@/ipc/types";
+import { useAtom } from "jotai";
+import {
+  AlignLeft,
+  Bot,
+  Code,
+  ExternalLink,
+  MessageSquare,
+} from "lucide-react";
 
 interface TokenBarProps {
   chatId?: number;

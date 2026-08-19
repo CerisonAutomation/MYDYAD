@@ -1,11 +1,11 @@
-import { db } from "../../db";
-import { apps, chats } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { getDyadAppPath } from "../../paths/paths";
-import { CodebaseFile, extractCodebase } from "../../utils/codebase";
-import { validateChatContext } from "../utils/context_paths_utils";
-import log from "electron-log";
 import { parseKnownAppMentions } from "@/shared/parse_mention_apps";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { db } from "../../db";
+import { type apps, chats } from "../../db/schema";
+import { getDyadAppPath } from "../../paths/paths";
+import { type CodebaseFile, extractCodebase } from "../../utils/codebase";
+import { validateChatContext } from "../utils/context_paths_utils";
 import { publishQueryInvalidations } from "./query_invalidation_delivery";
 
 const logger = log.scope("mention_apps");

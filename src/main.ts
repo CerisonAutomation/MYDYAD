@@ -1,18 +1,18 @@
+import { randomUUID } from "node:crypto";
+import * as path from "node:path";
 import {
+  net,
+  BrowserWindow,
+  type Event as ElectronEvent,
+  Menu,
   app,
   autoUpdater,
-  BrowserWindow,
+  crashReporter,
   dialog,
-  Menu,
+  nativeImage,
   protocol,
   session,
-  net,
-  nativeImage,
-  crashReporter,
-  type Event as ElectronEvent,
 } from "electron";
-import * as path from "node:path";
-import { randomUUID } from "node:crypto";
 
 // Suppress harmless EPIPE errors from console.error writing to dead pipes
 // (e.g. logging after Docker container or dev server process exits)
@@ -22,10 +22,10 @@ process.on("uncaughtException", (err) => {
 });
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { registerIpcHandlers } from "./ipc/ipc_host";
 import dotenv from "dotenv";
 // @ts-ignore
 import started from "electron-squirrel-startup";
+import { registerIpcHandlers } from "./ipc/ipc_host";
 console.log(
   "[BOOT] main.ts loaded, E2E_TEST_BUILD=",
   process.env.E2E_TEST_BUILD,
@@ -38,57 +38,106 @@ console.log(
 // Keychain prompts.
 app.commandLine.appendSwitch("password-store", "basic");
 
-import { updateElectronApp, UpdateSourceType } from "update-electron-app";
-import log from "electron-log";
-import {
-  getSettingsFilePath,
-  tryWriteSettings,
-  readSettings,
-  readEffectiveSettings,
-  writeCrashSentinel,
-  clearCrashSentinel,
-  crashSentinelExists,
-  readCrashSentinel,
-  recordRendererCrash,
-  readRendererCrashRecord,
-  clearRendererCrashRecord,
-  setInitialLoadIsFirstSession,
-} from "./main/settings";
-import { recordUpdaterError } from "./main/updater_state";
-import {
-  sendTelemetryEvent,
-  sendTelemetryEventToWindow,
-} from "./ipc/utils/telemetry";
-import { handleSupabaseOAuthReturn } from "./supabase_admin/supabase_return_handler";
-import { handleDyadProReturn } from "./main/pro";
-import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
-import { BackupManager } from "./backup_manager";
-import { db, getDatabasePath, initializeDatabase, closeDatabase } from "./db";
-import { apps } from "./db/schema";
+import fs from "fs";
+import { pathToFileURL } from "node:url";
 import { eq } from "drizzle-orm";
-import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
-import { reconcileOrphanTestUsers } from "./ipc/utils/supabase_test_user";
-import { UserSettings } from "./lib/schemas";
-import { handleNeonOAuthReturn } from "./neon_admin/neon_return_handler";
+import log from "electron-log";
+import { UpdateSourceType, updateElectronApp } from "update-electron-app";
+import { BackupManager } from "./backup_manager";
+import { closeDatabase, db, getDatabasePath, initializeDatabase } from "./db";
+import { apps } from "./db/schema";
+import { DyadError, DyadErrorKind, isDyadError } from "./errors/dyad_error";
+import {
+  AddMcpServerConfigSchema,
+  type AddMcpServerPayload,
+  AddPromptDataSchema,
+  type AddPromptPayload,
+} from "./ipc/deep_link_data";
 import {
   disposeConnectionFlowsForShutdown,
   runOAuthReturnExchange,
 } from "./ipc/handlers/connection_flow_handlers";
+import { remoteMachineHost } from "./ipc/services/distributed_machine_host";
+import { scrubGithubTokenFromRemotes } from "./ipc/utils/git_remote_token_scrub";
+import { gitAddSafeDirectory } from "./ipc/utils/git_utils";
 import {
-  AddMcpServerConfigSchema,
-  AddMcpServerPayload,
-  AddPromptDataSchema,
-  AddPromptPayload,
-} from "./ipc/deep_link_data";
+  applyManagedNodeToProcessPath,
+  getManagedNodeVersion,
+  maybeUpgradeManagedNode,
+} from "./ipc/utils/managed_node";
+import { disposeMcpOAuthForShutdown } from "./ipc/utils/mcp_oauth_flow";
+import { encryptStoredMcpSecrets } from "./ipc/utils/mcp_secret_encryption";
 import {
-  startPerformanceMonitoring,
-  stopPerformanceMonitoring,
-} from "./utils/performance_monitor";
+  createMcpBeforeQuitHandler,
+  disposeMcpClientsForShutdown,
+} from "./ipc/utils/mcp_shutdown";
+import { cleanupOldMediaFiles } from "./ipc/utils/media_cleanup";
 import {
-  browserCrashAttribution,
-  parseMinidumpSummary,
-  type MinidumpSummary,
-} from "./utils/minidump_summary";
+  createPlatformThumbnailFromPath,
+  getMediaThumbnailCacheRoot,
+} from "./ipc/utils/media_thumbnail";
+import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
+import {
+  stopAllAppsSync,
+  stopAppGarbageCollection,
+} from "./ipc/utils/process_manager";
+import { configureTrustedRenderer } from "./ipc/utils/renderer_security";
+import {
+  applyManagedPnpmToProcessPath,
+  getManagedPnpmBinDir,
+  getManagedPnpmInstallDir,
+} from "./ipc/utils/socket_firewall";
+import { reconcileOrphanTestUsers } from "./ipc/utils/supabase_test_user";
+import {
+  sendTelemetryEvent,
+  sendTelemetryEventToWindow,
+} from "./ipc/utils/telemetry";
+import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
+import type { UserSettings } from "./lib/schemas";
+import { appRelaunchRequest } from "./main/app_relaunch_request";
+import { createDeepLinkQueue } from "./main/deep_link_queue";
+import { DeepLinkWindowReadiness } from "./main/deep_link_window_readiness";
+import { createDyadMediaProtocolHandler } from "./main/dyad_media_protocol";
+import { registerDyadProtocolLinux } from "./main/linux_protocol_registration";
+import { handleDyadProReturn } from "./main/pro";
+import {
+  clearCrashSentinel,
+  clearRendererCrashRecord,
+  crashSentinelExists,
+  getSettingsFilePath,
+  readCrashSentinel,
+  readEffectiveSettings,
+  readRendererCrashRecord,
+  readSettings,
+  recordRendererCrash,
+  setInitialLoadIsFirstSession,
+  tryWriteSettings,
+  writeCrashSentinel,
+} from "./main/settings";
+import { recordUpdaterError } from "./main/updater_state";
+import {
+  shouldCreateWindowOnActivate,
+  shouldQuitAfterAllWindowsClosed,
+  shouldRequestRelaunchOnActivate,
+  shouldRetainClosedWindowForActivation,
+} from "./main/window_lifecycle_policy";
+import {
+  getWindowOpenHandlerResponse,
+  securePreviewPopupOptions,
+  shouldBlockMainWindowNavigation,
+} from "./main/window_security";
+import { handleNeonOAuthReturn } from "./neon_admin/neon_return_handler";
+import {
+  getDyadAppPath,
+  getDyadAppsBaseDirectory,
+  getUserDataPath,
+} from "./paths/paths";
+import { cleanupOldAiMessagesJson } from "./pro/main/ipc/handlers/local_agent/ai_messages_cleanup";
+import {
+  startChatSearchIndexer,
+  stopChatSearchIndexer,
+} from "./pro/main/ipc/handlers/local_agent/chat_search_indexer";
+import { handleSupabaseOAuthReturn } from "./supabase_admin/supabase_return_handler";
 import {
   listDumpFilesRecursive,
   moveDump,
@@ -98,80 +147,31 @@ import {
   crashAnnotationEventFields,
   crashPerformanceEventFields,
 } from "./utils/crash_telemetry_fields";
+import {
+  type MinidumpSummary,
+  browserCrashAttribution,
+  parseMinidumpSummary,
+} from "./utils/minidump_summary";
 import { classifyOom } from "./utils/oom_classifier";
 import {
-  stopAllAppsSync,
-  stopAppGarbageCollection,
-} from "./ipc/utils/process_manager";
-import { cleanupOldAiMessagesJson } from "./pro/main/ipc/handlers/local_agent/ai_messages_cleanup";
-import {
-  startChatSearchIndexer,
-  stopChatSearchIndexer,
-} from "./pro/main/ipc/handlers/local_agent/chat_search_indexer";
-import { cleanupOldMediaFiles } from "./ipc/utils/media_cleanup";
-import { scrubGithubTokenFromRemotes } from "./ipc/utils/git_remote_token_scrub";
-import { encryptStoredMcpSecrets } from "./ipc/utils/mcp_secret_encryption";
-import fs from "fs";
-import { gitAddSafeDirectory } from "./ipc/utils/git_utils";
-import {
-  getDyadAppsBaseDirectory,
-  getDyadAppPath,
-  getUserDataPath,
-} from "./paths/paths";
-import { createDeepLinkQueue } from "./main/deep_link_queue";
-import { DeepLinkWindowReadiness } from "./main/deep_link_window_readiness";
-import { appRelaunchRequest } from "./main/app_relaunch_request";
-import {
-  shouldCreateWindowOnActivate,
-  shouldRequestRelaunchOnActivate,
-  shouldRetainClosedWindowForActivation,
-  shouldQuitAfterAllWindowsClosed,
-} from "./main/window_lifecycle_policy";
-import { registerDyadProtocolLinux } from "./main/linux_protocol_registration";
-import {
-  applyManagedPnpmToProcessPath,
-  getManagedPnpmBinDir,
-  getManagedPnpmInstallDir,
-} from "./ipc/utils/socket_firewall";
-import {
-  applyManagedNodeToProcessPath,
-  getManagedNodeVersion,
-  maybeUpgradeManagedNode,
-} from "./ipc/utils/managed_node";
-import { createDyadMediaProtocolHandler } from "./main/dyad_media_protocol";
-import {
-  createPlatformThumbnailFromPath,
-  getMediaThumbnailCacheRoot,
-} from "./ipc/utils/media_thumbnail";
-import {
-  createMcpBeforeQuitHandler,
-  disposeMcpClientsForShutdown,
-} from "./ipc/utils/mcp_shutdown";
-import { disposeMcpOAuthForShutdown } from "./ipc/utils/mcp_oauth_flow";
-import { remoteMachineHost } from "./ipc/services/distributed_machine_host";
-import { configureTrustedRenderer } from "./ipc/utils/renderer_security";
-import {
-  getWindowOpenHandlerResponse,
-  securePreviewPopupOptions,
-  shouldBlockMainWindowNavigation,
-} from "./main/window_security";
-import { pathToFileURL } from "node:url";
-import { windowRegistry } from "./window_infrastructure/main/window_registry";
-import {
-  PRIMARY_WINDOW_SESSION_ID,
-  type WindowSessionId,
-} from "./window_infrastructure/types";
+  startPerformanceMonitoring,
+  stopPerformanceMonitoring,
+} from "./utils/performance_monitor";
 import {
   awaitProductWindowRenderer,
   configureWindowProductController,
 } from "./window_infrastructure/main/window_product_controller";
+import { windowRegistry } from "./window_infrastructure/main/window_registry";
 import {
-  clearLegacyWindowSessionPersistence,
   MAX_PRODUCT_WINDOWS,
-  restorableVisibleEntity,
   type WindowSessionDescriptor,
+  clearLegacyWindowSessionPersistence,
+  restorableVisibleEntity,
 } from "./window_infrastructure/main/window_session";
-import { DyadError, DyadErrorKind, isDyadError } from "./errors/dyad_error";
+import {
+  PRIMARY_WINDOW_SESSION_ID,
+  type WindowSessionId,
+} from "./window_infrastructure/types";
 
 log.errorHandler.startCatching();
 log.eventLogger.startLogging();

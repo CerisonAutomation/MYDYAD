@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { apps, chats, messages } from "@/db/schema";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
 
 describe("message request idempotency", () => {
   let db: TestDb;

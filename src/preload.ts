@@ -2,6 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer, webFrame } from "electron";
+import { isIpcInvokeEnvelope, unwrapIpcEnvelope } from "./ipc/contracts/core";
 import {
   VALID_INVOKE_CHANNELS,
   VALID_RECEIVE_CHANNELS,
@@ -10,7 +11,6 @@ import {
   type ValidReceiveChannel,
   type ValidSendChannel,
 } from "./ipc/preload/channels";
-import { isIpcInvokeEnvelope, unwrapIpcEnvelope } from "./ipc/contracts/core";
 
 // Use the contract-derived channel arrays
 const validInvokeChannels = VALID_INVOKE_CHANNELS;

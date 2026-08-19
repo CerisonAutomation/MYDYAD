@@ -1,7 +1,7 @@
-import { LargeLanguageModel } from "@/lib/schemas";
-import { readSettings } from "../../main/settings";
-import { Message } from "@/ipc/types";
+import type { Message } from "@/ipc/types";
+import type { LargeLanguageModel } from "@/lib/schemas";
 import { getErrorMessage } from "@ai-sdk/provider";
+import { readSettings } from "../../main/settings";
 
 import { findLanguageModel } from "./findLanguageModel";
 

@@ -1,16 +1,16 @@
-import { describe, expect, it } from "vitest";
 import {
-  assertReferenceStability,
   assertAllCommandsProducible,
   assertAllStatesReachable,
+  assertReferenceStability,
   commandsOf,
   driveTransitionMatrix,
   ignoreReasonOf,
 } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import {
   INITIAL_SCREENSHOT_STATE,
-  type ScreenshotEvent,
   type ScreenshotCommand,
+  type ScreenshotEvent,
   type ScreenshotState,
 } from "./state";
 import { transition } from "./transition";

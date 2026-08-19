@@ -42,11 +42,11 @@ vi.mock("@/ipc/types", () => ({
 }));
 
 import {
-  earlyTelemetryEvents,
-  earlyChatTabRemovalEvents,
-  chatNavigationEvents,
-  registerEarlyRendererEvents,
   ReplayEvent,
+  chatNavigationEvents,
+  earlyChatTabRemovalEvents,
+  earlyTelemetryEvents,
+  registerEarlyRendererEvents,
 } from "@/app_wiring/early_renderer_events";
 
 describe("ReplayEvent", () => {

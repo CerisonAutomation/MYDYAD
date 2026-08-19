@@ -4,13 +4,13 @@
  * fail-closed behavior. Runs in every `npm run eval` invocation (no API key
  * needed) so harness regressions surface before a paid benchmark run.
  */
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  seedWorld,
-  makeEvalContext,
-  buildHistoryToolSet,
-  newToolRun,
   type ScenarioFile,
+  buildHistoryToolSet,
+  makeEvalContext,
+  newToolRun,
+  seedWorld,
 } from "./helpers/chat_history_harness";
 
 const mini: ScenarioFile = {

@@ -1,6 +1,6 @@
-import { z } from "zod";
-import type { InvocationRef } from "@/state_machines/invocation_ref";
 import { SafeGitRefSchema } from "@/shared/git_refs";
+import type { InvocationRef } from "@/state_machines/invocation_ref";
+import { z } from "zod";
 import type {
   BranchSwitchFallback,
   PreviewError,

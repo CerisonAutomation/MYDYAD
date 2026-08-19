@@ -1,8 +1,8 @@
+import type { AppRunInvocationRef, RunUrl } from "@/app_run/state";
+import type { AppRunProducerEvent } from "@/app_run/transport";
 import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 import type { AppOutput } from "@/ipc/types/misc";
 import { appOutputInterests } from "@/window_infrastructure/main/production_high_volume";
-import type { AppRunProducerEvent } from "@/app_run/transport";
-import type { AppRunInvocationRef, RunUrl } from "@/app_run/state";
 
 const PROXY_PREFIX = "[dyad-proxy-server]started=[";
 

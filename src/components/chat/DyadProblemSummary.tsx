@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { AlertTriangle, FileText } from "lucide-react";
 import type { Problem } from "@/ipc/types";
+import { AlertTriangle, FileText } from "lucide-react";
+import React, { useState } from "react";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
-  DyadExpandIcon,
+  DyadCard,
   DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
 } from "./DyadCardPrimitives";
 
 type ProblemWithoutSnippet = Omit<Problem, "snippet">;
@@ -69,10 +69,10 @@ export const DyadProblemSummary: React.FC<DyadProblemSummaryProps> = ({
       try {
         problems.push({
           file: match[1],
-          line: parseInt(match[2], 10),
-          column: parseInt(match[3], 10),
+          line: Number.parseInt(match[2], 10),
+          column: Number.parseInt(match[3], 10),
           message: match[5].trim(),
-          code: parseInt(match[4], 10),
+          code: Number.parseInt(match[4], 10),
         });
       } catch {
         return [

@@ -12,16 +12,16 @@ import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { eq } from "drizzle-orm";
 
 import { messages } from "@/db/schema";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
+import { userInputClient } from "@/ipc/types/user_input";
+import { requireMcpToolConsent } from "@/ipc/utils/mcp_consent";
 import { readSettings, writeSettings } from "@/main/settings";
 import { requireAgentToolConsent } from "@/pro/main/ipc/handlers/local_agent/tool_definitions";
-import { requireMcpToolConsent } from "@/ipc/utils/mcp_consent";
-import { userInputClient } from "@/ipc/types/user_input";
 import { getTraceLog } from "@/state_machines/trace";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("local-agent consent banner (integration)", () => {
   let harness: HybridChatHarness;

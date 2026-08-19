@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
+import { IpcAppRuntimeOutput } from "@/ipc/services/app_runtime_transport";
 import type { WebContents } from "electron";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { IpcAppRuntimeOutput } from "@/ipc/services/app_runtime_transport";
 import type { WindowSessionId } from "../types";
 import {
   appOutputInterests,
   chatChunkInterests,
   sendChatChunk,
 } from "./production_high_volume";
-import { windowRegistry, type WindowEndpoint } from "./window_registry";
+import { type WindowEndpoint, windowRegistry } from "./window_registry";
 
 function endpoint(id: number): WindowEndpoint {
   return {

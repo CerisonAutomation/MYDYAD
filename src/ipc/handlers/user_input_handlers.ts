@@ -1,9 +1,9 @@
-import { createTypedHandler } from "./base";
-import { userInputContracts } from "../types/user_input";
 import {
   rememberUserInputSubscriber,
   userInputRegistry,
 } from "../../user_input/main";
+import { userInputContracts } from "../types/user_input";
+import { createTypedHandler } from "./base";
 
 export function registerUserInputHandlers(): void {
   createTypedHandler(userInputContracts.respond, async (event, input) => {

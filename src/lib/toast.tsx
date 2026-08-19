@@ -1,6 +1,5 @@
+import type { PostHog } from "posthog-js";
 import { toast } from "sonner";
-import { PostHog } from "posthog-js";
-import React from "react";
 import { CustomErrorToast } from "../components/CustomErrorToast";
 import { InputRequestToast } from "../components/InputRequestToast";
 
@@ -46,7 +45,7 @@ export const showError = (
           action={options?.action}
         />
       ),
-      { id: toastId, duration: Infinity },
+      { id: toastId, duration: Number.POSITIVE_INFINITY },
     );
 
     // After 2 seconds, revert the toast back to the original state
@@ -61,7 +60,7 @@ export const showError = (
             action={options?.action}
           />
         ),
-        { id: toastId, duration: Infinity },
+        { id: toastId, duration: Number.POSITIVE_INFINITY },
       );
     }, 2000);
   };
@@ -76,7 +75,7 @@ export const showError = (
         action={options?.action}
       />
     ),
-    { duration: options?.action ? Infinity : 8_000 },
+    { duration: options?.action ? Number.POSITIVE_INFINITY : 8_000 },
   );
 
   return toastId;
@@ -116,7 +115,7 @@ export const showInputRequest = (
         onResponse={onResponse}
       />
     ),
-    { duration: Infinity }, // Don't auto-close
+    { duration: Number.POSITIVE_INFINITY }, // Don't auto-close
   );
 
   return toastId;

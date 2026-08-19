@@ -1,16 +1,16 @@
-import React, { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { integrationProviderSelectionAtom } from "@/atoms/integrationAtoms";
-import { usePendingIntegrations } from "@/user_input/hooks";
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
-import { useAtomValue, useSetAtom } from "jotai";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useIntegrationContinue } from "@/hooks/useIntegrationContinue";
 import { useLoadApp } from "@/hooks/useLoadApp";
 import { useNeon } from "@/hooks/useNeon";
-import { useIntegrationContinue } from "@/hooks/useIntegrationContinue";
-import { useTranslation } from "react-i18next";
+import { ipc } from "@/ipc/types";
 import { isNeonSupportedFramework } from "@/lib/framework_constants";
+import { usePendingIntegrations } from "@/user_input/hooks";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,10 +19,11 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { DyadCard, DyadCardHeader, DyadBadge } from "./DyadCardPrimitives";
+import type React from "react";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { DyadBadge, DyadCard, DyadCardHeader } from "./DyadCardPrimitives";
 import { getCompletedIntegrationProvider } from "./dyadAddIntegrationUtils";
-import { ipc } from "@/ipc/types";
 
 interface DyadAddIntegrationProps {
   children: React.ReactNode;

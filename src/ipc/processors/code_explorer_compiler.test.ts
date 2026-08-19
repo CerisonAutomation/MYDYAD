@@ -2,12 +2,12 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { TypeScriptModule } from "../../../workers/code_explorer/core/types";
 import {
+  type CodeExplorerCompilerLoaders,
   getMissingCodeExplorerCompilerApis,
   resolveCodeExplorerCompiler,
-  type CodeExplorerCompilerLoaders,
 } from "../../../workers/code_explorer/code_explorer_worker";
+import type { TypeScriptModule } from "../../../workers/code_explorer/core/types";
 import { getCodeExplorerAvailability } from "./code_explorer";
 
 const compatibleCompiler = require("typescript") as TypeScriptModule;

@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { commitPnpmAllowBuildsConfigIfChangedMock } = vi.hoisted(() => ({
   commitPnpmAllowBuildsConfigIfChangedMock: vi.fn(),
@@ -37,14 +37,14 @@ vi.mock("@/ipc/utils/socket_firewall", async () => {
 
 import {
   CloudSandboxApiError,
-  createCloudSandbox,
   buildCloudSandboxFileMap,
+  createCloudSandbox,
   queueCloudSandboxSnapshotSync,
   reconcileCloudSandboxes,
   registerRunningCloudSandbox,
   setCloudSandboxSyncUpdateListener,
-  syncCloudSandboxDirtyPaths,
   stopCloudSandboxFileSync,
+  syncCloudSandboxDirtyPaths,
   syncCloudSandboxSnapshot,
   unregisterRunningCloudSandbox,
   uploadCloudSandboxFiles,

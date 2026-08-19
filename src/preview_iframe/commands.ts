@@ -1,5 +1,5 @@
-import type { createStore } from "jotai";
 import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
+import type { createStore } from "jotai";
 import type { PreviewIframeCommandRunner } from "./controller";
 import type { PreviewIframeEvent, PreviewIframePostMessage } from "./state";
 

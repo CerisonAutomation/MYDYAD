@@ -1,14 +1,14 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import * as parserModule from "@/lib/streamingMessageParser";
 import type {
   Block as ParserBlock,
   ParserState,
 } from "@/lib/streamingMessageParser";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 
 // The unit project has no setupFiles, so react-i18next is unmocked here and
 // DyadGit would render raw i18n keys. Load the real en strings and resolve

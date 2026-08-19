@@ -3,14 +3,14 @@ import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_p
 import { CLOSED_STATE } from "./state";
 import {
   VERSION_PREVIEW_MACHINE_ID,
-  VersionPreviewIntentEventSchema,
-  VersionPreviewKeySchema,
-  VersionPreviewRemoteSnapshotSchema,
-  projectVersionPreviewRemoteSnapshot,
   type VersionPreviewActorState,
   type VersionPreviewIntentEvent,
+  VersionPreviewIntentEventSchema,
   type VersionPreviewKey,
+  VersionPreviewKeySchema,
   type VersionPreviewRemoteSnapshot,
+  VersionPreviewRemoteSnapshotSchema,
+  projectVersionPreviewRemoteSnapshot,
 } from "./transport";
 
 const unavailableState: VersionPreviewActorState = {

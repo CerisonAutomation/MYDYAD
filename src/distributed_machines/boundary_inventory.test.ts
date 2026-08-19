@@ -9,8 +9,8 @@ import {
   distributedDefinitionInventory,
   frameworkOwnedBoundaryInventory,
   migratedActorEnsureInventory,
-  migratedSurfaceBoundaryInventory,
   migratedStatefulOwnerInventory,
+  migratedSurfaceBoundaryInventory,
   nonRemoteDispatchOrEnqueueInventory,
   unsafeEscapeHatchInventory,
 } from "./boundary_inventory.test_support";

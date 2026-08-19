@@ -1,12 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ipc,
-  type RenameMediaFileParams,
   type DeleteMediaFileParams,
   type MoveMediaFileParams,
+  type RenameMediaFileParams,
+  ipc,
 } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
 import { showError, showSuccess } from "@/lib/toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSettings } from "./useSettings";
 
 export function useAppMediaFiles() {

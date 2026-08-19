@@ -1,14 +1,14 @@
-import { createElement } from "react";
+import type { Version } from "@/ipc/types";
+import type { PreviewSession } from "@/version_preview/state";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 import {
+  VersionDiffContext,
   computeVisibleTabs,
   exitVersionEventForState,
   getVersionDisplayId,
-  VersionDiffContext,
 } from "./PreviewToolbar";
-import type { Version } from "@/ipc/types";
-import type { PreviewSession } from "@/version_preview/state";
 
 const ORDER = ["a", "b", "c", "d", "e", "f"] as const;
 const WIDTHS = { a: 100, b: 100, c: 100, d: 100, e: 100, f: 100 };

@@ -15,7 +15,7 @@
 //      the user pre-registers a client_id via the UI. Mirrors the
 //      non-DCR case real public MCP services generally don't expose.
 
-import { spawn, type ChildProcess } from "node:child_process";
+import { type ChildProcess, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import {
   afterAll,

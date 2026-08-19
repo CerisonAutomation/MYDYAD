@@ -1,14 +1,14 @@
-import type { IpcMainInvokeEvent } from "electron";
-import { z } from "zod";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import type { IpcMainInvokeEvent } from "electron";
+import type { z } from "zod";
 import {
+  type IpcContract,
   createIpcErrorEnvelope,
   createIpcSuccessEnvelope,
-  type IpcContract,
 } from "../contracts/core";
 import { sendTelemetryException } from "../utils/telemetry";
 import { registerTrustedIpcHandler } from "./trusted_handle";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
 
 type RegisteredHandler = (
   event: IpcMainInvokeEvent,
@@ -128,7 +128,7 @@ export function createLoggedTypedHandler(logger: {
   info: (msg: string) => void;
   error: (msg: string, err?: any) => void;
 }) {
-  return function <
+  return <
     TChannel extends string,
     TInput extends z.ZodType,
     TOutput extends z.ZodType,
@@ -138,7 +138,7 @@ export function createLoggedTypedHandler(logger: {
       event: IpcMainInvokeEvent,
       input: z.infer<TInput>,
     ) => Promise<z.infer<TOutput>>,
-  ): void {
+  ): void => {
     const runHandler = async (
       event: IpcMainInvokeEvent,
       input: z.infer<TInput>,

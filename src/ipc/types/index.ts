@@ -465,57 +465,57 @@ export { SubscriptionStatusSchema, UserBudgetInfoSchema } from "./system";
 // Aggregated IPC Client
 // =============================================================================
 
-import { settingsClient } from "./settings";
-import { appClient } from "./app";
-import { chatClient, chatStreamClient } from "./chat";
 import { agentClient, agentEventClient } from "./agent";
-import { githubClient, gitClient } from "./github";
+import { appClient } from "./app";
+import { appBlueprintClient, appBlueprintEventClient } from "./app_blueprint";
+import { appCollectionClient } from "./app_collections";
+import { audioClient } from "./audio";
+import { capacitorClient } from "./capacitor";
+import { chatClient, chatStreamClient } from "./chat";
 import {
   connectionFlowClient,
   connectionFlowEventClient,
 } from "./connection_flow";
-import { mcpClient } from "./mcp";
-import { vercelClient } from "./vercel";
-import { supabaseClient } from "./supabase";
-import { neonClient } from "./neon";
-import { migrationClient } from "./migration";
-import { systemClient, systemEventClient } from "./system";
-import { versionClient } from "./version";
-import { languageModelClient } from "./language-model";
-import { promptClient } from "./prompts";
-import { templateClient } from "./templates";
-import { proposalClient } from "./proposals";
-import { importClient } from "./import";
-import { helpClient, helpStreamClient } from "./help";
-import { capacitorClient } from "./capacitor";
 import { contextClient } from "./context";
-import { upgradeClient } from "./upgrade";
-import { visualEditingClient } from "./visual-editing";
-import { securityClient } from "./security";
-import { miscClient, miscEventClient, healthClient } from "./misc";
-import { freeAgentQuotaClient } from "./free_agent_quota";
-import { freeModelQuotaClient } from "./free_model_quota";
-import { audioClient } from "./audio";
-import { mediaClient } from "./media";
-import {
-  imageGenerationClient,
-  imageGenerationEventClient,
-} from "./image_generation";
-import { appBlueprintClient, appBlueprintEventClient } from "./app_blueprint";
-import { appCollectionClient } from "./app_collections";
-import { terminalClient } from "./terminal";
-import { testsClient, testsEventClient } from "./tests";
-import { recordingClient, recordingEventClient } from "./recording";
-import { userInputClient, userInputEventClient } from "./user_input";
-import { firstPromptClient } from "./first_prompt";
-import {
-  windowInfrastructureClient,
-  windowInfrastructureEventClient,
-} from "./window_infrastructure";
 import {
   distributedMachineClient,
   distributedMachineEventClient,
 } from "./distributed_machines";
+import { firstPromptClient } from "./first_prompt";
+import { freeAgentQuotaClient } from "./free_agent_quota";
+import { freeModelQuotaClient } from "./free_model_quota";
+import { gitClient, githubClient } from "./github";
+import { helpClient, helpStreamClient } from "./help";
+import {
+  imageGenerationClient,
+  imageGenerationEventClient,
+} from "./image_generation";
+import { importClient } from "./import";
+import { languageModelClient } from "./language-model";
+import { mcpClient } from "./mcp";
+import { mediaClient } from "./media";
+import { migrationClient } from "./migration";
+import { healthClient, miscClient, miscEventClient } from "./misc";
+import { neonClient } from "./neon";
+import { promptClient } from "./prompts";
+import { proposalClient } from "./proposals";
+import { recordingClient, recordingEventClient } from "./recording";
+import { securityClient } from "./security";
+import { settingsClient } from "./settings";
+import { supabaseClient } from "./supabase";
+import { systemClient, systemEventClient } from "./system";
+import { templateClient } from "./templates";
+import { terminalClient } from "./terminal";
+import { testsClient, testsEventClient } from "./tests";
+import { upgradeClient } from "./upgrade";
+import { userInputClient, userInputEventClient } from "./user_input";
+import { vercelClient } from "./vercel";
+import { versionClient } from "./version";
+import { visualEditingClient } from "./visual-editing";
+import {
+  windowInfrastructureClient,
+  windowInfrastructureEventClient,
+} from "./window_infrastructure";
 
 /**
  * Unified IPC client with all domains organized by namespace.

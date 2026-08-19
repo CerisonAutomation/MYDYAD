@@ -10,14 +10,14 @@
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { generateText, type LanguageModel } from "ai";
+import { type LanguageModel, generateText } from "ai";
 
-import { COMPACTION_SYSTEM_PROMPT } from "@/prompts/compaction_system_prompt";
 import {
-  formatAsTranscript,
   type CompactionMessage,
+  formatAsTranscript,
 } from "@/ipc/handlers/compaction/compaction_storage";
 import { estimateTokens } from "@/ipc/utils/token_utils";
+import { COMPACTION_SYSTEM_PROMPT } from "@/prompts/compaction_system_prompt";
 
 // ── Fixture types ──────────────────────────────────────────────
 

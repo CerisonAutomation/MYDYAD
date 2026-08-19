@@ -1,6 +1,6 @@
+import type { PreparedRequest } from "@/distributed_machines/prepared_request";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PreparedRequest } from "@/distributed_machines/prepared_request";
 import { useGenerateImage } from "./useGenerateImage";
 
 const mocks = vi.hoisted(() => ({

@@ -1,17 +1,17 @@
+import { chatInputValueAtom } from "@/atoms/chatAtoms";
 import {
-  MessageSquare,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useSetAtom } from "jotai";
+import {
   AlertCircle,
   AlertTriangle,
   ChevronDown,
   ChevronUp,
+  MessageSquare,
 } from "lucide-react";
-import { useSetAtom } from "jotai";
-import { chatInputValueAtom } from "@/atoms/chatAtoms";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 
 interface ConsoleEntryProps {

@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { parseFullMessage } from "../streamingMessageParser";
 import {
+  ASSERTION_PROPOSAL_VERSION,
+  type AssertionProposalPayload,
+} from "./assertion_proposal";
+import {
   ASSERTIONS_TAG,
   buildAssertionsTagContent,
   messageHasAssertionsProposal,
@@ -10,10 +14,6 @@ import {
   readAssertionsTagAttribute,
   replaceAssertionsTagInMessage,
 } from "./assertion_tag";
-import {
-  ASSERTION_PROPOSAL_VERSION,
-  type AssertionProposalPayload,
-} from "./assertion_proposal";
 import { RECORDED_TEST_DRAFT_VERSION } from "./draft";
 
 // Deliberately hostile text: XML-significant characters plus a literal closing

@@ -3,44 +3,38 @@
  * Main orchestrator for tool-based agent mode with parallel execution
  */
 
-import { IpcMainInvokeEvent } from "electron";
-import {
-  streamText,
-  ToolSet,
-  isStepCount,
-  hasToolCall,
-  ModelMessage,
-  type ToolExecutionOptions,
-} from "ai";
 import fs from "node:fs/promises";
+import {
+  type ModelMessage,
+  type ToolExecutionOptions,
+  type ToolSet,
+  hasToolCall,
+  isStepCount,
+  streamText,
+} from "ai";
+import type { IpcMainInvokeEvent } from "electron";
 import log from "electron-log";
 
 import { db } from "@/db";
-import { chats, messages, mcpServers } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { mcpManager } from "@/ipc/utils/mcp_manager";
+import { chats, mcpServers, messages } from "@/db/schema";
 import { requireMcpToolConsent } from "@/ipc/utils/mcp_consent";
-import { buildMcpAutoApprove } from "./mcp_auto_consent";
-import { scheduleChatSearchIndexing } from "./chat_search_indexer";
-import { parseMcpToolKey, sanitizeMcpName } from "@/ipc/utils/mcp_tool_utils";
+import { mcpManager } from "@/ipc/utils/mcp_manager";
 import { sanitizeMcpToolResult } from "@/ipc/utils/mcp_result_sanitizer";
+import { parseMcpToolKey, sanitizeMcpName } from "@/ipc/utils/mcp_tool_utils";
+import { eq } from "drizzle-orm";
+import { scheduleChatSearchIndexing } from "./chat_search_indexer";
+import { buildMcpAutoApprove } from "./mcp_auto_consent";
 
-import {
-  isDyadProEnabled,
-  isBasicAgentMode,
-  type ModelSelection,
-  type UserSettings,
-} from "@/lib/schemas";
-import type { SqlConsentMetadata } from "@/shared/sqlConsentMetadata";
-import { isFreeProModel } from "@/lib/freeProModel";
-import { readSettings } from "@/main/settings";
-import { getDyadAppPath } from "@/paths/paths";
 import { detectFrameworkType } from "@/ipc/utils/framework_utils";
 import { getModelClient } from "@/ipc/utils/get_model_client";
-import { safeSend } from "@/ipc/utils/safe_sender";
 import { sendChatChunk } from "@/ipc/utils/high_volume_delivery";
-import { broadcastToRegisteredWindows } from "@/ipc/utils/window_broadcast";
+import {
+  DYAD_INTERNAL_REQUEST_ID_HEADER,
+  getAiHeaders,
+  getProviderOptions,
+} from "@/ipc/utils/provider_options";
 import { publishQueryInvalidations } from "@/ipc/utils/query_invalidation_delivery";
+import { safeSend } from "@/ipc/utils/safe_sender";
 import {
   cancelOrphanedBaseStream,
   fastTextOutput,
@@ -50,102 +44,108 @@ import {
   getMaxTokens,
   getTemperature,
 } from "@/ipc/utils/token_utils";
+import { broadcastToRegisteredWindows } from "@/ipc/utils/window_broadcast";
+import { isFreeProModel } from "@/lib/freeProModel";
 import {
-  getProviderOptions,
-  getAiHeaders,
-  DYAD_INTERNAL_REQUEST_ID_HEADER,
-} from "@/ipc/utils/provider_options";
+  type ModelSelection,
+  type UserSettings,
+  isBasicAgentMode,
+  isDyadProEnabled,
+} from "@/lib/schemas";
+import { readSettings } from "@/main/settings";
+import { getDyadAppPath } from "@/paths/paths";
+import type { SqlConsentMetadata } from "@/shared/sqlConsentMetadata";
 
-import {
-  AgentToolName,
-  buildAgentToolSet,
-  shouldIncludeTool,
-  requireAgentToolConsent,
-} from "./tool_definitions";
-import {
-  deployAllFunctionsIfNeeded,
-  commitAllChanges,
-} from "./processors/file_operations";
-import { storeDbTimestampAtCurrentVersion } from "@/ipc/utils/neon_timestamp_utils";
-import { getAiMessagesJsonIfWithinLimit } from "@/ipc/utils/ai_messages_utils";
 import { deleteAppBlueprintForChat } from "@/ipc/handlers/app_blueprint_handlers";
+import { getAiMessagesJsonIfWithinLimit } from "@/ipc/utils/ai_messages_utils";
 import {
   normalizeModelSelection,
   resolveDefaultModelSelection,
 } from "@/ipc/utils/model_effort";
+import { storeDbTimestampAtCurrentVersion } from "@/ipc/utils/neon_timestamp_utils";
+import {
+  commitAllChanges,
+  deployAllFunctionsIfNeeded,
+} from "./processors/file_operations";
+import {
+  type AgentToolName,
+  buildAgentToolSet,
+  requireAgentToolConsent,
+  shouldIncludeTool,
+} from "./tool_definitions";
 
-import type { ChatStreamParams, ChatResponseEnd } from "@/ipc/types";
+import { DEFAULT_MAX_TOOL_CALL_STEPS } from "@/constants/settings_constants";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
-  AgentContext,
-  parsePartialJson,
-  escapeXmlAttr,
-  escapeXmlContent,
-  UserMessageContentPart,
-  FileEditTracker,
-  type Todo,
-} from "./tools/types";
-import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
-import {
-  prepareStepMessages,
-  buildTodoReminderMessage,
-  hasIncompleteTodos,
-  formatTodoSummary,
-  sanitizeStepMessages,
-  type InjectedMessage,
-} from "./prepare_step_utils";
-import { deleteTodos, loadTodos, saveTodos } from "./todo_persistence";
+  checkAndMarkForCompaction,
+  isChatPendingCompaction,
+  performCompaction,
+} from "@/ipc/handlers/compaction/compaction_handler";
+import { getPostCompactionMessages } from "@/ipc/handlers/compaction/compaction_utils";
 import { ensureDyadGitignored } from "@/ipc/handlers/gitignoreUtils";
-import { TOOL_DEFINITIONS } from "./tool_definitions";
+import type { ChatResponseEnd, ChatStreamParams } from "@/ipc/types";
 import {
+  type DbMessageForParsing,
   parseAiMessagesJson,
   sanitizeToolCallTranscript,
-  type DbMessageForParsing,
 } from "@/ipc/utils/ai_messages_utils";
+import { resolveAttachmentLogicalPath } from "@/ipc/utils/media_path_utils";
+import {
+  MODEL_REFUSAL_WARNING,
+  isModelRefusal,
+} from "@/ipc/utils/model_refusal";
+import { safeJoin } from "@/ipc/utils/path_utils";
+import {
+  type RendererMessageRow,
+  toRendererMessage,
+} from "@/ipc/utils/renderer_chat_message";
+import { computeStreamingPatch } from "@/ipc/utils/stream_text_utils";
+import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
+import { appendCancelledResponseNotice } from "@/shared/chatCancellation";
+import { userInputRegistry } from "@/user_input/main";
+import {
+  type InjectedMessage,
+  buildTodoReminderMessage,
+  formatTodoSummary,
+  hasIncompleteTodos,
+  prepareStepMessages,
+  sanitizeStepMessages,
+} from "./prepare_step_utils";
+import {
+  type RetryReplayEvent,
+  maybeAppendRetryReplayForRetry,
+  maybeCaptureRetryReplayEvent,
+  maybeCaptureRetryReplayText,
+} from "./retry_replay_utils";
+import { deleteTodos, loadTodos, saveTodos } from "./todo_persistence";
+import { TOOL_DEFINITIONS } from "./tool_definitions";
+import { addIntegrationTool } from "./tools/add_integration";
 import {
   buildExecuteSandboxScriptDescription,
   executeSandboxScriptTool,
 } from "./tools/execute_sandbox_script";
-import { writeFileTool } from "./tools/write_file";
+import { exitPlanTool } from "./tools/exit_plan";
 import {
+  type McpToolDef,
   collectMcpToolDefs,
   estimateMcpInlineTokens,
   getMcpInlineTokenThreshold,
-  type McpToolDef,
 } from "./tools/mcp_type_defs";
-import { addIntegrationTool } from "./tools/add_integration";
-import { writePlanTool } from "./tools/write_plan";
-import { exitPlanTool } from "./tools/exit_plan";
-import { writeAppBlueprintTool } from "./tools/write_app_blueprint";
-import { IMAGE_READ_MARKER, isImageFilePath } from "./tools/read_file";
-import { resolveAttachmentLogicalPath } from "@/ipc/utils/media_path_utils";
-import { safeJoin } from "@/ipc/utils/path_utils";
+import { isImageFilePath } from "./tools/read_file";
 import { resolveTargetAppPath } from "./tools/resolve_app_context";
-import { appendCancelledResponseNotice } from "@/shared/chatCancellation";
-import {
-  isModelRefusal,
-  MODEL_REFUSAL_WARNING,
-} from "@/ipc/utils/model_refusal";
-import {
-  isChatPendingCompaction,
-  performCompaction,
-  checkAndMarkForCompaction,
-} from "@/ipc/handlers/compaction/compaction_handler";
-import { getPostCompactionMessages } from "@/ipc/handlers/compaction/compaction_utils";
-import { DEFAULT_MAX_TOOL_CALL_STEPS } from "@/constants/settings_constants";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import {
-  type RetryReplayEvent,
-  maybeCaptureRetryReplayEvent,
-  maybeCaptureRetryReplayText,
-  maybeAppendRetryReplayForRetry,
-} from "./retry_replay_utils";
 import { setChatSummaryTool } from "./tools/set_chat_summary";
-import { computeStreamingPatch } from "@/ipc/utils/stream_text_utils";
-import { userInputRegistry } from "@/user_input/main";
 import {
-  toRendererMessage,
-  type RendererMessageRow,
-} from "@/ipc/utils/renderer_chat_message";
+  type AgentContext,
+  type FileEditTracker,
+  type Todo,
+  type UserMessageContentPart,
+  escapeXmlAttr,
+  escapeXmlContent,
+  parsePartialJson,
+} from "./tools/types";
+import { writeAppBlueprintTool } from "./tools/write_app_blueprint";
+import { writeFileTool } from "./tools/write_file";
+import { writePlanTool } from "./tools/write_plan";
 
 export function clearPendingLocalAgentInputsForChat(chatId: number): void {
   userInputRegistry.sweepChat(chatId);

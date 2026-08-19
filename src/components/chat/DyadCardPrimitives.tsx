@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
 import {
   AlertTriangle,
-  ChevronRight,
-  Loader2,
-  CircleX,
   CheckCircle2,
+  ChevronRight,
+  CircleX,
+  Loader2,
 } from "lucide-react";
-import { CustomTagState } from "./stateTypes";
+import type React from "react";
+import { useEffect, useState } from "react";
+import type { CustomTagState } from "./stateTypes";
 
 /**
  * Accent color configuration for DyadCard components.

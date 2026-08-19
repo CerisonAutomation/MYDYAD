@@ -1,10 +1,10 @@
-import { Palette, FileText, Plus, ChevronDown, ImagePlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ChevronDown, FileText, ImagePlus, Palette, Plus } from "lucide-react";
 
 export function NewLibraryItemMenu({
   onNewPrompt,

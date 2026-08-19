@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createStore, Provider } from "jotai";
-import { render, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { editorCursorAtom } from "@/atoms/viewAtoms";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, waitFor } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { useEffect, useRef } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FileEditor } from "./FileEditor";
 
 const mocks = vi.hoisted(() => {

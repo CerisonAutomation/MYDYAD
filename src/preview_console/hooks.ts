@@ -1,8 +1,8 @@
+import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
 import {
   useKeyedController,
   useKeyedMachineSelector,
 } from "@/state_machines/react";
-import { useAppRunRemoteManager } from "@/app_run/AppRunRemoteProvider";
 
 export function useConsoleEntries(appId: number | null) {
   const manager = useAppRunRemoteManager();

@@ -1,15 +1,15 @@
 import {
-  selectedComponentsPreviewAtom,
   previewIframeRefAtom,
+  selectedComponentsPreviewAtom,
   visualEditingSelectedComponentAtom,
 } from "@/atoms/previewAtoms";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { Code2, X } from "lucide-react";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { Code2, X } from "lucide-react";
 
 export function SelectedComponentsDisplay() {
   const [selectedComponents, setSelectedComponents] = useAtom(

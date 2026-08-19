@@ -1,24 +1,24 @@
-import { describe, expect, it } from "vitest";
-import { z } from "zod";
 import { appRunConformance } from "@/app_run/conformance.test_support";
 import { appRunRemoteIntentContract } from "@/app_run/remote_intent_contract";
-import { unsafeEscapeHatchInventory } from "../boundary_inventory.test_support";
 import { imageGenerationConformance } from "@/image_generation/conformance.test_support";
 import { imageGenerationRemoteIntentContract } from "@/image_generation/remote_intent_contract";
+import { describe, expect, it } from "vitest";
+import { z } from "zod";
+import { unsafeEscapeHatchInventory } from "../boundary_inventory.test_support";
 import { declareRemoteIntentContractForProtocolV1 } from "../remote_intent_contract";
 import {
-  REMOTE_MACHINE_PROTOCOL_VERSION,
   type MachineDispatchEnvelope,
   type MachineSnapshotEnvelope,
+  REMOTE_MACHINE_PROTOCOL_VERSION,
 } from "../remote_protocol";
 import {
+  type MachineConformance,
   REQUIRED_HISTORICAL_FAILURE_SHAPES,
   assertEnvelopeBudget,
   createConformanceDiagnostic,
   defineMachineConformance,
   formatConformanceDiagnostic,
   formatContractReport,
-  type MachineConformance,
 } from "./machine_conformance";
 import { PILOT_CONFORMANCE_REGISTRATIONS } from "./pilot_conformance";
 

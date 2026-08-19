@@ -1,35 +1,35 @@
-import { useAtom, useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { useRouter } from "@tanstack/react-router";
-import { useSettings } from "@/hooks/useSettings";
-import { Button } from "@/components/ui/button";
-// @ts-ignore
-import logo from "../../assets/logo.svg";
-import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
-import { cn } from "@/lib/utils";
-import { useDeepLink } from "@/contexts/DeepLinkContext";
-import { useEffect, useState } from "react";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { DyadProSuccessDialog } from "@/components/DyadProSuccessDialog";
-import { useTheme } from "@/contexts/ThemeContext";
-import { ipc } from "@/ipc/types";
-import { useSystemPlatform } from "@/hooks/useSystemPlatform";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import type { UserBudgetInfo } from "@/ipc/types";
+import { ChatTabs } from "@/components/chat/ChatTabs";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ChatTabs } from "@/components/chat/ChatTabs";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { useDeepLink } from "@/contexts/DeepLinkContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   useFirstPromptProviderResume,
   useFirstPromptSaga,
 } from "@/first_prompt/FirstPromptProvider";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useSettings } from "@/hooks/useSettings";
+import { useSystemPlatform } from "@/hooks/useSystemPlatform";
+import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { ipc } from "@/ipc/types";
+import type { UserBudgetInfo } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
 import type { UserSettings } from "@/lib/schemas";
+import { cn } from "@/lib/utils";
+import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useAtom, useAtomValue } from "jotai";
+import { useEffect, useState } from "react";
+// @ts-ignore
+import logo from "../../assets/logo.svg";
 
 export const TitleBar = () => {
   const [selectedAppId] = useAtom(selectedAppIdAtom);

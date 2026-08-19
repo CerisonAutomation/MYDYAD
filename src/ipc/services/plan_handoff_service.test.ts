@@ -28,11 +28,11 @@ vi.mock("@/ipc/handlers/planPersistence", () => ({
   readPlanFromDisk: mocks.readPlanFromDisk,
 }));
 
+import { beginChatActorDeletion } from "./chat_actor_deletion_fence";
 import {
   rememberPlanDraft,
   startPlanHandoffFromMain,
 } from "./plan_handoff_service";
-import { beginChatActorDeletion } from "./chat_actor_deletion_fence";
 
 describe("main plan handoff service", () => {
   beforeEach(() => {

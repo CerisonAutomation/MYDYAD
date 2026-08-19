@@ -1,4 +1,3 @@
-import { useSettings } from "@/hooks/useSettings";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -7,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSettings } from "@/hooks/useSettings";
 import type { DefaultFramework } from "@/lib/schemas";
 
 export function DefaultFrameworkSelector() {

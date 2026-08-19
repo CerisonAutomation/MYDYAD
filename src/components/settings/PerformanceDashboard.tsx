@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ipc } from "@/ipc/types";
+import { useEffect, useState } from "react";
 
 interface HealthStatus {
   status: "healthy" | "degraded" | "critical";

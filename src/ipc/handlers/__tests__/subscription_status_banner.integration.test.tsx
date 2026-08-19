@@ -1,11 +1,11 @@
-import { createServer, type Server } from "node:http";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { cleanup, screen } from "@testing-library/react";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
+import { type Server, createServer } from "node:http";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
+import { cleanup, screen } from "@testing-library/react";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 describe("subscription status banner (integration)", () => {
   let harness: HybridChatHarness;

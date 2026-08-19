@@ -1,39 +1,17 @@
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
 
-import {
-  differenceInCalendarDays,
-  formatDistanceToNow,
-  isToday,
-  isYesterday,
-} from "date-fns";
-import {
-  PlusCircle,
-  MoreVertical,
-  Trash2,
-  Edit3,
-  Search,
-  ArrowLeft,
-  Star,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { useAtom, useSetAtom } from "jotai";
-import {
-  selectedChatIdAtom,
-  removeChatIdFromAllTrackingAtom,
-  ensureRecentViewedChatIdAtom,
-} from "@/atoms/chatAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { dropdownOpenAtom } from "@/atoms/uiAtoms";
-import { ipc } from "@/ipc/types";
-import { showError, showSuccess } from "@/lib/toast";
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+  ensureRecentViewedChatIdAtom,
+  removeChatIdFromAllTrackingAtom,
+  selectedChatIdAtom,
+} from "@/atoms/chatAtoms";
+import { dropdownOpenAtom } from "@/atoms/uiAtoms";
+import { AppAvatar } from "@/components/AppAvatar";
+import { DeleteChatDialog } from "@/components/chat/DeleteChatDialog";
+import { RenameChatDialog } from "@/components/chat/RenameChatDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -42,17 +20,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { useChats } from "@/hooks/useChats";
-import { AppAvatar } from "@/components/AppAvatar";
-import { RenameChatDialog } from "@/components/chat/RenameChatDialog";
-import { DeleteChatDialog } from "@/components/chat/DeleteChatDialog";
+import { ipc } from "@/ipc/types";
+import { showError, showSuccess } from "@/lib/toast";
+import {
+  differenceInCalendarDays,
+  formatDistanceToNow,
+  isToday,
+  isYesterday,
+} from "date-fns";
+import { motion } from "framer-motion";
+import { useAtom, useSetAtom } from "jotai";
+import {
+  ArrowLeft,
+  Edit3,
+  MoreVertical,
+  PlusCircle,
+  Search,
+  Star,
+  Trash2,
+} from "lucide-react";
 
-import { ChatSearchDialog } from "./ChatSearchDialog";
-import { useSelectChat } from "@/hooks/useSelectChat";
 import { useLoadApps } from "@/hooks/useLoadApps";
-import { useSetChatFavorite } from "@/hooks/useSetChatFavorite";
 import { useReducedMotionPref } from "@/hooks/useReducedMotion";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { useSetChatFavorite } from "@/hooks/useSetChatFavorite";
 import { cn } from "@/lib/utils";
+import { ChatSearchDialog } from "./ChatSearchDialog";
 
 const CHAT_ACTION_SPRING = {
   type: "spring" as const,

@@ -1,35 +1,35 @@
-import type { createStore } from "jotai";
 import { chatMessagesByIdAtom } from "@/atoms/chatAtoms";
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
+import { IpcRemoteMachineConnection } from "@/distributed_machines/ipc_connection";
 import { RemoteMachineClient } from "@/distributed_machines/remote_client";
 import type { RemoteMachineClientConnection } from "@/distributed_machines/remote_client";
-import { IpcRemoteMachineConnection } from "@/distributed_machines/ipc_connection";
+import { ipc } from "@/ipc/types";
+import { sha256Hex } from "@/lib/browser_hash";
 import { convertFileAttachmentsToChatAttachments } from "@/lib/chatAttachmentConversion";
-import { uuidIdSource, type IdSource } from "@/state_machines/clock";
-import type { ChatStreamRuntimeDeps } from "./runtime_deps";
-import { ChatStreamPreviewStore } from "./preview_store";
+import { queryKeys } from "@/lib/queryKeys";
+import { mergeResyncMessages } from "@/lib/resyncChat";
+import { shouldShowPnpmMinimumReleaseAgeWarning } from "@/lib/schemas";
+import { showExtraFilesToast, showWarning } from "@/lib/toast";
+import { PNPM_MINIMUM_RELEASE_AGE_WARNING_PREFIX } from "@/shared/packageManagerWarnings";
+import { type IdSource, uuidIdSource } from "@/state_machines/clock";
+import type { createStore } from "jotai";
+import { serializeImmutableChatTurnPayload } from "./intent_payload";
 import { CHAT_STREAM_INVOCATION_KIND } from "./invocation";
+import { ChatStreamPreviewStore } from "./preview_store";
 import type {
   StreamEvent,
   StreamRequest,
   StreamSettledResult,
 } from "./renderer_facade";
+import type { ChatStreamRuntimeDeps } from "./runtime_deps";
 import {
-  chatStreamClientDefinition,
-  chatStreamKey,
   type ChatStreamIntentEvent,
   type ChatStreamRemoteSnapshot,
   type SerializableChatTurnIntent,
+  chatStreamClientDefinition,
+  chatStreamKey,
   unavailableChatStreamSnapshot,
 } from "./transport";
-import { sha256Hex } from "@/lib/browser_hash";
-import { serializeImmutableChatTurnPayload } from "./intent_payload";
-import { queryKeys } from "@/lib/queryKeys";
-import { ipc } from "@/ipc/types";
-import { mergeResyncMessages } from "@/lib/resyncChat";
-import { shouldShowPnpmMinimumReleaseAgeWarning } from "@/lib/schemas";
-import { showExtraFilesToast, showWarning } from "@/lib/toast";
-import { PNPM_MINIMUM_RELEASE_AGE_WARNING_PREFIX } from "@/shared/packageManagerWarnings";
 
 type JotaiStore = ReturnType<typeof createStore>;
 

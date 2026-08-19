@@ -5,9 +5,9 @@
  * Renderer should use the browser-compatible structured_logger.ts
  */
 
-import log from "electron-log";
-import path from "node:path";
 import fs from "node:fs/promises";
+import path from "node:path";
+import log from "electron-log";
 
 // ── Configuration ────────────────────────────────────────────────────────────
 
@@ -71,7 +71,7 @@ class LocalErrorLog {
     }
   }
 
-  async readRecent(count: number = 100): Promise<ErrorLogEntry[]> {
+  async readRecent(count = 100): Promise<ErrorLogEntry[]> {
     try {
       const content = await fs.readFile(this.logFile, "utf-8");
       const lines = content.trim().split("\n").filter(Boolean);

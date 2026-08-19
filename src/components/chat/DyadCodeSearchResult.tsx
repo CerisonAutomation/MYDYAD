@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from "react";
 import { FileCode, FileText } from "lucide-react";
-import type { DyadTagNode } from "./stateTypes";
+import type React from "react";
+import { useMemo, useState } from "react";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
-  DyadExpandIcon,
+  DyadCard,
   DyadCardContent,
+  DyadCardHeader,
+  DyadExpandIcon,
 } from "./DyadCardPrimitives";
+import type { DyadTagNode } from "./stateTypes";
 
 interface DyadCodeSearchResultProps {
   node?: DyadTagNode;

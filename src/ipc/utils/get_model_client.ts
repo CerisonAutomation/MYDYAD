@@ -1,42 +1,42 @@
-import { createOpenAI } from "@ai-sdk/openai";
-import { createGoogle } from "@ai-sdk/google";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { createXai } from "@ai-sdk/xai";
-import { createVertex as createGoogleVertex } from "@ai-sdk/google-vertex";
-import { createAzure } from "@ai-sdk/azure";
-import type { LanguageModel } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
-import type { FetchFunction } from "@ai-sdk/provider-utils";
-import type {
-  LargeLanguageModel,
-  ModelSelection,
-  UserSettings,
-  VertexProviderSetting,
-  AzureProviderSetting,
-} from "../../lib/schemas";
-import { getEnvVar } from "./read_env";
-import log from "electron-log";
-import { FREE_OPENROUTER_MODEL_NAMES } from "../shared/language_model_constants";
-import { getLanguageModelProviders } from "../shared/language_model_helpers";
-import { resolveBuiltinModelAlias } from "../shared/remote_language_model_catalog";
-import { LanguageModelProvider } from "@/ipc/types";
-import type { DyadEngineProvider } from "./llm_engine_provider";
-import { getLmStudioBaseUrl } from "./lm_studio_utils";
-import { createOllamaProvider } from "./ollama_provider";
-import { getOllamaApiUrl } from "../handlers/local_model_ollama_handler";
-import { createFallback } from "./fallback_ai_model";
-import { getTestFetchOption } from "./test_fetch_override";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { LanguageModelProvider } from "@/ipc/types";
+import { FREE_PRO_MODEL_NAME, isFreeProModel } from "@/lib/freeProModel";
+import { getModelPreferenceKey } from "@/lib/modelEffort";
 import {
   findInvalidProviderApiKeyCharacter,
   formatInvalidProviderApiKeyMessage,
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
-import { FREE_PRO_MODEL_NAME, isFreeProModel } from "@/lib/freeProModel";
-import { getOpenRouterAppAttributionHeaders } from "./openrouter_attribution";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createAzure } from "@ai-sdk/azure";
+import { createGoogle } from "@ai-sdk/google";
+import { createVertex as createGoogleVertex } from "@ai-sdk/google-vertex";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import type { FetchFunction } from "@ai-sdk/provider-utils";
+import { createXai } from "@ai-sdk/xai";
+import type { LanguageModel } from "ai";
+import log from "electron-log";
+import type {
+  AzureProviderSetting,
+  LargeLanguageModel,
+  ModelSelection,
+  UserSettings,
+  VertexProviderSetting,
+} from "../../lib/schemas";
+import { getOllamaApiUrl } from "../handlers/local_model_ollama_handler";
+import { FREE_OPENROUTER_MODEL_NAMES } from "../shared/language_model_constants";
+import { getLanguageModelProviders } from "../shared/language_model_helpers";
+import { resolveBuiltinModelAlias } from "../shared/remote_language_model_catalog";
+import { createFallback } from "./fallback_ai_model";
+import type { DyadEngineProvider } from "./llm_engine_provider";
+import { getLmStudioBaseUrl } from "./lm_studio_utils";
 import { resolveModelSelection } from "./model_effort";
-import { getModelPreferenceKey } from "@/lib/modelEffort";
+import { createOllamaProvider } from "./ollama_provider";
+import { getOpenRouterAppAttributionHeaders } from "./openrouter_attribution";
+import { getEnvVar } from "./read_env";
+import { getTestFetchOption } from "./test_fetch_override";
 
 // The test-only fetch seam lives in ./test_fetch_override (dependency-free,
 // so secondary factories can use it without import cycles). Re-exported here

@@ -1,22 +1,22 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { PROVIDER_TO_ENV_VAR } from "@/ipc/shared/language_model_constants";
+import { getEnvVar } from "@/ipc/utils/read_env";
 import {
-  isDyadProEnabled,
-  type ChatMode,
-  type UserSettings,
-} from "@/lib/schemas";
-import {
+  type ChatModeResolution,
   normalizeStoredChatMode,
   resolveChatMode,
-  type ChatModeResolution,
 } from "@/lib/chatMode";
 import {
   FREE_PRO_BUILD_MODE_ERROR,
   getFreeProCompatibleChatMode,
   isFreeProBuildModeCombination,
 } from "@/lib/freeProModel";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import {
+  type ChatMode,
+  type UserSettings,
+  isDyadProEnabled,
+} from "@/lib/schemas";
 import { readSettings } from "@/main/settings";
-import { PROVIDER_TO_ENV_VAR } from "@/ipc/shared/language_model_constants";
-import { getEnvVar } from "@/ipc/utils/read_env";
 import { getFreeAgentQuotaStatus } from "./free_agent_quota_handlers";
 
 export { normalizeStoredChatMode };

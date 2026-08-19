@@ -1,10 +1,10 @@
 import {
+  type ChatMode,
+  StoredChatModeSchema,
+  type UserSettings,
   getEffectiveDefaultChatMode,
   isDyadProEnabled,
   migrateStoredChatMode,
-  StoredChatModeSchema,
-  type ChatMode,
-  type UserSettings,
 } from "./schemas";
 
 export type ChatModeFallbackReason = "quota-exhausted";

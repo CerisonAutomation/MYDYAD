@@ -1,49 +1,49 @@
-import { dialog } from "electron";
-import { platform, arch } from "os";
-import fixPath from "fix-path";
-import { runShellCommand } from "../utils/runShellCommand";
-import { readRefreshedWindowsPath } from "../utils/windows_env_path";
-import log from "electron-log";
 import { existsSync } from "fs";
-import fs from "fs/promises";
+import { arch, platform } from "os";
 import { delimiter, join } from "path";
-import { readSettings, writeSettings } from "../../main/settings";
-import { createTypedHandler } from "./base";
-import { registerTrustedIpcHandler } from "./trusted_handle";
-import { systemContracts } from "../types/system";
-import { IS_TEST_BUILD } from "../utils/test_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { safeSend } from "@/ipc/utils/safe_sender";
-import { getPathEnvKey } from "@/ipc/utils/path_env";
 import {
+  MANAGED_NODE_VERSION,
+  ManagedNodeInstallError,
+  type NodeRuntimeSource,
+  cancelManagedNodeInstall,
   getManagedNodeBinDir,
   getManagedNodeBinDirsForInstalledVersions,
   getManagedNodeBinaryPath,
   getManagedNodeVersion,
   getNodeVersionAtPath,
   installManagedNode,
-  cancelManagedNodeInstall,
   isManagedNodeInstalled,
   isManagedNodeSupported,
   isUsableSystemNodeVersion,
-  ManagedNodeInstallError,
-  MANAGED_NODE_VERSION,
   removeManagedNode,
-  type NodeRuntimeSource,
 } from "@/ipc/utils/managed_node";
-import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
 import { prependPathSegment, sanitizePathEnv } from "@/ipc/utils/managed_tools";
+import { getPathEnvKey } from "@/ipc/utils/path_env";
+import { safeSend } from "@/ipc/utils/safe_sender";
 import {
+  PNPM_GLOBAL_INSTALL_PACKAGE,
+  PNPM_MINIMUM_RELEASE_AGE_VERSION,
   applyManagedPnpmToProcessPath,
   getCommandExecutionDisplayDetails,
   getManagedPnpmCliScriptPath,
   getManagedPnpmInstallDir,
   getPackageManagerCommandEnv,
   getPnpmMinimumReleaseAgeSupport,
-  PNPM_GLOBAL_INSTALL_PACKAGE,
-  PNPM_MINIMUM_RELEASE_AGE_VERSION,
   runCommand,
 } from "@/ipc/utils/socket_firewall";
+import { sendTelemetryEvent } from "@/ipc/utils/telemetry";
+import { dialog } from "electron";
+import log from "electron-log";
+import fixPath from "fix-path";
+import fs from "fs/promises";
+import { readSettings, writeSettings } from "../../main/settings";
+import { systemContracts } from "../types/system";
+import { runShellCommand } from "../utils/runShellCommand";
+import { IS_TEST_BUILD } from "../utils/test_utils";
+import { readRefreshedWindowsPath } from "../utils/windows_env_path";
+import { createTypedHandler } from "./base";
+import { registerTrustedIpcHandler } from "./trusted_handle";
 
 const logger = log.scope("node_handlers");
 const BRAILLE_SPINNER_PATTERN = /^[\u2800-\u28ff]+$/u;

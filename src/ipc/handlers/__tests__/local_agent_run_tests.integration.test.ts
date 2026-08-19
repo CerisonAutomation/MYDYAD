@@ -11,11 +11,11 @@ import { screen, waitFor } from "@testing-library/react";
 import { eq } from "drizzle-orm";
 
 import { apps } from "@/db/schema";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("local-agent run_tests (integration)", () => {
   let harness: HybridChatHarness;

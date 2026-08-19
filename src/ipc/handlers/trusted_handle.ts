@@ -1,4 +1,4 @@
-import { ipcMain, type IpcMainInvokeEvent } from "electron";
+import { type IpcMainInvokeEvent, ipcMain } from "electron";
 import { assertTrustedRenderer } from "../utils/renderer_security";
 
 /**

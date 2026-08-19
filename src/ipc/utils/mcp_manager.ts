@@ -1,21 +1,21 @@
+import { type MCPClient, createMCPClient } from "@ai-sdk/mcp";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { mcpServers } from "../../db/schema";
-import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
-import log from "electron-log";
-import { eq } from "drizzle-orm";
 
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import {
-  captureMcpOAuthWriteAuthority,
   DyadOAuthClientProvider,
+  captureMcpOAuthWriteAuthority,
 } from "./mcp_oauth_provider";
+import { settleWithinTimeout } from "./promise_utils";
 import {
+  type ServerSecretRead,
   decryptFromString,
   readServerSecretMap,
-  type ServerSecretRead,
 } from "./secret_storage";
-import { settleWithinTimeout } from "./promise_utils";
 
 // Connecting without a secret we know exists would talk to the server
 // unauthenticated, so refuse and point at the likely cause.

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { ModelMessage } from "ai";
+import { describe, expect, it } from "vitest";
 import { assistantTrace } from "./mcp_consent_context";
 
 describe("assistantTrace", () => {

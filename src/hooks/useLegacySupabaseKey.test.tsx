@@ -1,5 +1,5 @@
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -19,11 +19,11 @@ vi.mock("@/ipc/types", () => ({
   },
 }));
 
+import { queryKeys } from "@/lib/queryKeys";
 import {
   useLegacySupabaseKey,
   useSwitchToPublishableKey,
 } from "./useLegacySupabaseKey";
-import { queryKeys } from "@/lib/queryKeys";
 
 function makeWrapper() {
   const queryClient = new QueryClient({

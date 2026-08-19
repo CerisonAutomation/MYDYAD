@@ -1,9 +1,9 @@
-import { apps, appCollections } from "@/db/schema";
+import { appCollections, apps } from "@/db/schema";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { eq, inArray, isNotNull } from "drizzle-orm";
+import { appCollectionContracts } from "../types/app_collections";
 import { createTypedHandler } from "./base";
 import { getHandlerContext } from "./handler_context";
-import { appCollectionContracts } from "../types/app_collections";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 function buildAppCollectionDto(
   row: {

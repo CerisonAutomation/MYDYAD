@@ -8,10 +8,10 @@
  *   • Performance tracking
  */
 
-import { z } from "zod";
-import { logger } from "./structured_logger";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { registerTrustedIpcHandler } from "@/ipc/handlers/trusted_handle";
+import { z } from "zod";
+import { logger } from "./structured_logger";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

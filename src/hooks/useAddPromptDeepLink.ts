@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
 import { useDeepLink } from "@/contexts/DeepLinkContext";
-import { AddPromptDeepLinkData } from "@/ipc/deep_link_data";
+import type { AddPromptDeepLinkData } from "@/ipc/deep_link_data";
 import { showInfo } from "@/lib/toast";
+import { useCallback, useEffect, useState } from "react";
 
 export function useAddPromptDeepLink() {
   const { lastDeepLink, clearLastDeepLink } = useDeepLink();

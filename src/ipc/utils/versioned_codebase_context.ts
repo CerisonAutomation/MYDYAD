@@ -1,13 +1,13 @@
-import { CodebaseFile, CodebaseFileReference } from "@/utils/codebase";
-import { ModelMessage } from "@ai-sdk/provider-utils";
 import crypto from "node:crypto";
+import type { CodebaseFile, CodebaseFileReference } from "@/utils/codebase";
+import type { ModelMessage } from "@ai-sdk/provider-utils";
 import log from "electron-log";
+import { normalizePath } from "../../../shared/normalizePath";
 import {
   getCurrentCommitHash,
   getFileAtCommit,
   isGitStatusClean,
 } from "./git_utils";
-import { normalizePath } from "../../../shared/normalizePath";
 
 const logger = log.scope("versioned_codebase_context");
 

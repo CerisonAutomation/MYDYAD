@@ -1,16 +1,16 @@
-import { createStore, Provider } from "jotai";
-import { render, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import capturedSessionFixture from "./fixtures/chat-tab-session.real.json";
-import { ChatTabs } from "@/components/chat/ChatTabs";
 import {
+  type ChatTabSession,
   chatTabSessionStorageAtom,
   closedChatIdsAtom,
   hydrateChatTabSessionAtom,
   recentViewedChatIdsAtom,
   sessionOpenedChatIdsAtom,
-  type ChatTabSession,
 } from "@/atoms/chatAtoms";
+import { ChatTabs } from "@/components/chat/ChatTabs";
+import { render, waitFor } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { describe, expect, it, vi } from "vitest";
+import capturedSessionFixture from "./fixtures/chat-tab-session.real.json";
 
 const capturedSession = capturedSessionFixture as ChatTabSession;
 

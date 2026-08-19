@@ -1,5 +1,3 @@
-import { eq } from "drizzle-orm";
-import type { z } from "zod";
 import { db } from "@/db";
 import { chats } from "@/db/schema";
 import type { DistributedMachineDefinition } from "@/distributed_machines/definition";
@@ -10,42 +8,44 @@ import {
   clearPendingActorStreamCancellation,
   executeChatStreamFromActor,
 } from "@/ipc/handlers/chat_stream_handlers";
+import { assertChatActorAdmissionOpen } from "@/ipc/services/chat_actor_deletion_fence";
 import {
   chatExecutionEndpoint,
   publishChatInvalidations,
 } from "@/ipc/services/chat_actor_platform";
-import { assertChatActorAdmissionOpen } from "@/ipc/services/chat_actor_deletion_fence";
+import { eq } from "drizzle-orm";
+import type { z } from "zod";
 import type { ChatStreamHostCommand, ChatStreamHostState } from "./host_state";
 import {
+  type ChatStreamHostIgnoreReason,
   initialChatStreamHostState,
   transitionChatStreamHost,
-  type ChatStreamHostIgnoreReason,
 } from "./host_transition";
 import {
-  loadChatQueue,
+  claimQueueHead,
   completeSessionQueueAcceptance,
   disposeSessionChatQueue,
   hydrateChatStreamPersistence,
   isSessionQueuedIntent,
+  loadChatQueue,
   markIntentTerminal,
   mutateChatQueue,
-  claimQueueHead,
   persistQueuedIntent,
   persistSessionQueuedIntent,
   restoreClaimedQueueHead,
   stageActiveIntent,
 } from "./persistence";
 import {
+  CHAT_STREAM_MACHINE_ID,
   CHAT_STREAM_MAX_DISPATCH_ENVELOPE_BYTES,
   CHAT_STREAM_MAX_SNAPSHOT_ENVELOPE_BYTES,
-  CHAT_STREAM_MACHINE_ID,
   ChatStreamIntentEventSchema,
-  ChatStreamKeySchema,
-  ChatStreamRemoteSnapshotSchema,
-  chatStreamKey,
   type ChatStreamKey,
+  ChatStreamKeySchema,
   type ChatStreamRemoteSnapshot,
+  ChatStreamRemoteSnapshotSchema,
   type ChatStreamWireEvent,
+  chatStreamKey,
   unavailableChatStreamSnapshot,
 } from "./transport";
 

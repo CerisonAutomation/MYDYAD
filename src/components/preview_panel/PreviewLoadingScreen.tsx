@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { AppExit } from "@/app_run/selectors";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { useAppExit, useAppRunState } from "@/hooks/useAppRun";
+import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import type { ConsoleEntry } from "@/ipc/types";
+import { showInfo } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { useConsoleEntries } from "@/preview_console/hooks";
 import { useAtomValue } from "jotai";
 import {
   AlertTriangle,
@@ -8,17 +17,8 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ConsoleEntry } from "@/ipc/types";
-import type { AppExit } from "@/app_run/selectors";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { runAppLifecycleInBackground, useRunApp } from "@/hooks/useRunApp";
-import { useAppExit, useAppRunState } from "@/hooks/useAppRun";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { cn } from "@/lib/utils";
-import { showInfo } from "@/lib/toast";
-import { useConsoleEntries } from "@/preview_console/hooks";
 
 const STARTUP_LOG_MESSAGES = new Set([
   "Connecting to app...",

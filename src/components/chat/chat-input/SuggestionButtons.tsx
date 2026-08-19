@@ -1,10 +1,5 @@
-import type React from "react";
-import { useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { useAtomValue } from "jotai";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -12,7 +7,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useRunApp } from "@/hooks/useRunApp";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { useAtomValue } from "jotai";
 import { usePostHog } from "posthog-js/react";
+import type React from "react";
+import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useSummarizeInNewChat } from "../SummarizeInNewChatButton";
 
 export function SuggestionButton({

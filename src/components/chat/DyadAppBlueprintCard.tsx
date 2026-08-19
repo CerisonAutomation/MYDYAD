@@ -1,43 +1,44 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  AlertCircle,
-  Sparkles,
-  Check,
-  Loader2,
-  Palette,
-  Layout,
-  Paintbrush,
-  Pencil,
-} from "lucide-react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { appBlueprintStateAtom } from "@/atoms/appBlueprintAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useTemplates } from "@/hooks/useTemplates";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { useCustomThemes } from "@/hooks/useCustomThemes";
-import { useThemes } from "@/hooks/useThemes";
 import { useLoadApp } from "@/hooks/useLoadApp";
 import { useRunApp } from "@/hooks/useRunApp";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { useTemplates } from "@/hooks/useTemplates";
+import { useThemes } from "@/hooks/useThemes";
 import { ipc } from "@/ipc/types";
+import type {
+  AppBlueprintEditableField,
+  AppBlueprintVisual,
+  AppBlueprintVisualEditableField,
+} from "@/ipc/types/app_blueprint";
+import { queryKeys } from "@/lib/queryKeys";
+import { showError } from "@/lib/toast";
 import {
   sanitizeAppDisplayName,
   slugifyAppFolderName,
 } from "@/shared/app_names";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import type {
-  AppBlueprintEditableField,
-  AppBlueprintVisualEditableField,
-  AppBlueprintVisual,
-} from "@/ipc/types/app_blueprint";
-import { showError } from "@/lib/toast";
-import { queryKeys } from "@/lib/queryKeys";
-import { AppBlueprintUserPrompt } from "./AppBlueprintUserPrompt";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  AlertCircle,
+  Check,
+  Layout,
+  Loader2,
+  Paintbrush,
+  Palette,
+  Pencil,
+  Sparkles,
+} from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AppBlueprintDesignDirection } from "./AppBlueprintDesignDirection";
+import { AppBlueprintNameConflictDialog } from "./AppBlueprintNameConflictDialog";
+import { AppBlueprintUserPrompt } from "./AppBlueprintUserPrompt";
 import { AppBlueprintVisuals } from "./AppBlueprintVisuals";
 import { getAppBlueprintTemplateOptions } from "./appBlueprintTemplateOptions";
-import { AppBlueprintNameConflictDialog } from "./AppBlueprintNameConflictDialog";
 import type { CustomTagState } from "./stateTypes";
 
 function isNameConflictError(error: unknown): boolean {

@@ -1,29 +1,29 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  ImageIcon,
-  Box,
-  Camera,
-  Layers,
-  Sparkles,
-  Lock,
-  Loader2,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useLoadApps } from "@/hooks/useLoadApps";
+import { Textarea } from "@/components/ui/textarea";
 import { useGenerateImage } from "@/hooks/useGenerateImage";
+import { useLoadApps } from "@/hooks/useLoadApps";
 import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { AppSearchSelect } from "./AppSearchSelect";
 import type { ImageThemeMode } from "@/ipc/types";
+import {
+  Box,
+  Camera,
+  ImageIcon,
+  Layers,
+  Loader2,
+  Lock,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AppSearchSelect } from "./AppSearchSelect";
 
 const THEME_MODES: {
   value: ImageThemeMode;

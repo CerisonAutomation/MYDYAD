@@ -1,10 +1,10 @@
-import { Copy, Check } from "lucide-react";
-import { useState } from "react";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Check, Copy } from "lucide-react";
+import { useState } from "react";
 
 interface CopyErrorMessageProps {
   errorMessage: string;

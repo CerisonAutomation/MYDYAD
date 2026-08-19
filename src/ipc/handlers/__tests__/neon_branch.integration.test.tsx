@@ -33,11 +33,11 @@ import { eq } from "drizzle-orm";
 
 import { apps, chats } from "@/db/schema";
 import { writeSettings } from "@/main/settings";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 type TestApp = {
   appId: number;

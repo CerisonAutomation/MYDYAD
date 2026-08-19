@@ -1,13 +1,13 @@
+import type { GoogleLanguageModelOptions as GoogleProviderOptions } from "@ai-sdk/google";
+import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import type { ModelSelection, SmartContextMode } from "../../lib/schemas";
 import type { CodebaseFile } from "../../utils/codebase";
-import type { VersionedFiles } from "./versioned_codebase_context";
-import type { GoogleLanguageModelOptions as GoogleProviderOptions } from "@ai-sdk/google";
-import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
   getAnthropicProviderOptions,
   getGeminiThinkingBudgetTokens,
   getModelEffort,
 } from "./thinking_utils";
+import type { VersionedFiles } from "./versioned_codebase_context";
 
 export interface MentionedAppCodebase {
   appName: string;

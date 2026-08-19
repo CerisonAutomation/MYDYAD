@@ -1,16 +1,16 @@
-import { describe, expect, it } from "vitest";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import type { TransitionObserver } from "@/state_machines/types";
+import { describe, expect, it } from "vitest";
+import { VoiceToTextController } from "./controller";
 import type {
   VoiceCommand,
   VoiceEvent,
   VoiceState,
   VoiceTransitionResult,
 } from "./state";
-import { VoiceToTextController } from "./controller";
 import { transition } from "./transition";
 
 interface VoiceTrace {

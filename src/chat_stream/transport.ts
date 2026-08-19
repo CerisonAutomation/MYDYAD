@@ -1,16 +1,16 @@
-import { z } from "zod";
+import type { RemoteClientDefinition } from "@/distributed_machines/remote_client";
+import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import {
-  ChatStreamParamsSchema,
   ChatResponseEndSchema,
+  ChatStreamParamsSchema,
 } from "@/ipc/types/chat";
 import { ChatStreamInvocationRefSchema } from "@/ipc/types/chat";
-import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
-import type { RemoteClientDefinition } from "@/distributed_machines/remote_client";
 import {
   MAX_CHAT_ERROR_CHARS,
   MAX_CHAT_PROMPT_CHARS,
   MAX_CHAT_WIRE_ID_CHARS,
 } from "@/shared/chatAttachmentLimits";
+import { z } from "zod";
 
 export const CHAT_STREAM_MACHINE_ID = "chat_stream" as const;
 const MEBIBYTE = 1_024 * 1_024;

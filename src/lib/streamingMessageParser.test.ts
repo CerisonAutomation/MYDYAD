@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
 import {
+  type Block,
   advanceParser,
   getParserBlocks,
   initialParserState,
   parseFullMessage,
-  type Block,
 } from "@/lib/streamingMessageParser";
+import { describe, expect, it } from "vitest";
 
 function blocksToShape(blocks: Block[]) {
   return blocks.map((b) => {

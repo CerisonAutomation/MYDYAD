@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from "react";
-import { ImageIcon, Upload, Link, Check } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StylePopover } from "./StylePopover";
 import { VALID_IMAGE_MIME_TYPES } from "@/ipc/types/visual-editing";
+import { Check, ImageIcon, Link, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { StylePopover } from "./StylePopover";
 
 export interface ImageUploadData {
   fileName: string;

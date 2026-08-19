@@ -29,13 +29,13 @@ import path from "node:path";
 
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
 import { messages as messagesTable, security_fix_chats } from "@/db/schema";
 import type { SecurityFinding } from "@/ipc/types/security";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import { and, asc, desc, eq } from "drizzle-orm";
 
 const LARGE_REVIEW_STREAM_TIMEOUT_MS = 90_000;

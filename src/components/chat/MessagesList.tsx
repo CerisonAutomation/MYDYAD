@@ -1,35 +1,35 @@
-import React from "react";
 import type { Message, Version } from "@/ipc/types";
+import React from "react";
 import {
   forwardRef,
-  useState,
   useCallback,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { Virtuoso } from "react-virtuoso";
-import ChatMessage from "./ChatMessage";
 import { OpenRouterSetupBanner, SetupBanner } from "../SetupBanner";
+import ChatMessage from "./ChatMessage";
 
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useUserInputRequests } from "@/user_input/hooks";
-import { useAtomValue } from "jotai";
-import { CheckCircle2, Loader2, RefreshCw, Undo } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useVersions } from "@/hooks/useVersions";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { showError, showWarning } from "@/lib/toast";
-import { ipc } from "@/ipc/types";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { Button } from "@/components/ui/button";
+import { useChatMode } from "@/hooks/useChatMode";
 import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
 import { useSettings } from "@/hooks/useSettings";
-import { useChatMode } from "@/hooks/useChatMode";
-import { ModifiedFilesCard } from "./ModifiedFilesCard";
-import { isCancelledResponseContent } from "@/shared/chatCancellation";
+import { useStreamChat } from "@/hooks/useStreamChat";
 import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { useVersions } from "@/hooks/useVersions";
+import { ipc } from "@/ipc/types";
+import { showError, showWarning } from "@/lib/toast";
+import { isCancelledResponseContent } from "@/shared/chatCancellation";
+import { useUserInputRequests } from "@/user_input/hooks";
 import type { PreviewEvent } from "@/version_preview/state";
+import { useAtomValue } from "jotai";
+import { CheckCircle2, Loader2, RefreshCw, Undo } from "lucide-react";
 import { ExtraCommitsRevertDialog } from "./ExtraCommitsRevertDialog";
+import { ModifiedFilesCard } from "./ModifiedFilesCard";
 import { getExtraRevertedCommits } from "./revertImpact";
 
 interface MessagesListProps {

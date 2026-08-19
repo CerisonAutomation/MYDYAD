@@ -1,12 +1,12 @@
-import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import { useVersionChanges } from "@/hooks/useVersionChanges";
-import type { VersionChangedFile } from "@/ipc/types";
-import { FileDiffEditor } from "./FileDiffEditor";
-import { STATUS_META } from "./versionChangeMeta";
 import { useVersionPreview } from "@/hooks/useVersionPreview";
+import type { VersionChangedFile } from "@/ipc/types";
+import { cn } from "@/lib/utils";
 import { selectedDiffFileForState } from "@/version_preview/state";
+import { useTranslation } from "react-i18next";
+import { FileDiffEditor } from "./FileDiffEditor";
 import { getDisplayedVersionDiffPath } from "./diffSelection";
+import { STATUS_META } from "./versionChangeMeta";
 
 interface VersionDiffViewProps {
   appId: number;

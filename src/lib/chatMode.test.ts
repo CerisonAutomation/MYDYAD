@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { normalizeStoredChatMode, resolveChatMode } from "@/lib/chatMode";
-import { getEffectiveDefaultChatMode, type UserSettings } from "@/lib/schemas";
+import { type UserSettings, getEffectiveDefaultChatMode } from "@/lib/schemas";
+import { describe, expect, it } from "vitest";
 
 function makeSettings(overrides: Partial<UserSettings> = {}): UserSettings {
   return {

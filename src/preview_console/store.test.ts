@@ -1,11 +1,11 @@
 import type { ConsoleEntry } from "@/ipc/types";
 import {
-  getPreviewConsoleEntryByteLength,
   MAX_PREVIEW_CONSOLE_BYTES_PER_APP,
   MAX_PREVIEW_CONSOLE_ENTRIES_PER_APP,
   MAX_PREVIEW_CONSOLE_MESSAGE_BYTES,
   MAX_PREVIEW_CONSOLE_SOURCE_NAME_BYTES,
   PREVIEW_CONSOLE_OMISSION_MESSAGE,
+  getPreviewConsoleEntryByteLength,
 } from "@/lib/preview_console_buffer";
 import { describe, expect, it } from "vitest";
 import { PreviewConsoleStore } from "./store";

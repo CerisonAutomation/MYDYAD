@@ -1,7 +1,7 @@
-import { QueryClient } from "@tanstack/react-query";
-import { ChatSummary } from "./schemas";
-import { queryKeys } from "./queryKeys";
+import type { QueryClient } from "@tanstack/react-query";
 import { ipc } from "../ipc/types";
+import { queryKeys } from "./queryKeys";
+import type { ChatSummary } from "./schemas";
 
 type ResolveChatSummaryOptions = {
   cacheOnly?: boolean;

@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WebContents } from "electron";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getDefaultShell,
   PtySessionManager,
   type TerminalPtyProcess,
   type TerminalSessionManagerDeps,
+  getDefaultShell,
 } from "./pty_session_manager";
 
 interface MockPtyController {

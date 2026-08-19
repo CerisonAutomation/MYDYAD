@@ -1,20 +1,20 @@
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { chatMessagesByIdAtom } from "@/atoms/chatAtoms";
+import { useRemoteMachineClient } from "@/distributed_machines/react";
+import { useSelectChat } from "@/hooks/useSelectChat";
+import { ipc, versionEventClient } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { useRegisterEntityDisposer } from "@/state_machines/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useStore } from "jotai";
 import {
+  type PropsWithChildren,
   createContext,
   useContext,
   useEffect,
   useState,
-  type PropsWithChildren,
 } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useStore } from "jotai";
 import { toast } from "sonner";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { chatMessagesByIdAtom } from "@/atoms/chatAtoms";
-import { useSelectChat } from "@/hooks/useSelectChat";
-import { ipc, versionEventClient } from "@/ipc/types";
-import { queryKeys } from "@/lib/queryKeys";
-import { useRemoteMachineClient } from "@/distributed_machines/react";
-import { useRegisterEntityDisposer } from "@/state_machines/react";
 import { versionPreviewClientDefinition } from "./client_definition";
 import { VersionPreviewPresentationStore } from "./presentation_store";
 import { ownsHistoricalCheckout } from "./state";
@@ -244,7 +244,7 @@ export function VersionPreviewProvider({ children }: PropsWithChildren) {
             {
               id: toastId,
               description: state.error.message,
-              duration: Infinity,
+              duration: Number.POSITIVE_INFINITY,
               action: {
                 label: "Retry",
                 onClick: () => {
@@ -285,7 +285,7 @@ export function VersionPreviewProvider({ children }: PropsWithChildren) {
           toast.error("Version restore needs attention.", {
             id: toastId,
             description: state.error.message,
-            duration: Infinity,
+            duration: Number.POSITIVE_INFINITY,
           });
         } else {
           toast.dismiss(toastId);

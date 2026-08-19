@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { buildFrontmatter, parsePlanFile, validatePlanId } from "./planUtils";
 import { ensureDyadGitignored } from "./gitignoreUtils";
+import { buildFrontmatter, parsePlanFile, validatePlanId } from "./planUtils";
 
 export type PlanStatus = "draft" | "accepted";
 

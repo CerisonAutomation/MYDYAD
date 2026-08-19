@@ -1,13 +1,13 @@
-import { useMemo, useState } from "react";
-import { ArrowLeft, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AddAppsToCollectionDialog } from "@/components/AddAppsToCollectionDialog";
 import { AppShowcaseCard } from "@/components/AppShowcaseCard";
+import { Button } from "@/components/ui/button";
+import type { AppCollection } from "@/hooks/useAppCollections";
 import { useAppThumbnails } from "@/hooks/useAppThumbnails";
 import { useOpenApp } from "@/hooks/useOpenApp";
-import { sortAppsForShowcase } from "@/lib/sortApps";
 import type { ListedApp } from "@/ipc/types/app";
-import type { AppCollection } from "@/hooks/useAppCollections";
-import { AddAppsToCollectionDialog } from "@/components/AddAppsToCollectionDialog";
+import { sortAppsForShowcase } from "@/lib/sortApps";
+import { ArrowLeft, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface CollectionDetailViewProps {
   collection: AppCollection;

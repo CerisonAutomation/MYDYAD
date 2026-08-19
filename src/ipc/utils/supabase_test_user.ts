@@ -1,17 +1,17 @@
 import crypto from "node:crypto";
-import log from "electron-log";
 import { eq, isNotNull } from "drizzle-orm";
+import log from "electron-log";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
+import { fetchWithRetry } from "@/ipc/utils/retryWithRateLimit";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
-import { fetchWithRetry } from "@/ipc/utils/retryWithRateLimit";
-import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
 import {
+  type SupabaseApiKey,
   executeSupabaseSql,
   getProjectApiKeys,
-  type SupabaseApiKey,
 } from "../../supabase_admin/supabase_management_client";
 
 const logger = log.scope("supabase_test_user");

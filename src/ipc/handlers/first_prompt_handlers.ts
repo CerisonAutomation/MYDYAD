@@ -1,11 +1,11 @@
 import { ipcMain } from "electron";
 import log from "electron-log";
-import { firstPromptSendContracts } from "../types/first_prompt";
-import { assertTrustedRenderer } from "../utils/renderer_security";
 import {
   firstPromptCreationRegistry,
   logFirstPromptCreationCleanupFailure,
 } from "../services/first_prompt_creation_service";
+import { firstPromptSendContracts } from "../types/first_prompt";
+import { assertTrustedRenderer } from "../utils/renderer_security";
 
 const logger = log.scope("first_prompt_handlers");
 

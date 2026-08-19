@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  collectSystemMemorySignals,
   collectProcessTree,
+  collectSystemMemorySignals,
   parsePsProcessTable,
   parseSwapUsage,
   parseVmStat,

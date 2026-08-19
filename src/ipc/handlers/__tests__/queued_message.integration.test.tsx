@@ -7,11 +7,11 @@ import {
 } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 async function startMediumStream(harness: HybridChatHarness, chatId: number) {
   const { send } = await harness.typeInChat("tc=1 [sleep=medium]", { chatId });

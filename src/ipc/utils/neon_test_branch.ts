@@ -1,21 +1,21 @@
-import log from "electron-log";
-import { eq, isNotNull } from "drizzle-orm";
 import { EndpointType } from "@neondatabase/api-client";
+import { eq, isNotNull } from "drizzle-orm";
+import log from "electron-log";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getDyadAppPath } from "@/paths/paths";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { getNeonClient } from "../../neon_admin/neon_management_client";
 import { getConnectionUri } from "../../neon_admin/neon_context";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { readEnvVarsOrEmpty, updateNeonEnvVars } from "./app_env_var_utils";
-import { detectFrameworkType } from "./framework_utils";
-import { retryOnLocked } from "./retryOnLocked";
-import { ensureNeonAuth, getOrCreateNeonAuthCookieSecret } from "./neon_utils";
+import { getNeonClient } from "../../neon_admin/neon_management_client";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
-import { getDyadAppPath } from "@/paths/paths";
+import { readEnvVarsOrEmpty, updateNeonEnvVars } from "./app_env_var_utils";
+import { detectFrameworkType } from "./framework_utils";
+import { ensureNeonAuth, getOrCreateNeonAuthCookieSecret } from "./neon_utils";
+import { retryOnLocked } from "./retryOnLocked";
 
 const logger = log.scope("neon_test_branch");
 

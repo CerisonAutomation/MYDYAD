@@ -1,8 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { createStore } from "jotai";
 import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
-import { isPreviewOpenAtom, stagedDiffFileAtom } from "@/atoms/viewAtoms";
 import {
+  type CommitDialogSource,
   clearStagedDiffAtom,
   closeCommitDialogAtom,
   commitMessageDraftAtom,
@@ -12,8 +10,10 @@ import {
   openCommitDialogAtom,
   openStagedDiffAtom,
   resetCommitDialogAtom,
-  type CommitDialogSource,
 } from "@/atoms/commitAtoms";
+import { isPreviewOpenAtom, stagedDiffFileAtom } from "@/atoms/viewAtoms";
+import { createStore } from "jotai";
+import { describe, expect, it } from "vitest";
 
 const APP = 1;
 const OTHER_APP = 2;

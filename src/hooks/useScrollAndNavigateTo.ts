@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { activeSettingsSectionAtom } from "@/atoms/viewAtoms";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { activeSettingsSectionAtom } from "@/atoms/viewAtoms";
+import { useCallback } from "react";
 
 type ScrollOptions = {
   behavior?: ScrollBehavior;
@@ -15,7 +15,7 @@ type ScrollOptions = {
  * Returns an async function that navigates to the given route, then scrolls the element with the provided id into view.
  */
 export function useScrollAndNavigateTo(
-  to: string = "/settings",
+  to = "/settings",
   options?: ScrollOptions,
 ) {
   const navigate = useNavigate();

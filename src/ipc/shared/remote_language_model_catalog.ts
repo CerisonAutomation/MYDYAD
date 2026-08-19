@@ -1,5 +1,3 @@
-import log from "electron-log";
-import { z } from "zod";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type {
   LanguageModel,
@@ -7,13 +5,15 @@ import type {
 } from "@/ipc/types/language-model";
 import { EffortSettingsSchema } from "@/ipc/types/language-model";
 import {
-  ThemeGenerationModelOptionSchema,
   type ThemeGenerationModelOption,
+  ThemeGenerationModelOptionSchema,
 } from "@/ipc/types/templates";
+import log from "electron-log";
+import { z } from "zod";
 import {
   CLOUD_PROVIDERS,
-  GEMINI_3_5_FLASH,
   GEMINI_3_1_PRO_PREVIEW,
+  GEMINI_3_5_FLASH,
   GPT_5_2_MODEL_NAME,
   GPT_5_5_MODEL_NAME,
   GPT_5_NANO,
@@ -315,7 +315,7 @@ function convertRemoteCatalog(
 
   const parsedExpiresAt = remoteCatalog.expiresAt
     ? new Date(remoteCatalog.expiresAt).getTime()
-    : NaN;
+    : Number.NaN;
 
   // Merge required builtin aliases that may be missing from the remote catalog.
   const fallback = buildFallbackCatalog();

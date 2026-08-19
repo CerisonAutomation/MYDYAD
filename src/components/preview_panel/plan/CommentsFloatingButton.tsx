@@ -1,13 +1,13 @@
-import React from "react";
-import { MessageSquare, Send } from "lucide-react";
+import type { PlanAnnotation } from "@/atoms/planAtoms";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
-  PopoverTrigger,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
+import { MessageSquare, Send } from "lucide-react";
+import type React from "react";
 import { CommentCard } from "./CommentCard";
-import type { PlanAnnotation } from "@/atoms/planAtoms";
 
 interface CommentsFloatingButtonProps {
   chatId: number;

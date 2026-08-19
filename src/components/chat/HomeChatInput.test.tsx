@@ -1,5 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
-import { cloneElement, type ReactElement, type ReactNode } from "react";
+import { type ReactElement, type ReactNode, cloneElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HomeChatInput } from "./HomeChatInput";
 

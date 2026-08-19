@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 function GithubIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -9,7 +9,7 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 import { useSettings } from "@/hooks/useSettings";
-import { showSuccess, showError } from "@/lib/toast";
+import { showError, showSuccess } from "@/lib/toast";
 
 export function GitHubIntegration() {
   const { t } = useTranslation(["home", "common"]);

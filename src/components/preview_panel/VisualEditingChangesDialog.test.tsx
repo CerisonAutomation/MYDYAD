@@ -1,3 +1,5 @@
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { pendingVisualChangesAtom } from "@/atoms/previewAtoms";
 import {
   act,
   fireEvent,
@@ -5,11 +7,9 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { pendingVisualChangesAtom } from "@/atoms/previewAtoms";
 import { VisualEditingChangesDialog } from "./VisualEditingChangesDialog";
 
 const mocks = vi.hoisted(() => ({

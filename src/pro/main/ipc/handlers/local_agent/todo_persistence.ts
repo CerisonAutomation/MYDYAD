@@ -6,8 +6,8 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import log from "electron-log";
 import { AgentTodoSchema } from "@/ipc/types";
+import log from "electron-log";
 import type { Todo } from "./tools/types";
 
 const logger = log.scope("todo_persistence");

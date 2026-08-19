@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckCircle2, Info, KeyRound } from "lucide-react";
-import type { AzureProviderSetting, UserSettings } from "@/lib/schemas";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   findInvalidProviderApiKeyCharacter,
   formatInvalidProviderApiKeyMessage,
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
+import type { AzureProviderSetting, UserSettings } from "@/lib/schemas";
+import { CheckCircle2, Info, KeyRound } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface AzureConfigurationProps {
   settings: UserSettings | null | undefined;

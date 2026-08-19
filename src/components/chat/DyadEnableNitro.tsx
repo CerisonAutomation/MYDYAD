@@ -1,12 +1,12 @@
-import React from "react";
 import { Server } from "lucide-react";
+import type React from "react";
 import {
+  DyadBadge,
   DyadCard,
   DyadCardHeader,
-  DyadBadge,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
-import { CustomTagState } from "./stateTypes";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadEnableNitroProps {
   state?: CustomTagState;

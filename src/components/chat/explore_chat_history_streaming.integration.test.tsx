@@ -1,11 +1,11 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { ChatStreamRemoteManager } from "@/chat_stream/remote_manager";
 import { ChatStreamProvider } from "@/chat_stream/ChatStreamProvider";
+import { ChatStreamRemoteManager } from "@/chat_stream/remote_manager";
 import { applyPreviewChunk } from "@/lib/streamingPreviewSync";
 import { makeAgentContext } from "@/pro/main/ipc/handlers/local_agent/tools/chat_search_spec_utils";
 import type { HistoryReportStats } from "@/pro/main/ipc/handlers/local_agent/tools/explore_chat_history_report";

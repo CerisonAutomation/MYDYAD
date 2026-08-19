@@ -1,9 +1,9 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { executeSandboxScriptInProcess } from "./execution";
 import {
-  serializeSandboxWorkerError,
   type SandboxWorkerInput,
   type SandboxWorkerMessage,
+  serializeSandboxWorkerError,
 } from "./worker_protocol";
 
 function getParentPort(): NonNullable<typeof parentPort> {

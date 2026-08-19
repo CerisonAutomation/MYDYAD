@@ -1,7 +1,7 @@
+import { ScanQrCode } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
-import { ScanQrCode } from "lucide-react";
-import { DyadCard, DyadCardHeader, DyadBadge } from "./DyadCardPrimitives";
+import { DyadBadge, DyadCard, DyadCardHeader } from "./DyadCardPrimitives";
 import type { DyadTagNode } from "./stateTypes";
 
 interface DyadWebCrawlProps {

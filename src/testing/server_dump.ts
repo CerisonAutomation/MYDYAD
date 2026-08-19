@@ -22,9 +22,9 @@ import {
   normalizeGitContextHashes,
   normalizeItemReferences,
   normalizeMcpCallIds,
+  normalizePath,
   normalizeToolCallIds,
   normalizeVersionedFiles,
-  normalizePath,
 } from "../../e2e-tests/helpers/utils/normalization";
 
 const IGNORED_SNAPSHOT_FILE_PATHS = new Set([".gitattributes"]);

@@ -1,20 +1,20 @@
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import {
+  Check,
   MousePointer2,
   Pencil,
-  Type,
-  Trash2,
-  Undo,
   Redo,
-  Check,
+  Trash2,
+  Type,
+  Undo,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ToolbarColorPicker } from "./ToolbarColorPicker";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 
 interface AnnotatorToolbarProps {
   tool: "select" | "draw" | "text";

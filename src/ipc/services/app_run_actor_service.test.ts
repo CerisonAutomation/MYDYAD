@@ -26,8 +26,8 @@ vi.mock("./main_app_runtime_output", () => ({
   MainAppRuntimeOutput: class MainAppRuntimeOutput {},
 }));
 
-import { AppRunActorService } from "./app_run_actor_service";
 import { appRunOperationRegistry } from "@/app_run/operations";
+import { AppRunActorService } from "./app_run_actor_service";
 
 describe("AppRunActorService.executeAlreadyLockedExternalRestart", () => {
   const invocationRef = {

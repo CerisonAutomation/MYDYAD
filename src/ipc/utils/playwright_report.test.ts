@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  classifyErrorText,
-  parsePlaywrightReport,
   PLAYWRIGHT_REPORT_ERROR_FILE,
   type PwReport,
+  classifyErrorText,
+  parsePlaywrightReport,
 } from "./playwright_report";
 
 describe("classifyErrorText", () => {

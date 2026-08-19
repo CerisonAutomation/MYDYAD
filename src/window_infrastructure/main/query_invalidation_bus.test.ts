@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import type { QueryInvalidationBatch, WindowSessionId } from "../types";
 import { QueryInvalidationBus } from "./query_invalidation_bus";
-import { WindowRegistry, type WindowEndpoint } from "./window_registry";
+import { type WindowEndpoint, WindowRegistry } from "./window_registry";
 
 function endpoint(id: number): WindowEndpoint {
   return {

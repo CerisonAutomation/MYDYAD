@@ -1,6 +1,3 @@
-import { useSettings } from "@/hooks/useSettings";
-import { useLanguageModelsByProviders } from "@/hooks/useLanguageModelsByProviders";
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -9,8 +6,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { useLanguageModelsByProviders } from "@/hooks/useLanguageModelsByProviders";
+import { useSettings } from "@/hooks/useSettings";
+import { useTranslation } from "react-i18next";
 
 export function DefaultModelSelector() {
   const { settings, updateSettings } = useSettings();

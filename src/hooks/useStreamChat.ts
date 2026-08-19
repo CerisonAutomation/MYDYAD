@@ -1,20 +1,20 @@
-import { useCallback, useMemo } from "react";
-import type { ComponentSelection, FileAttachment } from "@/ipc/types";
 import type { QueuedMessageItem } from "@/atoms/chatAtoms";
-import type { Chat } from "@/ipc/types";
 import { useChatStreamManager } from "@/chat_stream/ChatStreamProvider";
 import type { StreamSettledResult } from "@/chat_stream/renderer_facade";
-import { useChatStreamState } from "@/hooks/useChatStream";
 import { isStreamActive } from "@/chat_stream/transition";
+import { useChatStreamState } from "@/hooks/useChatStream";
+import type { ComponentSelection, FileAttachment } from "@/ipc/types";
+import type { Chat } from "@/ipc/types";
+import { chatAttachmentToFileAttachment } from "@/lib/attachment_conversion";
+import { convertFileAttachmentsToChatAttachments } from "@/lib/chatAttachmentConversion";
 import { showError } from "@/lib/toast";
-import { useSearch } from "@tanstack/react-router";
 import {
   CHAT_PROMPT_LENGTH_LIMIT_MESSAGE,
   MAX_CHAT_PROMPT_CHARS,
   validateChatAttachmentFiles,
 } from "@/shared/chatAttachmentLimits";
-import { convertFileAttachmentsToChatAttachments } from "@/lib/chatAttachmentConversion";
-import { chatAttachmentToFileAttachment } from "@/lib/attachment_conversion";
+import { useSearch } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
 
 let _fallbackCounter = 0;
 

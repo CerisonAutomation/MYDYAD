@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
+import { beginChatActorDeletion } from "@/ipc/services/chat_actor_deletion_fence";
 import { describe, expect, it } from "vitest";
 import { planHandoffDefinition } from "./definition";
 import { transitionPlanHandoffHost } from "./host_transition";
 import {
+  type PlanHandoffIntent,
   PlanHandoffIntentSchema,
   serializePlanDocument,
-  type PlanHandoffIntent,
 } from "./transport";
-import { beginChatActorDeletion } from "@/ipc/services/chat_actor_deletion_fence";
 
 function intent(handoffId = "handoff-1"): PlanHandoffIntent {
   const plan = { title: "Ship it", content: "Implementation steps" };

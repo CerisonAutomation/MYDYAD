@@ -1,6 +1,6 @@
-import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { SecurityFinding } from "@/ipc/types/security";
+import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 
 export type SecurityLevel = SecurityFinding["level"];
 

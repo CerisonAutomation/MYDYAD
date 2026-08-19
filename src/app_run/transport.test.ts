@@ -9,17 +9,17 @@ import type {
 import {
   APP_RUN_REMOTE_INTENT_CLASS,
   AppRunDispatchSchema,
+  type AppRunIntentEvent,
   AppRunIntentEventSchema,
   AppRunKeySchema,
+  type AppRunProducerEvent,
   AppRunProducerEventSchema,
+  type AppRunRemoteSnapshot,
   AppRunRemoteSnapshotSchema,
   AppRunWireEventSchema,
+  type AppRunWireInvocationRef,
   appRunKey,
   projectAppRunRemoteSnapshot,
-  type AppRunIntentEvent,
-  type AppRunProducerEvent,
-  type AppRunRemoteSnapshot,
-  type AppRunWireInvocationRef,
 } from "./transport";
 
 const APP_ID = 42;

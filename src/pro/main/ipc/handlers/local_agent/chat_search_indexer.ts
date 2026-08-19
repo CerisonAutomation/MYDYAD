@@ -1,5 +1,5 @@
-import log from "electron-log";
 import { db } from "@/db";
+import log from "electron-log";
 import {
   CHAT_SEARCH_PROJECTION_VERSION,
   projectChatMessageForSearch,

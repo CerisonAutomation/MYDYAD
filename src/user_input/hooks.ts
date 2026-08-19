@@ -1,11 +1,11 @@
-import { useMemo, useSyncExternalStore } from "react";
-import { useAtomValue, useStore } from "jotai";
-import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 import { integrationProviderSelectionAtom } from "@/atoms/integrationAtoms";
+import { useAtomValue, useStore } from "jotai";
+import { useMemo, useSyncExternalStore } from "react";
+import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 import {
-  getUserInputReadModel,
   type UserInputReadModelSnapshot,
   type UserInputRequests,
+  getUserInputReadModel,
 } from "./read_model";
 import {
   selectPendingIntegrations,

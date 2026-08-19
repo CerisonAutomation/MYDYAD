@@ -1,7 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Palette, FileText, Image } from "lucide-react";
+import { BookOpen, FileText, Image, Palette } from "lucide-react";
 
 type LibrarySection = {
   id: string;

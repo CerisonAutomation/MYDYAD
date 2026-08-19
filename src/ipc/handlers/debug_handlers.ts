@@ -1,41 +1,41 @@
-import { BrowserWindow, clipboard } from "electron";
-import { platform, arch } from "os";
-import { readSettings } from "../../main/settings";
-import { createTypedHandler } from "./base";
-import { systemContracts } from "../types/system";
-import { miscContracts, SESSION_DEBUG_SCHEMA_VERSION } from "../types/misc";
-import type { SystemDebugInfo } from "../types/system";
-import type { SessionDebugBundle } from "../types/misc";
+import { arch, platform } from "os";
 import type { UserSettings } from "@/lib/schemas";
+import { BrowserWindow, clipboard } from "electron";
 import type { AiMessagesJsonV6 } from "../../db/schema";
+import { readSettings } from "../../main/settings";
+import { SESSION_DEBUG_SCHEMA_VERSION, miscContracts } from "../types/misc";
+import type { SessionDebugBundle } from "../types/misc";
+import { systemContracts } from "../types/system";
+import type { SystemDebugInfo } from "../types/system";
+import { createTypedHandler } from "./base";
 
 import log from "electron-log";
 
 const logger = log.scope("debug_handlers");
-import path from "path";
 import fs from "fs";
-import { runShellCommand } from "../utils/runShellCommand";
-import { extractCodebase } from "../../utils/codebase";
+import path from "path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { resolveDefaultModelSelection } from "@/ipc/utils/model_effort";
+import {
+  PNPM_PM_ON_FAIL_IGNORE_ARG,
+  getPackageManagerCommandEnv,
+} from "@/ipc/utils/socket_firewall";
+import type { ModelSelection } from "@/lib/schemas";
+import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import {
-  chats,
   apps,
+  chats,
   language_model_providers,
   language_models,
   mcpServers,
 } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { getDyadAppPath } from "../../paths/paths";
-import { validateChatContext } from "../utils/context_paths_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import {
-  getPackageManagerCommandEnv,
-  PNPM_PM_ON_FAIL_IGNORE_ARG,
-} from "@/ipc/utils/socket_firewall";
 import { getLastUpdaterError } from "../../main/updater_state";
+import { getDyadAppPath } from "../../paths/paths";
+import { extractCodebase } from "../../utils/codebase";
 import { collectProcessMemoryDiagnostics } from "../../utils/process_memory_diagnostics";
-import { resolveDefaultModelSelection } from "@/ipc/utils/model_effort";
-import type { ModelSelection } from "@/lib/schemas";
+import { validateChatContext } from "../utils/context_paths_utils";
+import { runShellCommand } from "../utils/runShellCommand";
 
 /**
  * Collects auto-updater failure details: the last updater error seen this

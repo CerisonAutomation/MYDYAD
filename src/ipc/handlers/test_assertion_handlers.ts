@@ -1,31 +1,53 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import log from "electron-log";
 import { streamText } from "ai";
-import { z } from "zod";
 import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { z } from "zod";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { isSingleAssertionStatement } from "@/lib/test_recorder/assertion_code";
+import {
+  type AssertionPlanItem,
+  type AssertionProposalPayload,
+  countAssertions,
+  isAssertionItem,
+} from "@/lib/test_recorder/assertion_proposal";
+import {
+  type AssertionProposalStatus,
+  buildAssertionsTagContent,
+  messageHasAssertionsProposal,
+  parseAssertionsPayloadFromMessage,
+  readAssertionsTagAttribute,
+  replaceAssertionsTagInMessage,
+} from "@/lib/test_recorder/assertion_tag";
+import {
+  generateSpecSource,
+  recordedBodyStatements,
+  recordedSpecFileName,
+} from "@/lib/test_recorder/codegen";
+import {
+  type RecordedTestDraft,
+  draftIncludesSignIn,
+  normalizeTestName,
+} from "@/lib/test_recorder/draft";
+import {
+  generateTestUserFixtureSource,
+  readFixtureMode,
+} from "@/lib/test_recorder/fixture_templates";
+import { readSettings } from "@/main/settings";
+import {
+  TEST_ASSERTION_CODE_SYSTEM_PROMPT,
+  buildAssertionCodePayload,
+} from "@/prompts/test_assertions_prompt";
 import { db } from "../../db";
 import { apps, chats, messages } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
-import { createTypedHandler } from "./base";
-import { E2E_TEST_DIR, testsContracts } from "../types/tests";
-import type { ApplyTestAssertionsResult } from "../types/tests";
-import { assertMutationPathAllowed } from "../utils/path_utils";
-import { withLock } from "../utils/lock_utils";
-import { broadcastToAllWindows } from "../utils/window_broadcast";
 import {
-  gitAdd,
-  gitResetFile,
-  readGitIndexEntries,
-  restoreGitIndexEntries,
-  type GitIndexEntry,
-} from "../utils/git_utils";
-import { extractJson } from "../utils/extract_json";
-import { getModelClient } from "../utils/get_model_client";
-import { fastTextOutput } from "../utils/stream_text_utils";
-import { getAiHeaders, getProviderOptions } from "../utils/provider_options";
+  appOperationCoordinator,
+  readAppResource,
+} from "../services/app_operation_coordinator";
 import {
   clearRecordedTestDraft,
   forgetRecordedDraftWrite,
@@ -33,45 +55,23 @@ import {
   markRecordedDraftWritten,
   restoreRecordedTestDraft,
 } from "../services/recorded_test_drafts";
-import { readSettings } from "@/main/settings";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { E2E_TEST_DIR, testsContracts } from "../types/tests";
+import type { ApplyTestAssertionsResult } from "../types/tests";
+import { extractJson } from "../utils/extract_json";
+import { getModelClient } from "../utils/get_model_client";
 import {
-  countAssertions,
-  isAssertionItem,
-  type AssertionPlanItem,
-  type AssertionProposalPayload,
-} from "@/lib/test_recorder/assertion_proposal";
-import {
-  draftIncludesSignIn,
-  normalizeTestName,
-  type RecordedTestDraft,
-} from "@/lib/test_recorder/draft";
-import {
-  generateSpecSource,
-  recordedBodyStatements,
-  recordedSpecFileName,
-} from "@/lib/test_recorder/codegen";
-import {
-  generateTestUserFixtureSource,
-  readFixtureMode,
-} from "@/lib/test_recorder/fixture_templates";
-import { isSingleAssertionStatement } from "@/lib/test_recorder/assertion_code";
-import {
-  buildAssertionsTagContent,
-  messageHasAssertionsProposal,
-  parseAssertionsPayloadFromMessage,
-  readAssertionsTagAttribute,
-  replaceAssertionsTagInMessage,
-  type AssertionProposalStatus,
-} from "@/lib/test_recorder/assertion_tag";
-import {
-  buildAssertionCodePayload,
-  TEST_ASSERTION_CODE_SYSTEM_PROMPT,
-} from "@/prompts/test_assertions_prompt";
-import {
-  appOperationCoordinator,
-  readAppResource,
-} from "../services/app_operation_coordinator";
+  type GitIndexEntry,
+  gitAdd,
+  gitResetFile,
+  readGitIndexEntries,
+  restoreGitIndexEntries,
+} from "../utils/git_utils";
+import { withLock } from "../utils/lock_utils";
+import { assertMutationPathAllowed } from "../utils/path_utils";
+import { getAiHeaders, getProviderOptions } from "../utils/provider_options";
+import { fastTextOutput } from "../utils/stream_text_utils";
+import { broadcastToAllWindows } from "../utils/window_broadcast";
+import { createTypedHandler } from "./base";
 
 /**
  * Writing a recorded test to disk. Approving the assertion card is the only way

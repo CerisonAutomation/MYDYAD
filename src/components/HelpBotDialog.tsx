@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { LoadingBlock, VanillaMarkdownParser } from "@/components/LoadingBlock";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { ipc } from "@/ipc/types";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { LoadingBlock, VanillaMarkdownParser } from "@/components/LoadingBlock";
 
 interface HelpBotDialogProps {
   isOpen: boolean;

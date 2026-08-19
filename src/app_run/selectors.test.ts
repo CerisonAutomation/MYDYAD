@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { projectAppRunRemoteSnapshot } from "./transport";
-import type { AppRunInvocationRef, RunState } from "./state";
 import { selectRemoteAppExit, selectRemoteAppUrl } from "./selectors";
+import type { AppRunInvocationRef, RunState } from "./state";
+import { projectAppRunRemoteSnapshot } from "./transport";
 
 const invocationRef: AppRunInvocationRef = {
   kind: "app-run",

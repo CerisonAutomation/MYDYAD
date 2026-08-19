@@ -1,19 +1,19 @@
 import { db } from "@/db";
 import { apps } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
-  AppChatContext,
+  type AppChatContext,
   AppChatContextSchema,
-  ContextPathResults,
+  type ContextPathResults,
 } from "@/lib/schemas";
-import { estimateTokens } from "../utils/token_utils";
-import { createLoggedHandler } from "./safe_handle";
-import log from "electron-log";
 import { getDyadAppPath } from "@/paths/paths";
 import { extractCodebase } from "@/utils/codebase";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { z } from "zod";
 import { validateChatContext } from "../utils/context_paths_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { estimateTokens } from "../utils/token_utils";
+import { createLoggedHandler } from "./safe_handle";
 
 const logger = log.scope("context_paths_handlers");
 const handle = createLoggedHandler(logger);

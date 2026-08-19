@@ -1,7 +1,7 @@
-import log from "electron-log";
-import { lt } from "drizzle-orm";
 import { db } from "@/db";
 import { messages } from "@/db/schema";
+import { lt } from "drizzle-orm";
+import log from "electron-log";
 
 const logger = log.scope("ai_messages_cleanup");
 

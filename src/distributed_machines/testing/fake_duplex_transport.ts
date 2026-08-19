@@ -1,24 +1,24 @@
-import type { WindowSessionId } from "@/window_infrastructure/types";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
+import type { WindowSessionId } from "@/window_infrastructure/types";
 import type { z } from "zod";
-import type { RemoteMachineManifest } from "../remote_manifest";
 import type {
   RemoteMachineClientConnection,
   RemoteTransportStatus,
 } from "../remote_client";
 import { RemoteMachineTransportError } from "../remote_client";
+import type { RemoteMachineManifest } from "../remote_manifest";
 import {
-  MachineDisposedEnvelopeSchema,
-  MachineSnapshotEnvelopeSchema,
   type MachineAddress,
   type MachineDispatchEnvelope,
   type MachineDispatchReceipt,
   type MachineDisposedEnvelope,
+  MachineDisposedEnvelopeSchema,
   type MachineSnapshotEnvelope,
+  MachineSnapshotEnvelopeSchema,
 } from "../remote_protocol";
-import {
-  type RemoteTransportEndpoint,
+import type {
   RemoteMachineTransport,
+  RemoteTransportEndpoint,
 } from "../remote_transport";
 
 interface FakeRemoteView {

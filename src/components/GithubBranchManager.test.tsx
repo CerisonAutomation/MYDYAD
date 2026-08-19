@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { projectGithubOps } from "@/github_ops/projection";
 import type { GithubOpsState } from "@/github_ops/state";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GithubBranchManager } from "./GithubBranchManager";
 
 const mocks = vi.hoisted(() => ({

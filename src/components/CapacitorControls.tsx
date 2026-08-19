@@ -1,22 +1,4 @@
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ipc } from "@/ipc/types";
-import { showSuccess } from "@/lib/toast";
-import {
-  Smartphone,
-  TabletSmartphone,
-  Loader2,
-  ExternalLink,
-  Copy,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -24,7 +6,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { showSuccess } from "@/lib/toast";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  Copy,
+  ExternalLink,
+  Loader2,
+  Smartphone,
+  TabletSmartphone,
+} from "lucide-react";
+import { useState } from "react";
 
 interface CapacitorControlsProps {
   appId: number;

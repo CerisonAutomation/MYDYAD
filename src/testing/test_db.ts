@@ -1,11 +1,11 @@
+import path from "node:path";
+import * as schema from "@/db/schema";
 import Database from "better-sqlite3";
 import {
   type BetterSQLite3Database,
   drizzle,
 } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import path from "node:path";
-import * as schema from "@/db/schema";
 
 export type TestDb = BetterSQLite3Database<typeof schema> & {
   $client: Database.Database;

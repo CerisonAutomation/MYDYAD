@@ -1,11 +1,11 @@
+import path from "node:path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { app, shell } from "electron";
 import log from "electron-log";
-import path from "node:path";
-import { createLoggedHandler } from "./safe_handle";
-import { IS_TEST_BUILD } from "../utils/test_utils";
-import { isFileWithinAnyDyadMediaDir } from "../utils/media_path_utils";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { registerDyadProtocolLinux } from "../../main/linux_protocol_registration";
+import { isFileWithinAnyDyadMediaDir } from "../utils/media_path_utils";
+import { IS_TEST_BUILD } from "../utils/test_utils";
+import { createLoggedHandler } from "./safe_handle";
 
 const logger = log.scope("shell_handlers");
 const handle = createLoggedHandler(logger);

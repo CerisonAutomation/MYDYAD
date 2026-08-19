@@ -1,10 +1,10 @@
 import * as path from "path";
-import * as fs from "fs/promises";
-import { app } from "electron";
-import log from "electron-log";
-import Database from "better-sqlite3";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { calculateFileChecksum } from "@/utils/file_checksum";
+import Database from "better-sqlite3";
+import { app } from "electron";
+import log from "electron-log";
+import * as fs from "fs/promises";
 
 const logger = log.scope("backup_manager");
 
@@ -94,7 +94,7 @@ export class BackupManager {
   /**
    * Create a backup of settings and database
    */
-  async createBackup(reason: string = "manual"): Promise<string> {
+  async createBackup(reason = "manual"): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const version = app.getVersion();
     const backupName = `v${version}_${timestamp}_${reason}`;

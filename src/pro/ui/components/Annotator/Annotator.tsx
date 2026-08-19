@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { AnnotationCanvas } from "./AnnotationCanvas";
+import { chatInputValueAtom } from "@/atoms/chatAtoms";
 import { AnnotatorToolbar } from "@/components/preview_panel/AnnotatorToolbar";
 import { DraggableTextInput } from "@/components/preview_panel/DraggableTextInput";
 import { useSetAtom } from "jotai";
-import { chatInputValueAtom } from "@/atoms/chatAtoms";
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnnotationCanvas } from "./AnnotationCanvas";
 
 // Types
 type Point = [number, number];

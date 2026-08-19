@@ -1,14 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apps } from "@/db/schema";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { registerAppHandlers } from "@/ipc/handlers/app_handlers";
 import {
-  setupHandlerTestHarness,
   type HandlerTestHarness,
+  setupHandlerTestHarness,
 } from "@/testing/handler_test_harness";
 
 const mocks = vi.hoisted(() => ({

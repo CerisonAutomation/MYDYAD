@@ -1,16 +1,16 @@
-import { getImageGenerationKey } from "@/image_generation/transport";
+import type { HostedActorRef } from "@/distributed_machines/definition";
+import type { FenceHandle } from "@/distributed_machines/keyed_admission_gate";
 import type {
   ImageGenerationActorState,
   ImageGenerationEvent,
   ImageGenerationIgnoreReason,
 } from "@/image_generation/state";
-import type { FenceHandle } from "@/distributed_machines/keyed_admission_gate";
-import type { HostedActorRef } from "@/distributed_machines/definition";
+import { getImageGenerationKey } from "@/image_generation/transport";
+import { remoteMachineHost } from "./distributed_machine_host";
 import { imageGenerationDefinition } from "./image_generation_definition";
+import { imageGenerationOperationService } from "./image_generation_operation_service";
 import { imageGenerationPresentationService } from "./image_generation_presentation_service";
 import { imageGenerationService } from "./image_generation_service";
-import { imageGenerationOperationService } from "./image_generation_operation_service";
-import { remoteMachineHost } from "./distributed_machine_host";
 
 type ImageGenerationActorHost = Pick<
   typeof remoteMachineHost,

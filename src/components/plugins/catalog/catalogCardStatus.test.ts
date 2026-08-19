@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import type { McpServer } from "@/ipc/types";
 import type { McpCatalogEntry } from "@/ipc/types/mcp_catalog";
+import { describe, expect, it } from "vitest";
 import { catalogCardStatus } from "./catalogCardStatus";
 
 function entryOf(overrides: Partial<McpCatalogEntry> = {}): McpCatalogEntry {

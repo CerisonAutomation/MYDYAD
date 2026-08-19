@@ -1,26 +1,26 @@
 import {
-  StrictMode,
-  createElement,
-  useEffect,
-  type PropsWithChildren,
-} from "react";
-import { act, render, renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { TwoWindowHarness } from "@/testing/two_window_harness";
+import { act, render, renderHook, waitFor } from "@testing-library/react";
+import {
+  type PropsWithChildren,
+  StrictMode,
+  createElement,
+  useEffect,
+} from "react";
+import { describe, expect, it } from "vitest";
 import { ActorHost } from "./actor_host";
-import { RemoteMachineClient } from "./remote_client";
-import { createRemoteMachineManifest } from "./remote_manifest";
 import {
   RemoteMachineProvider,
   useDistributedMachine,
   useRemoteMachineClient,
 } from "./react";
+import { RemoteMachineClient } from "./remote_client";
+import { createRemoteMachineManifest } from "./remote_manifest";
 import { RemoteMachineTransport } from "./remote_transport";
-import { createRemoteTestMachine, FakeDuplexRemoteTransport } from "./testing";
+import { FakeDuplexRemoteTransport, createRemoteTestMachine } from "./testing";
 
 function createHarness() {
   const clock = createFakeClock();

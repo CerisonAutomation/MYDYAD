@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AppRunInvocationRef } from "@/app_run/state";
-import type { RuntimeMode2 } from "@/lib/schemas";
 import type { RunningAppInfo } from "@/ipc/utils/process_manager";
-import {
-  AppRuntimeService,
-  getAppRuntimeOperationResources,
-  type AppRuntimeOutput,
-  type AppRuntimeServiceDependencies,
-} from "./app_runtime_service";
+import type { RuntimeMode2 } from "@/lib/schemas";
 import { AppOperationCoordinator } from "./app_operation_coordinator";
+import {
+  type AppRuntimeOutput,
+  AppRuntimeService,
+  type AppRuntimeServiceDependencies,
+  getAppRuntimeOperationResources,
+} from "./app_runtime_service";
 
 const APP_ID = 42;
 const REF: AppRunInvocationRef = {

@@ -1,16 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,13 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useMcp, type Transport } from "@/hooks/useMcp";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useDeepLink } from "@/contexts/DeepLinkContext";
+import { type Transport, useMcp } from "@/hooks/useMcp";
+import type { AddMcpServerDeepLinkData } from "@/ipc/deep_link_data";
 import type { McpServer } from "@/ipc/types";
 import { ipc } from "@/ipc/types";
 import { DEFAULT_OAUTH_CALLBACK_PORT } from "@/ipc/types/mcp";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
-import { useDeepLink } from "@/contexts/DeepLinkContext";
-import { AddMcpServerDeepLinkData } from "@/ipc/deep_link_data";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { OauthPlaintextStorageAlert } from "./OauthPlaintextStorageAlert";
 
 export function useOauthCallbackPort() {

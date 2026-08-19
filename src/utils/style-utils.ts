@@ -134,9 +134,9 @@ export function rgbToHex(rgb: string): string {
   if (!rgb || rgb.startsWith("#")) return rgb || "#000000";
   const rgbMatch = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
   if (rgbMatch) {
-    const r = parseInt(rgbMatch[1]).toString(16).padStart(2, "0");
-    const g = parseInt(rgbMatch[2]).toString(16).padStart(2, "0");
-    const b = parseInt(rgbMatch[3]).toString(16).padStart(2, "0");
+    const r = Number.parseInt(rgbMatch[1]).toString(16).padStart(2, "0");
+    const g = Number.parseInt(rgbMatch[2]).toString(16).padStart(2, "0");
+    const b = Number.parseInt(rgbMatch[3]).toString(16).padStart(2, "0");
     return `#${r}${g}${b}`;
   }
   return rgb || "#000000";

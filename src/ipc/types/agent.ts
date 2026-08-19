@@ -1,11 +1,11 @@
 import { z } from "zod";
+import { AgentToolConsentSchema } from "../../lib/schemas";
 import {
-  defineContract,
-  defineEvent,
   createClient,
   createEventClient,
+  defineContract,
+  defineEvent,
 } from "../contracts/core";
-import { AgentToolConsentSchema } from "../../lib/schemas";
 
 // =============================================================================
 // Agent Schemas

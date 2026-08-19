@@ -1,51 +1,3 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  acknowledgeConnectionFlow,
-  cancelConnectionFlow,
-  startConnectionFlow,
-  useConnectionFlow,
-  useUnsolicitedConnectionReturn,
-} from "@/hooks/useConnectionFlow";
-import { useTranslation } from "react-i18next";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ipc, type NeonProjectListItem } from "@/ipc/types";
-import { toast } from "sonner";
-import { useSettings } from "@/hooks/useSettings";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import { Switch } from "@/components/ui/switch";
-import {
-  ExternalLink,
-  Info,
-  Loader2,
-  Plus,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useNeon } from "@/hooks/useNeon";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { isNeonSupportedFramework } from "@/lib/framework_constants";
-import { getErrorMessage } from "@/lib/errors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,6 +9,54 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/contexts/ThemeContext";
+import {
+  acknowledgeConnectionFlow,
+  cancelConnectionFlow,
+  startConnectionFlow,
+  useConnectionFlow,
+  useUnsolicitedConnectionReturn,
+} from "@/hooks/useConnectionFlow";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { useNeon } from "@/hooks/useNeon";
+import { useSettings } from "@/hooks/useSettings";
+import { type NeonProjectListItem, ipc } from "@/ipc/types";
+import { getErrorMessage } from "@/lib/errors";
+import { isNeonSupportedFramework } from "@/lib/framework_constants";
+import { queryKeys } from "@/lib/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  ExternalLink,
+  Info,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 export function NeonConnector({ appId }: { appId: number }) {
   const { t } = useTranslation("home");

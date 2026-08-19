@@ -1,20 +1,21 @@
 // UserProfileFull.tsx — full-featured user profile page component
 
-import React, {
-  useState,
-  useEffect,
+import type React from "react";
+import {
   useCallback,
-  useRef,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   fetchUser,
+  fetchUserActivity,
   updateUser,
   uploadAvatar,
-  fetchUserActivity,
 } from "../services/userService";
-import type { User, ActivityItem } from "../types";
+import type { ActivityItem, User } from "../types";
 
 interface UserProfileFullProps {
   userId?: string;

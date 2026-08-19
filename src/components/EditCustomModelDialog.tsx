@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ipc } from "@/ipc/types";
 import { useSettings } from "@/hooks/useSettings";
-import { useMutation } from "@tanstack/react-query";
+import { ipc } from "@/ipc/types";
 import { showError, showSuccess } from "@/lib/toast";
+import { useMutation } from "@tanstack/react-query";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 interface Model {
   apiName: string;
@@ -67,17 +68,17 @@ export function EditCustomModelDialog({
         providerId,
         description: description || undefined,
         maxOutputTokens: maxOutputTokens
-          ? parseInt(maxOutputTokens, 10)
+          ? Number.parseInt(maxOutputTokens, 10)
           : undefined,
-        contextWindow: contextWindow ? parseInt(contextWindow, 10) : undefined,
+        contextWindow: contextWindow ? Number.parseInt(contextWindow, 10) : undefined,
       };
 
       if (!newParams.apiName) throw new Error("Model API name is required");
       if (!newParams.displayName)
         throw new Error("Model display name is required");
-      if (maxOutputTokens && isNaN(newParams.maxOutputTokens ?? NaN))
+      if (maxOutputTokens && isNaN(newParams.maxOutputTokens ?? Number.NaN))
         throw new Error("Max Output Tokens must be a valid number");
-      if (contextWindow && isNaN(newParams.contextWindow ?? NaN))
+      if (contextWindow && isNaN(newParams.contextWindow ?? Number.NaN))
         throw new Error("Context Window must be a valid number");
 
       // First delete the old model

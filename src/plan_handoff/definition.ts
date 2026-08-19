@@ -1,14 +1,11 @@
 import { createHash } from "node:crypto";
-import { eq } from "drizzle-orm";
-import type { z } from "zod";
 import { db } from "@/db";
 import { apps, chats } from "@/db/schema";
 import type { DistributedMachineDefinition } from "@/distributed_machines/definition";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { createChatForApp } from "@/ipc/utils/chat_creation_utils";
 import { savePlanToDisk } from "@/ipc/handlers/planPersistence";
-import { getDyadAppPath } from "@/paths/paths";
+import { assertChatActorAdmissionOpen } from "@/ipc/services/chat_actor_deletion_fence";
 import {
   publishChatInvalidations,
   routePlanHandoffPresentation,
@@ -18,27 +15,30 @@ import {
   dispatchPlanImplementationTurn,
   waitForChatActorIdle,
 } from "@/ipc/services/chat_actor_service";
-import { assertChatActorAdmissionOpen } from "@/ipc/services/chat_actor_deletion_fence";
-import {
-  PLAN_HANDOFF_MACHINE_ID,
-  PlanHandoffIntentEventSchema,
-  PlanHandoffKeySchema,
-  PlanHandoffRemoteSnapshotSchema,
-  planHandoffKey,
-  serializePlanDocument,
-  type PlanHandoffIntent,
-  type PlanHandoffKey,
-} from "./transport";
-import {
-  type PlanHandoffCommand,
-  type PlanHandoffHostEvent,
-  type PlanHandoffHostState,
-  type PlanHandoffIgnoreReason,
+import { createChatForApp } from "@/ipc/utils/chat_creation_utils";
+import { getDyadAppPath } from "@/paths/paths";
+import { eq } from "drizzle-orm";
+import type { z } from "zod";
+import type {
+  PlanHandoffCommand,
+  PlanHandoffHostEvent,
+  PlanHandoffHostState,
+  PlanHandoffIgnoreReason,
 } from "./host_state";
 import {
   PLAN_HANDOFF_DISPLAY_MS,
   transitionPlanHandoffHost,
 } from "./host_transition";
+import {
+  PLAN_HANDOFF_MACHINE_ID,
+  type PlanHandoffIntent,
+  PlanHandoffIntentEventSchema,
+  type PlanHandoffKey,
+  PlanHandoffKeySchema,
+  PlanHandoffRemoteSnapshotSchema,
+  planHandoffKey,
+  serializePlanDocument,
+} from "./transport";
 
 function initialState(key: PlanHandoffKey): PlanHandoffHostState {
   assertChatActorAdmissionOpen(key.sourceChatId);

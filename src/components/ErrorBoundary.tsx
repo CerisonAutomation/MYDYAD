@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LightbulbIcon } from "lucide-react";
-import { ErrorComponentProps } from "@tanstack/react-router";
-import { usePostHog } from "posthog-js/react";
 import { ipc } from "@/ipc/types";
 import { logger } from "@/utils/structured_logger";
+import type { ErrorComponentProps } from "@tanstack/react-router";
+import { LightbulbIcon } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { useEffect, useState } from "react";
 
 export function ErrorBoundary({ error }: ErrorComponentProps) {
   const [isLoading, setIsLoading] = useState(false);

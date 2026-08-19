@@ -1,7 +1,7 @@
-import { useSetAtom } from "jotai";
-import { useNavigate } from "@tanstack/react-router";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { useNavigate } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 
 export function useOpenApp() {
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);

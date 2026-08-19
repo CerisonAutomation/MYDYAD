@@ -1,10 +1,10 @@
-import type { WebContents } from "electron";
 import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
 import {
-  windowRegistry,
   type WindowEndpoint,
+  windowRegistry,
 } from "@/window_infrastructure/main/window_registry";
 import type { WindowSessionId } from "@/window_infrastructure/types";
+import type { WebContents } from "electron";
 
 const nullEndpoint: WindowEndpoint = {
   // Synthetic endpoints must never look like registrable Electron webContents.

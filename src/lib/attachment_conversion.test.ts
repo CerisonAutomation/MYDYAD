@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+import type { ChatAttachment, FileAttachment } from "@/ipc/types";
 import { chatAttachmentToFileAttachment } from "@/lib/attachment_conversion";
 import { convertFileAttachmentsToChatAttachments } from "@/lib/chatAttachmentConversion";
-import type { ChatAttachment, FileAttachment } from "@/ipc/types";
+import { describe, expect, it } from "vitest";
 
 describe("attachment_conversion", () => {
   it("round-trips a File through base64 and back preserving bytes and metadata", async () => {

@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from "react";
-import { Compass, Pencil, Check, X, Plus } from "lucide-react";
+import { Check, Compass, Pencil, Plus, X } from "lucide-react";
+import type React from "react";
+import { useCallback, useState } from "react";
 import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
 
 interface AppBlueprintDesignDirectionProps {

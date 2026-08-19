@@ -1,13 +1,13 @@
-import log from "electron-log";
-import { and, eq, isNotNull, isNull, like, or, type SQL } from "drizzle-orm";
-import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import { db } from "@/db";
 import { mcpServers } from "@/db/schema";
+import { type SQL, and, eq, isNotNull, isNull, like, or } from "drizzle-orm";
+import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+import log from "electron-log";
 import {
+  PLAINTEXT_PREFIX,
   decryptSecretMap,
   encryptSecretMap,
   isSecretEncryptionAvailable,
-  PLAINTEXT_PREFIX,
 } from "./secret_storage";
 
 const logger = log.scope("mcp_secret_encryption");

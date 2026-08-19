@@ -1,22 +1,22 @@
 import { z } from "zod";
 import {
-  createClient,
-  createEventClient,
-  defineContract,
-  defineEvent,
-} from "../contracts/core";
-import {
-  QueryInvalidationBatchSchema,
-  QueryInvalidationEventSchema,
-  QueryInvalidationScopeSchema,
   ChatTabOwnershipSchema,
   ChatTabTransferPayloadSchema,
   EntityDisposalEventSchema,
+  QueryInvalidationBatchSchema,
+  QueryInvalidationEventSchema,
+  QueryInvalidationScopeSchema,
   TabInstanceIdSchema,
   VisibleEntitySchema,
   WindowInterestSchema,
   WindowSessionIdSchema,
 } from "../../window_infrastructure/types";
+import {
+  createClient,
+  createEventClient,
+  defineContract,
+  defineEvent,
+} from "../contracts/core";
 
 export const windowInfrastructureContracts = {
   bootstrap: defineContract({

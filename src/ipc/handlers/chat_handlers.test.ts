@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { eq } from "drizzle-orm";
 import { apps, chats, messages } from "@/db/schema";
 import { DyadErrorKind } from "@/errors/dyad_error";
 import {
   type HandlerTestHarness,
   setupHandlerTestHarness,
 } from "@/testing/handler_test_harness";
+import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { registerChatHandlers } from "./chat_handlers";
 
 const deletionOrder = vi.hoisted(() => [] as string[]);

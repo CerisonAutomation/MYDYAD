@@ -8,11 +8,11 @@ import {
   within,
 } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 function queuedCountText(count: number) {
   return new RegExp(`^${count}\\s+Queued`, "i");

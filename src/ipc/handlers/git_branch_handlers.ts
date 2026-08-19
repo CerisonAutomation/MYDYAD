@@ -1,52 +1,52 @@
-import { IpcMainInvokeEvent } from "electron";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { readSettings } from "../../main/settings";
-import {
-  gitMergeAbort,
-  gitFetch,
-  gitPull,
-  gitCreateBranch,
-  gitDeleteBranch,
-  gitCheckout,
-  gitMerge,
-  gitCurrentBranch,
-  gitListBranches,
-  gitListRemoteBranches,
-  gitRenameBranch,
-  GitStateError,
-  GIT_ERROR_CODES,
-  isGitMergeInProgress,
-  isGitRebaseInProgress,
-  getGitUncommittedFilesWithStatus,
-  gitDiscardAllChanges,
-  getFileAtCommit,
-  isMissingRemoteBranchError,
-} from "../utils/git_utils";
-import { gitService } from "../services/git_service";
-import { getDyadAppPath } from "../../paths/paths";
-import { safeJoin } from "../utils/path_utils";
 import { promises as fsPromises } from "node:fs";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
+import type { IpcMainInvokeEvent } from "electron";
+import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import log from "electron-log";
+import { readSettings } from "../../main/settings";
+import { getDyadAppPath } from "../../paths/paths";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
-import { updateAppGithubRepo, ensureCleanWorkspace } from "./github_handlers";
-import { createTypedHandler } from "./base";
-import { githubContracts, gitContracts } from "../types/github";
-import { ensureDyadGitignored } from "./gitignoreUtils";
+import { gitService } from "../services/git_service";
+import { gitContracts, githubContracts } from "../types/github";
 import type {
-  GitBranchAppIdParams,
   CreateGitBranchParams,
+  GetUncommittedFileDiffParams,
+  GitBranchAppIdParams,
   GitBranchParams,
   RenameGitBranchParams,
   UncommittedFile,
-  GetUncommittedFileDiffParams,
   UncommittedFileDiff,
 } from "../types/github";
+import {
+  GIT_ERROR_CODES,
+  GitStateError,
+  getFileAtCommit,
+  getGitUncommittedFilesWithStatus,
+  gitCheckout,
+  gitCreateBranch,
+  gitCurrentBranch,
+  gitDeleteBranch,
+  gitDiscardAllChanges,
+  gitFetch,
+  gitListBranches,
+  gitListRemoteBranches,
+  gitMerge,
+  gitMergeAbort,
+  gitPull,
+  gitRenameBranch,
+  isGitMergeInProgress,
+  isGitRebaseInProgress,
+  isMissingRemoteBranchError,
+} from "../utils/git_utils";
+import { safeJoin } from "../utils/path_utils";
+import { createTypedHandler } from "./base";
+import { ensureCleanWorkspace, updateAppGithubRepo } from "./github_handlers";
+import { ensureDyadGitignored } from "./gitignoreUtils";
 
 const logger = log.scope("git_branch_handlers");
 

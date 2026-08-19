@@ -1,48 +1,48 @@
-import { FileEditor } from "./FileEditor";
-import { FileTree } from "./FileTree";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import {
-  RefreshCw,
-  Maximize2,
-  Minimize2,
-  ArrowLeft,
-  Pencil,
-  Loader2,
-} from "lucide-react";
+import { clearStagedDiffAtom, exitStagedDiffAtom } from "@/atoms/commitAtoms";
+import { selectedFileAtom, stagedDiffFileAtom } from "@/atoms/viewAtoms";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useQueryClient } from "@tanstack/react-query";
-import { selectedFileAtom, stagedDiffFileAtom } from "@/atoms/viewAtoms";
-import { clearStagedDiffAtom, exitStagedDiffAtom } from "@/atoms/commitAtoms";
-import { queryKeys } from "@/lib/queryKeys";
-import { useTranslation } from "react-i18next";
-import { VersionDiffView } from "./VersionDiffView";
-import {
-  Panel,
-  Group as PanelGroup,
-  Separator as PanelResizeHandle,
-} from "react-resizable-panels";
-import { StagedDiffView } from "./StagedDiffView";
-import { CommitMenu } from "./CommitMenu";
+import { useLoadApp } from "@/hooks/useLoadApp";
 import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
+import { useVersionChanges } from "@/hooks/useVersionChanges";
 import { useVersionPreview } from "@/hooks/useVersionPreview";
+import { queryKeys } from "@/lib/queryKeys";
+import { showWarning } from "@/lib/toast";
 import {
   diffVersionIdForState,
   isMutatingState,
   ownsHistoricalCheckout,
   selectedDiffFileForState,
 } from "@/version_preview/state";
-import { useVersionChanges } from "@/hooks/useVersionChanges";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  ArrowLeft,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Pencil,
+  RefreshCw,
+} from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Panel,
+  Group as PanelGroup,
+  Separator as PanelResizeHandle,
+} from "react-resizable-panels";
+import { CommitMenu } from "./CommitMenu";
+import { FileEditor } from "./FileEditor";
+import { FileTree } from "./FileTree";
+import { StagedDiffView } from "./StagedDiffView";
+import { VersionDiffView } from "./VersionDiffView";
 import {
   getDisplayedStagedDiffPath,
   getDisplayedVersionDiffPath,
 } from "./diffSelection";
-import { showWarning } from "@/lib/toast";
 
 interface App {
   id?: number;

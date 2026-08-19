@@ -1,17 +1,17 @@
-import { QueryClient } from "@tanstack/react-query";
 import { randomUUID } from "node:crypto";
+import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  registerQueryInvalidationListener,
-  visibleEntitiesForRoute,
-  type RendererIpcClient,
-} from "./registerRendererIpcListeners";
 import { queryKeys } from "@/lib/queryKeys";
 import type {
   QueryInvalidationBatch,
   WindowSessionId,
 } from "@/window_infrastructure/types";
+import {
+  type RendererIpcClient,
+  registerQueryInvalidationListener,
+  visibleEntitiesForRoute,
+} from "./registerRendererIpcListeners";
 
 describe("visible entity publication", () => {
   it("publishes entities only for routes that visibly present them", () => {

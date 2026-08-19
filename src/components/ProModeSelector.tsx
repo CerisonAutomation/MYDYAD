@@ -1,25 +1,25 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Bot, Info } from "lucide-react";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 import { useSettings } from "@/hooks/useSettings";
-import { hasDyadProKey, type UserSettings } from "@/lib/schemas";
+import { type UserSettings, hasDyadProKey } from "@/lib/schemas";
+import { Bot, Info } from "lucide-react";
 
 export function Agent2ModeSelector() {
   const { settings, updateSettings } = useSettings();

@@ -20,6 +20,7 @@ import {
   clearConsoleLogs,
   getNetworkEntries,
   getNetworkResponseBody,
+  attachPageListeners,
 } from "./browser_session";
 import { resolveTargetAppPath } from "./resolve_app_context";
 import type { Page, Browser } from "playwright";
@@ -49,7 +50,7 @@ const clickAction = z.object({
       "CSS selector for the element to click (e.g. 'button.submit', '#login', 'a[href=\"/about\"]'). Alternative to ref.",
     ),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -57,10 +58,13 @@ const clickAction = z.object({
       "Stable ref number from a prior read_page call (e.g. [3] <button>). Alternative to selector — use when the page was just read.",
     ),
   wait_ms: z
-    .number()
+    .coerce.number()
     .optional()
     .describe("Milliseconds to wait after clicking before returning"),
-});
+}).refine(
+  (args) => args.selector || args.ref,
+  { message: "Either selector or ref is required. Call read_page first to get refs, then use ref number." },
+);
 
 const typeAction = z.object({
   action: z.literal("type"),
@@ -71,7 +75,7 @@ const typeAction = z.object({
       "CSS selector for the input element to type into. Alternative to ref.",
     ),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -87,7 +91,7 @@ const scrollAction = z.object({
     .enum(["up", "down", "left", "right"])
     .describe("Direction to scroll"),
   amount: z
-    .number()
+    .coerce.number()
     .optional()
     .describe("Number of pixels to scroll (default: 500)"),
 });
@@ -111,7 +115,7 @@ const getTextAction = z.object({
       "CSS selector for the element to read text from. Alternative to ref.",
     ),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -127,7 +131,7 @@ const waitForAction = z.object({
     .optional()
     .describe("CSS selector for the element to wait for. Alternative to ref."),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -135,7 +139,7 @@ const waitForAction = z.object({
       "Stable ref number from a prior read_page call. Alternative to selector.",
     ),
   timeout_ms: z
-    .number()
+    .coerce.number()
     .optional()
     .describe("Maximum time to wait in milliseconds (default: 10000)"),
 });
@@ -149,30 +153,46 @@ const readPageAction = z.object({
       "Which elements to include: interactive (default, forms+links+buttons), all (full DOM), viewport (visible only)",
     ),
   depth: z
-    .number()
+    .coerce.number()
     .min(1)
     .max(20)
     .optional()
     .describe("Maximum DOM tree depth (default: 5, max: 20)"),
 });
 
+const batchActionStepSchema = z.object({
+  action: z
+    .string()
+    .describe(
+      "Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page, key, double_click, hover, scroll_to)",
+    ),
+  params: z
+    .record(z.string(), z.unknown())
+    .describe("Parameters for the action"),
+});
+
 const batchAction = z.object({
   action: z.literal("batch"),
   steps: z
-    .array(
-      z.object({
-        action: z
-          .string()
-          .describe(
-            "Action to perform (navigate, click, type, scroll, screenshot, get_text, wait_for, read_page, key, double_click, hover, scroll_to)",
-          ),
-        params: z
-          .record(z.string(), z.unknown())
-          .describe("Parameters for the action"),
-      }),
+    .preprocess(
+      (val) => {
+        // Tolerate platform serialization quirks where arrays arrive as
+        // JSON strings from the LLM tool-calling layer.
+        if (typeof val === "string") {
+          try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) return parsed;
+          } catch {
+            // fall through — Zod will reject the raw string
+          }
+        }
+        return val;
+      },
+      z
+        .array(batchActionStepSchema)
+        .min(1)
+        .max(20),
     )
-    .min(1)
-    .max(20)
     .describe("Ordered list of actions to execute sequentially"),
 });
 
@@ -183,7 +203,7 @@ const scrollToAction = z.object({
     .optional()
     .describe("CSS selector for the element to scroll to"),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -206,7 +226,7 @@ const doubleClickAction = z.object({
     .optional()
     .describe("CSS selector for the element to double-click"),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -220,7 +240,7 @@ const hoverAction = z.object({
     .optional()
     .describe("CSS selector for the element to hover over"),
   ref: z
-    .number()
+    .coerce.number()
     .int()
     .min(1)
     .optional()
@@ -240,7 +260,7 @@ const locatorSchema = z.object({
   placeholder: z.string().optional().describe("Input placeholder text"),
   selector: z.string().optional().describe("CSS selector"),
   testId: z.string().optional().describe("data-testid attribute value"),
-  nth: z.number().optional().describe("Zero-based index when multiple matches"),
+  nth: z.coerce.number().optional().describe("Zero-based index when multiple matches"),
   exact: z.boolean().optional().describe("Exact text match (default: false)"),
 });
 
@@ -343,10 +363,55 @@ const javascriptExecAction = z.object({
     ),
 });
 
+const selectAction = z.object({
+  action: z.literal("select"),
+  selector: z
+    .string()
+    .optional()
+    .describe("CSS selector for the <select> element"),
+  ref: z
+    .coerce.number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Stable ref number from a prior read_page call"),
+  value: z.string().describe("Option value to select"),
+});
+
+const reloadAction = z.object({
+  action: z.literal("reload"),
+});
+
+const backAction = z.object({
+  action: z.literal("back"),
+});
+
+const forwardAction = z.object({
+  action: z.literal("forward"),
+});
+
+const focusAction = z.object({
+  action: z.literal("focus"),
+  selector: z.string().optional().describe("CSS selector for the element to focus"),
+  ref: z.coerce.number().int().min(1).optional().describe("Stable ref number from a prior read_page call"),
+});
+
+const uploadFileAction = z.object({
+  action: z.literal("upload_file"),
+  selector: z.string().optional().describe("CSS selector for the <input type=file> element"),
+  ref: z.coerce.number().int().min(1).optional().describe("Stable ref number from a prior read_page call"),
+  file_path: z.string().describe("Absolute path to the file to upload"),
+});
+
+const ariaSnapshotAction = z.object({
+  action: z.literal("aria_snapshot"),
+  selector: z.string().optional().describe("CSS selector to scope the snapshot (default: entire page)"),
+});
+
 const resizeWindowAction = z.object({
   action: z.literal("resize_window"),
-  width: z.number().optional().describe("Viewport width in pixels"),
-  height: z.number().optional().describe("Viewport height in pixels"),
+  width: z.coerce.number().optional().describe("Viewport width in pixels"),
+  height: z.coerce.number().optional().describe("Viewport height in pixels"),
   preset: z
     .enum(["mobile", "tablet", "desktop"])
     .optional()
@@ -378,6 +443,13 @@ const browserControlSchema = z.discriminatedUnion("action", [
   keyAction,
   doubleClickAction,
   hoverAction,
+  selectAction,
+  reloadAction,
+  backAction,
+  forwardAction,
+  focusAction,
+  uploadFileAction,
+  ariaSnapshotAction,
   consoleLogsAction,
   networkRequestsAction,
   tabsContextAction,
@@ -407,6 +479,13 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - **wait_for** — Wait for an element to appear in the DOM. Provide \`selector\` **or** \`ref\`. Optional \`timeout_ms\` (default 10000).
 - **read_page** — Get a structured representation of the page with interactive elements (forms, links, buttons) labeled with stable refs. Provide \`mode\` (interactive/all/viewport). Optional \`depth\` (default 5).
 - **batch** — Execute multiple actions sequentially. Provide \`steps\` array with {action, params} objects. Max 20 steps.
+- **select** — Select an option from a <select> dropdown. Provide \`selector\` or \`ref\` plus \`value\` (the option's value attribute).
+- **reload** — Reload the current page.
+- **back** — Navigate back in browser history.
+- **forward** — Navigate forward in browser history.
+- **focus** — Focus an element (useful for activating inputs before typing). Provide \`selector\` or \`ref\`.
+- **upload_file** — Upload a file to an <input type=file> element. Provide \`selector\` or \`ref\` plus \`file_path\` (absolute path).
+- **aria_snapshot** — Get the accessibility tree of the page (or a scoped element). Useful for testing screen reader output and ARIA compliance.
 - **console_logs** — Read captured browser console output (log/info/warn/error messages and uncaught exceptions) for the active tab. Optional \`clear\` to clear the buffer after reading it.
 - **network_requests** — List captured network requests (method, status, resource type, URL) for the active tab, most recent last. Optional \`url_filter\` for a substring match on the URL. Provide \`request_id\` (the id shown in a prior listing) instead to fetch that request's response body.
 - **tabs_context** — List open browser tabs with their id, URL, title, and which one is active.
@@ -426,6 +505,7 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - Testing a local dev server or deployed web app interactively
 - Taking screenshots of pages for visual documentation
 - Automating form filling or navigation flows for testing
+- Checking accessibility (ARIA) compliance
 
 ### Notes
 - A persistent shared headless Chromium session is reused across calls (not launched per invocation). The browser auto-closes after 5 minutes of inactivity and on app quit.
@@ -699,7 +779,7 @@ async function resolveTargetSelector(
     return `[data-dyad-ref="${ref}"]`;
   }
   throw new DyadError(
-    "Either 'selector' or 'ref' must be provided",
+    "Missing target: provide 'selector' (CSS) or 'ref' (number from read_page). If you don't have a ref, call read_page first to get the page structure with numbered elements.",
     DyadErrorKind.Validation,
   );
 }
@@ -1114,6 +1194,27 @@ async function executeBatch(
         case "hover":
           result = await executeHover(page, params as any);
           break;
+        case "select":
+          result = await executeSelect(page, params as any);
+          break;
+        case "reload":
+          result = await executeReload(page);
+          break;
+        case "back":
+          result = await executeBack(page);
+          break;
+        case "forward":
+          result = await executeForward(page);
+          break;
+        case "focus":
+          result = await executeFocus(page, params as any);
+          break;
+        case "upload_file":
+          result = await executeUploadFile(page, params as any);
+          break;
+        case "aria_snapshot":
+          result = await executeAriaSnapshot(page, params as any);
+          break;
         default:
           result = `Unknown action: ${actionName}`;
       }
@@ -1187,6 +1288,123 @@ async function executeHover(
   }
   await element.hover();
   return `Hovered over element matching: ${selector}`;
+}
+
+async function executeSelect(
+  page: PlaywrightPage,
+  args: z.infer<typeof selectAction>,
+): Promise<string> {
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
+  if (!element) {
+    throw new DyadError(
+      `No element found matching selector: ${selector}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await page.selectOption(selector, args.value);
+  return `Selected option "${args.value}" in element matching: ${selector}`;
+}
+
+async function executeReload(page: PlaywrightPage): Promise<string> {
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(500);
+  const title = await page.title();
+  return `Page reloaded (title: "${title}")`;
+}
+
+async function executeBack(page: PlaywrightPage): Promise<string> {
+  await page.goBack({ waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(300);
+  const url = page.url();
+  const title = await page.title();
+  return `Navigated back to ${url} (title: "${title}")`;
+}
+
+async function executeForward(page: PlaywrightPage): Promise<string> {
+  await page.goForward({ waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(300);
+  const url = page.url();
+  const title = await page.title();
+  return `Navigated forward to ${url} (title: "${title}")`;
+}
+
+async function executeFocus(
+  page: PlaywrightPage,
+  args: z.infer<typeof focusAction>,
+): Promise<string> {
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
+  if (!element) {
+    throw new DyadError(
+      `No element found matching selector: ${selector}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await element.focus();
+  return `Focused element matching: ${selector}`;
+}
+
+async function executeUploadFile(
+  page: PlaywrightPage,
+  args: z.infer<typeof uploadFileAction>,
+): Promise<string> {
+  const selector = await resolveTargetSelector(page, args);
+  const element = await page.$(selector);
+  if (!element) {
+    throw new DyadError(
+      `No element found matching selector: ${selector}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  // Verify file exists
+  try {
+    await fs.access(args.file_path);
+  } catch {
+    throw new DyadError(
+      `File not found: ${args.file_path}`,
+      DyadErrorKind.NotFound,
+    );
+  }
+  await element.setInputFiles(args.file_path);
+  return `Uploaded file ${args.file_path} to element matching: ${selector}`;
+}
+
+async function executeAriaSnapshot(
+  page: PlaywrightPage,
+  args: z.infer<typeof ariaSnapshotAction>,
+): Promise<string> {
+  const snapshot = await page.accessibility.snapshot({
+    interestingOnly: false,
+    root: args.selector ? await page.$(args.selector) ?? undefined : undefined,
+  });
+  if (!snapshot) {
+    return "No accessibility tree available for this page.";
+  }
+  const formatNode = (node: any, indent = 0): string => {
+    const pad = "  ".repeat(indent);
+    const parts: string[] = [];
+    if (node.role) parts.push(node.role);
+    if (node.name) parts.push(`\"${node.name.slice(0, 80)}\"`);
+    if (node.description) parts.push(`(description: \"${node.description.slice(0, 60)}\")`);
+    if (node.value) parts.push(`[value=\"${node.value}\"]`);
+    if (node.focused) parts.push("[focused]");
+    if (node.disabled) parts.push("[disabled]");
+    if (node.required) parts.push("[required]");
+    let result = pad + parts.join(" ");
+    if (node.children) {
+      for (const child of node.children) {
+        result += "\n" + formatNode(child, indent + 1);
+      }
+    }
+    return result;
+  };
+  const output = formatNode(snapshot);
+  const MAX_ARIA_CHARS = 30_000;
+  if (output.length > MAX_ARIA_CHARS) {
+    return output.slice(0, MAX_ARIA_CHARS) + "\n…[truncated]";
+  }
+  return output;
 }
 
 async function executeFrameIframe(
@@ -1408,6 +1626,7 @@ async function executeTabsCreate(): Promise<string> {
     );
   }
   const newPage = (await context.newPage()) as PlaywrightPage;
+  attachPageListeners(newPage);
   const id = getOrAssignTabId(newPage);
   activeTabPage = newPage;
   return `Created and switched to new tab: ${id}`;
@@ -1660,6 +1879,26 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         if (args.ref) return `<dyad-browser action="hover" ref="${args.ref}">`;
         if (!args.selector) return undefined;
         return `<dyad-browser action="hover" selector="${escapeXmlAttr(args.selector)}">`;
+      case "select":
+        if (args.ref) return `<dyad-browser action="select" ref="${args.ref}" value="${escapeXmlAttr(args.value)}">`;
+        if (!args.selector) return undefined;
+        return `<dyad-browser action="select" selector="${escapeXmlAttr(args.selector)}" value="${escapeXmlAttr(args.value)}">`;
+      case "reload":
+        return `<dyad-browser action="reload">`;
+      case "back":
+        return `<dyad-browser action="back">`;
+      case "forward":
+        return `<dyad-browser action="forward">`;
+      case "focus":
+        if (args.ref) return `<dyad-browser action="focus" ref="${args.ref}">`;
+        if (!args.selector) return undefined;
+        return `<dyad-browser action="focus" selector="${escapeXmlAttr(args.selector)}">`;
+      case "upload_file":
+        if (args.ref) return `<dyad-browser action="upload_file" ref="${args.ref}">`;
+        if (!args.selector) return undefined;
+        return `<dyad-browser action="upload_file" selector="${escapeXmlAttr(args.selector)}">`;
+      case "aria_snapshot":
+        return `<dyad-browser action="aria_snapshot"${args.selector ? ` selector="${escapeXmlAttr(args.selector)}"` : ""}>`;
       case "console_logs":
         return `<dyad-browser action="console_logs"${args.clear ? ` clear="true"` : ""}>`;
       case "network_requests":
@@ -1683,6 +1922,30 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
 
   execute: async (args, ctx: AgentContext) => {
     logger.log(`Executing browser_control: ${args.action}`);
+
+    // Coerce string numbers to actual numbers — LLMs often stringify numeric values
+    const numericFields = ["ref", "wait_ms", "timeout_ms", "amount", "depth", "width", "height", "nth"];
+    for (const field of numericFields) {
+      if (field in args && typeof (args as any)[field] === "string") {
+        const num = Number((args as any)[field]);
+        if (!isNaN(num)) {
+          (args as any)[field] = num;
+        }
+      }
+    }
+
+    // Coerce string booleans to actual booleans — LLMs often send "true"/"false" as strings
+    const booleanFields = ["clear", "full_page", "exact"];
+    for (const field of booleanFields) {
+      if (field in args && typeof (args as any)[field] === "string") {
+        const val = ((args as any)[field] as string).toLowerCase();
+        if (val === "true" || val === "1") {
+          (args as any)[field] = true;
+        } else if (val === "false" || val === "0") {
+          (args as any)[field] = false;
+        }
+      }
+    }
 
     // Build initial XML based on action
     let initialXml: string = "";
@@ -1725,6 +1988,27 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
         break;
       case "hover":
         initialXml = `<dyad-browser action="hover" selector="${escapeXmlAttr(args.selector ?? "")}">`;
+        break;
+      case "select":
+        initialXml = `<dyad-browser action="select" selector="${escapeXmlAttr(args.selector ?? "")}" value="${escapeXmlAttr(args.value)}">`;
+        break;
+      case "reload":
+        initialXml = `<dyad-browser action="reload">`;
+        break;
+      case "back":
+        initialXml = `<dyad-browser action="back">`;
+        break;
+      case "forward":
+        initialXml = `<dyad-browser action="forward">`;
+        break;
+      case "focus":
+        initialXml = `<dyad-browser action="focus" selector="${escapeXmlAttr(args.selector ?? "")}">`;
+        break;
+      case "upload_file":
+        initialXml = `<dyad-browser action="upload_file" selector="${escapeXmlAttr(args.selector ?? "")}">`;
+        break;
+      case "aria_snapshot":
+        initialXml = `<dyad-browser action="aria_snapshot"${args.selector ? ` selector="${escapeXmlAttr(args.selector)}"` : ""}>`;
         break;
       case "console_logs":
         initialXml = `<dyad-browser action="console_logs"${args.clear ? ` clear="true"` : ""}>`;
@@ -1817,6 +2101,27 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
           break;
         case "hover":
           result = await executeHover(page, args);
+          break;
+        case "select":
+          result = await executeSelect(page, args);
+          break;
+        case "reload":
+          result = await executeReload(page);
+          break;
+        case "back":
+          result = await executeBack(page);
+          break;
+        case "forward":
+          result = await executeForward(page);
+          break;
+        case "focus":
+          result = await executeFocus(page, args);
+          break;
+        case "upload_file":
+          result = await executeUploadFile(page, args);
+          break;
+        case "aria_snapshot":
+          result = await executeAriaSnapshot(page, args);
           break;
         case "console_logs":
           result = await executeConsoleLogs(page, args);

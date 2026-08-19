@@ -1,13 +1,14 @@
-import React, { useMemo, useState } from "react";
 import {
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
-  CheckCircle2,
-  MessageSquareText,
   CircleDot,
+  ClipboardList,
   ListChecks,
+  MessageSquareText,
 } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 import { unescapeXmlAttr, unescapeXmlContent } from "../../../shared/xmlEscape";
 
 interface QAEntry {

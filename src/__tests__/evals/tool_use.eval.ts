@@ -1,36 +1,36 @@
-import { describe, it } from "vitest";
-import { generateText, isStepCount, type Tool } from "ai";
 import { readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
+import {
+  GEMINI_3_FLASH,
+  SONNET_4_6,
+} from "@/ipc/shared/language_model_constants";
 import { searchReplaceTool } from "@/pro/main/ipc/handlers/local_agent/tools/search_replace";
 import { writeFileTool } from "@/pro/main/ipc/handlers/local_agent/tools/write_file";
 import { applySearchReplace } from "@/pro/main/ipc/processors/search_replace_processor";
 import { escapeSearchReplaceMarkers } from "@/pro/shared/search_replace_markers";
 import { constructLocalAgentPrompt } from "@/prompts/local_agent_prompt";
+import { type Tool, generateText, isStepCount } from "ai";
+import { describe, it } from "vitest";
 import {
-  SONNET_4_6,
-  GEMINI_3_FLASH,
-} from "@/ipc/shared/language_model_constants";
-import {
-  GPT_5_4,
-  getEvalModel,
-  hasDyadProKey,
-  type EvalProvider,
-} from "./helpers/get_eval_model";
-import {
+  type JudgeRecord,
+  type LLMRequestRecord,
+  type ToolCallRecord,
   normalizeUsage,
   recordDirFor,
   recordEvalRun,
-  type LLMRequestRecord,
-  type ToolCallRecord,
-  type JudgeRecord,
 } from "./helpers/eval_recorder";
-import { createUnifiedDiff } from "./helpers/unified_diff";
 import {
-  SIMPLE_SEARCH_REPLACE_SYSTEM_PROMPT,
-  SEARCH_REPLACE_FEW_SYSTEM_PROMPT,
+  type EvalProvider,
+  GPT_5_4,
+  getEvalModel,
+  hasDyadProKey,
+} from "./helpers/get_eval_model";
+import {
   PRO_AGENT_EXPERIMENTAL_SYSTEM_PROMPT,
+  SEARCH_REPLACE_FEW_SYSTEM_PROMPT,
+  SIMPLE_SEARCH_REPLACE_SYSTEM_PROMPT,
 } from "./helpers/prompts";
+import { createUnifiedDiff } from "./helpers/unified_diff";
 
 // ── Fixture loader ─────────────────────────────────────────────
 

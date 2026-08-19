@@ -1,13 +1,14 @@
-import React, {
+import { earlyDeepLinkEvents } from "@/app_wiring/early_renderer_events";
+import { useNavigate } from "@tanstack/react-router";
+import type React from "react";
+import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { DeepLinkData } from "../ipc/types";
-import { earlyDeepLinkEvents } from "@/app_wiring/early_renderer_events";
+import type { DeepLinkData } from "../ipc/types";
 
 type DeepLinkContextType = {
   lastDeepLink: (DeepLinkData & { timestamp: number }) | null;

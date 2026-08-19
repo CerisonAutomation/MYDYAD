@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
+import { appCollections, apps } from "@/db/schema";
 import { DyadErrorKind } from "@/errors/dyad_error";
-import { apps, appCollections } from "@/db/schema";
 import {
   type HandlerTestHarness,
   setupHandlerTestHarness,
 } from "@/testing/handler_test_harness";
+import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { registerAppCollectionHandlers } from "./app_collection_handlers";
 
 describe("registerAppCollectionHandlers", () => {

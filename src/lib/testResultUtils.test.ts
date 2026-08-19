@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { TestCase, TestResult } from "@/ipc/types";
+import { describe, expect, it } from "vitest";
 import {
   buildSingleTestFileResult,
   reconcileResultFile,

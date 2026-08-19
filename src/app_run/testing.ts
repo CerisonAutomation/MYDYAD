@@ -1,12 +1,12 @@
+import type { AppRunRemoteConnection } from "./remote_manager";
 import type { AppRunInvocationRef, RunState } from "./state";
 import {
+  type AppRunIntentEvent,
   AppRunIntentEventSchema,
   AppRunKeySchema,
-  projectAppRunRemoteSnapshot,
-  type AppRunIntentEvent,
   type AppRunRemoteSnapshot,
+  projectAppRunRemoteSnapshot,
 } from "./transport";
-import type { AppRunRemoteConnection } from "./remote_manager";
 
 type MachineAddress = Parameters<AppRunRemoteConnection["subscribe"]>[0];
 type MachineDispatchEnvelope = Parameters<

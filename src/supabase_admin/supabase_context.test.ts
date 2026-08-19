@@ -1,13 +1,13 @@
+import { DyadErrorKind } from "@/errors/dyad_error";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  getProjectApiKeys,
-  getSupabaseClient,
-} from "./supabase_management_client";
 import {
   getSupabaseClientCode,
   getSupabaseTableSchema,
 } from "./supabase_context";
-import { DyadErrorKind } from "@/errors/dyad_error";
+import {
+  getProjectApiKeys,
+  getSupabaseClient,
+} from "./supabase_management_client";
 
 vi.mock("./supabase_management_client", () => ({
   getSupabaseClient: vi.fn(),

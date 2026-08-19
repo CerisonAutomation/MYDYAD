@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { glob } from "glob";
 import log from "electron-log";
+import { glob } from "glob";
 import {
   E2E_TEST_DIR,
   LEGACY_TEST_DIR,

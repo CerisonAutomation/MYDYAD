@@ -1,5 +1,5 @@
-import { LargeLanguageModel } from "@/lib/schemas";
-import { LanguageModel } from "@/ipc/types";
+import type { LanguageModel } from "@/ipc/types";
+import type { LargeLanguageModel } from "@/lib/schemas";
 import { getLanguageModels } from "../shared/language_model_helpers";
 
 export async function findLanguageModel(

@@ -1,13 +1,13 @@
+import { stagedDiffFileAtom } from "@/atoms/viewAtoms";
+import {
+  LineStats,
+  getStatusIcon,
+} from "@/components/chat/uncommittedFileStatus";
+import { useUncommittedFileDiff } from "@/hooks/useUncommittedFileDiff";
+import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
+import { cn } from "@/lib/utils";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { stagedDiffFileAtom } from "@/atoms/viewAtoms";
-import { useUncommittedFiles } from "@/hooks/useUncommittedFiles";
-import { useUncommittedFileDiff } from "@/hooks/useUncommittedFileDiff";
-import {
-  getStatusIcon,
-  LineStats,
-} from "@/components/chat/uncommittedFileStatus";
 import { FileDiffEditor } from "./FileDiffEditor";
 import { getDisplayedStagedDiffPath } from "./diffSelection";
 

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
-import { BackButton } from "@/components/ui/back-button";
-import { Button } from "@/components/ui/button";
 import { PluginsList } from "@/components/plugins/PluginsList";
 import { CatalogSection } from "@/components/plugins/catalog/CatalogSection";
+import { BackButton } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
 import { useDeepLink } from "@/contexts/DeepLinkContext";
+import { Plus } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 const PluginsPage: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

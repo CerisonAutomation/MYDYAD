@@ -1,5 +1,3 @@
-import { Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,6 +5,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { AppCollection } from "@/hooks/useAppCollections";
+import { cn } from "@/lib/utils";
+import { Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 interface CollectionFolderCardProps {
   collection: AppCollection;

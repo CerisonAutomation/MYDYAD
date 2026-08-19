@@ -1,96 +1,94 @@
 import {
-  StopCircleIcon,
-  X,
   Loader2,
-  SendHorizontalIcon,
   Lock,
   Mic,
   MicOff,
+  SendHorizontalIcon,
+  StopCircleIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useSettings } from "@/hooks/useSettings";
-import { useChatMessageCount, useChatMessages } from "@/hooks/useChatMessages";
-import { ipc } from "@/ipc/types";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import {
+  agentTodosByChatIdAtom,
   chatInputValuesByIdAtom,
   chatMessagesByIdAtom,
-  selectedChatIdAtom,
-  agentTodosByChatIdAtom,
   needsFreshPlanChatAtom,
+  selectedChatIdAtom,
 } from "@/atoms/chatAtoms";
-import { atom, useAtom, useSetAtom, useAtomValue, useStore } from "jotai";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useChatMessageCount, useChatMessages } from "@/hooks/useChatMessages";
 import { useProposal } from "@/hooks/useProposal";
-import { Proposal } from "@/lib/schemas";
+import { useSettings } from "@/hooks/useSettings";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { ipc } from "@/ipc/types";
+import { atom, useAtom, useAtomValue, useSetAtom, useStore } from "jotai";
 
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
 import { useRunApp } from "@/hooks/useRunApp";
 import { usePostHog } from "posthog-js/react";
 import { TokenBar } from "./TokenBar";
 
-import { useVersions } from "@/hooks/useVersions";
-import { useAttachments } from "@/hooks/useAttachments";
-import { AttachmentsList } from "./AttachmentsList";
-import { DragDropOverlay } from "./DragDropOverlay";
-import { FileAttachmentTypeDialog } from "./FileAttachmentTypeDialog";
-import { showExtraFilesToast, showInfo, showWarning } from "@/lib/toast";
-import { ChatInputControls } from "../ChatInputControls";
-import { ChatInputActions } from "./chat-input/ChatInputActions";
-import { ChatErrorBox } from "./ChatErrorBox";
-import { AgentConsentBanner } from "./AgentConsentBanner";
-import { TodoList } from "./TodoList";
-import { QuestionnaireInput } from "./QuestionnaireInput";
-import { QueuedMessagesList } from "./QueuedMessagesList";
+import { dismissedImageGenerationJobIdsAtom } from "@/atoms/imageGenerationAtoms";
 import {
-  selectedComponentsPreviewAtom,
-  previewIframeRefAtom,
-  visualEditingSelectedComponentAtom,
   currentComponentCoordinatesAtom,
   pendingVisualChangesAtom,
+  previewIframeRefAtom,
+  selectedComponentsPreviewAtom,
+  visualEditingSelectedComponentAtom,
 } from "@/atoms/previewAtoms";
-import { SelectedComponentsDisplay } from "./SelectedComponentDisplay";
-import { LexicalChatInput } from "./LexicalChatInput";
-import { AuxiliaryActionsMenu } from "./AuxiliaryActionsMenu";
-import { ChatImageGenerationStrip } from "./ChatImageGenerationStrip";
-import { dismissedImageGenerationJobIdsAtom } from "@/atoms/imageGenerationAtoms";
-import { useChatImageGenerationJobs } from "@/image_generation/hooks";
 import { ImageGeneratorDialog } from "@/components/ImageGeneratorDialog";
-import { useChatModeToggle } from "@/hooks/useChatModeToggle";
 import { VisualEditingChangesDialog } from "@/components/preview_panel/VisualEditingChangesDialog";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  ContextLimitBanner,
-  shouldShowContextLimitBanner,
-} from "./ContextLimitBanner";
-import { PromoMessage, usePromoMessage } from "./PromoMessage";
-import { useCountTokens } from "@/hooks/useCountTokens";
+import { useAttachments } from "@/hooks/useAttachments";
+import { useChatMode } from "@/hooks/useChatMode";
+import { useChatModeToggle } from "@/hooks/useChatModeToggle";
 import { useChats } from "@/hooks/useChats";
-import { useRouter } from "@tanstack/react-router";
+import { useCountTokens } from "@/hooks/useCountTokens";
+import { useOpenPreviewIfSetupRequired } from "@/hooks/useOpenPreviewIfSetupRequired";
+import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { useVersions } from "@/hooks/useVersions";
+import { useVoiceToText } from "@/hooks/useVoiceToText";
+import { useChatImageGenerationJobs } from "@/image_generation/hooks";
+import { queryKeys } from "@/lib/queryKeys";
+import { isDyadProEnabled, isLocalAgentBackedMode } from "@/lib/schemas";
+import { showExtraFilesToast, showInfo, showWarning } from "@/lib/toast";
 import { showError as showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useVoiceToText } from "@/hooks/useVoiceToText";
-import { isDyadProEnabled, isLocalAgentBackedMode } from "@/lib/schemas";
-import { ReferencedAppsBar } from "./ReferencedAppsBar";
-import { useChatMode } from "@/hooks/useChatMode";
-import { useOpenPreviewIfSetupRequired } from "@/hooks/useOpenPreviewIfSetupRequired";
-import { getUserInputReadModel } from "@/user_input/read_model";
-import { usePendingToolConsents } from "@/user_input/hooks";
-import type { PendingToolConsent } from "@/user_input/selectors";
 import { useSendPreviewIframeEvent } from "@/preview_iframe/usePreviewIframe";
 import {
   CHAT_PROMPT_LENGTH_LIMIT_MESSAGE,
   MAX_CHAT_PROMPT_CHARS,
 } from "@/shared/chatAttachmentLimits";
+import { usePendingToolConsents } from "@/user_input/hooks";
+import { getUserInputReadModel } from "@/user_input/read_model";
+import type { PendingToolConsent } from "@/user_input/selectors";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { ChatInputControls } from "../ChatInputControls";
+import { AgentConsentBanner } from "./AgentConsentBanner";
+import { AttachmentsList } from "./AttachmentsList";
+import { AuxiliaryActionsMenu } from "./AuxiliaryActionsMenu";
+import { ChatErrorBox } from "./ChatErrorBox";
+import { ChatImageGenerationStrip } from "./ChatImageGenerationStrip";
+import {
+  ContextLimitBanner,
+  shouldShowContextLimitBanner,
+} from "./ContextLimitBanner";
+import { DragDropOverlay } from "./DragDropOverlay";
+import { FileAttachmentTypeDialog } from "./FileAttachmentTypeDialog";
+import { LexicalChatInput } from "./LexicalChatInput";
+import { PromoMessage, usePromoMessage } from "./PromoMessage";
+import { QuestionnaireInput } from "./QuestionnaireInput";
+import { QueuedMessagesList } from "./QueuedMessagesList";
+import { ReferencedAppsBar } from "./ReferencedAppsBar";
+import { SelectedComponentsDisplay } from "./SelectedComponentDisplay";
+import { TodoList } from "./TodoList";
+import { ChatInputActions } from "./chat-input/ChatInputActions";
 
 const showTokenBarAtom = atom(false);
 

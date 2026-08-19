@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { CatalogInput } from "@/ipc/types/mcp_catalog";
 import type { McpServer } from "@/ipc/types";
 import type { McpServerUpdate } from "@/ipc/types/mcp";
+import type { CatalogInput } from "@/ipc/types/mcp_catalog";
+import { useState } from "react";
 import { useOauthCallbackPort } from "./AddPluginDialog";
 
 // A stable key per input, and where its value is stored, both derive from

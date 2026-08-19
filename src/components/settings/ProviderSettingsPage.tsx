@@ -1,20 +1,19 @@
-import { useState, useEffect } from "react";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
 import { BackButton } from "@/components/ui/back-button";
-import { useSettings } from "@/hooks/useSettings";
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
 import {
   useFirstPromptProviderResume,
   useFirstPromptSaga,
 } from "@/first_prompt/FirstPromptProvider";
-import { ipc, type ProviderApiKeyValidationProvider } from "@/ipc/types";
+import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { useSettings } from "@/hooks/useSettings";
+import { type ProviderApiKeyValidationProvider, ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
 import {} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,25 +24,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Switch } from "@/components/ui/switch";
-import { showError } from "@/lib/toast";
-import {
-  UserSettings,
-  AzureProviderSetting,
-  VertexProviderSetting,
-  hasDyadProKey,
-} from "@/lib/schemas";
 import { DyadErrorKind } from "@/errors/dyad_error";
 import {
   findInvalidProviderApiKeyCharacter,
   formatInvalidProviderApiKeyMessage,
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
+import {
+  type AzureProviderSetting,
+  type UserSettings,
+  type VertexProviderSetting,
+  hasDyadProKey,
+} from "@/lib/schemas";
+import { showError } from "@/lib/toast";
 
-import { ProviderSettingsHeader } from "./ProviderSettingsHeader";
 import { ApiKeyConfiguration } from "./ApiKeyConfiguration";
 import { ModelsSection } from "./ModelsSection";
+import { ProviderSettingsHeader } from "./ProviderSettingsHeader";
 
 interface ProviderSettingsPageProps {
   provider: string;

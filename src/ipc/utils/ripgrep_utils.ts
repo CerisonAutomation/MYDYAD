@@ -2,11 +2,11 @@
  * Shared utilities for ripgrep integration
  */
 
-import { app } from "electron";
-import path from "node:path";
-import os from "node:os";
-import { createRequire } from "node:module";
 import fs from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
+import { app } from "electron";
 
 // Electron main process runs as CJS — __filename is always available.
 // Vite replaces import.meta.url with undefined in CJS output.

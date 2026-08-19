@@ -1,7 +1,7 @@
-import { AlertTriangle, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
 import { ipc } from "@/ipc/types";
+import { AlertTriangle, ArrowRight, Sparkles } from "lucide-react";
 
 interface FreeAgentQuotaBannerProps {
   onSwitchToBuildMode: () => void;

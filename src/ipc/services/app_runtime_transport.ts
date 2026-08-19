@@ -1,7 +1,7 @@
 import type { WebContents } from "electron";
 
-import type { AppOutput } from "@/ipc/types/misc";
 import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
+import type { AppOutput } from "@/ipc/types/misc";
 import {
   appOutputInterests,
   ensureProducerInterest,

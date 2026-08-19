@@ -1,12 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
 import type { BrowserWindow } from "electron";
+import { describe, expect, it, vi } from "vitest";
 import type { TabInstanceId, WindowSessionId } from "../types";
-import { WindowRegistry, type WindowEndpoint } from "./window_registry";
 import {
   chatNotificationTarget,
   deliverChatNavigationToExistingWindow,
   revealWindow,
 } from "./chat_notification_routing";
+import { type WindowEndpoint, WindowRegistry } from "./window_registry";
 
 const session = (suffix: number) =>
   `00000000-0000-4000-8000-${String(suffix).padStart(12, "0")}` as WindowSessionId;

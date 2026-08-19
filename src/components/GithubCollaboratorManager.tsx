@@ -1,23 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { SimpleAvatar } from "@/components/ui/SimpleAvatar";
-import { ipc } from "@/ipc/types";
-import {
-  Trash2,
-  UserPlus,
-  Users,
-  ChevronsDownUp,
-  ChevronsUpDown,
-} from "lucide-react";
-import { showSuccess, showError } from "@/lib/toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +9,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ipc } from "@/ipc/types";
+import { showError, showSuccess } from "@/lib/toast";
+import {
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Trash2,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Collaborator {
   login: string;

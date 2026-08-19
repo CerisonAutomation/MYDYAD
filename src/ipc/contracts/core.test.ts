@@ -1,6 +1,6 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
   createClient,
   createIpcErrorEnvelope,

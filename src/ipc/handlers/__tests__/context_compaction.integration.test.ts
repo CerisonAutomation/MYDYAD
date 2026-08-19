@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 // Migrated from e2e-tests/context_compaction.spec.ts, then converted from the
 // node chat-flow harness to the HYBRID harness (real <ChatPanel> over the real
 // IPC stack). The describe/it names are kept identical to the node version on
@@ -19,19 +21,12 @@
 // of a stream error. Dyad Engine calls are routed to the harness fake server
 // via `engine: true`.
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import fs from "node:fs";
-import path from "node:path";
 
 import { screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
-import { ipc } from "@/ipc/types";
-import { versionPreviewHandlerService } from "@/ipc/handlers/version_handlers";
 import { chats, messages } from "@/db/schema";
+import { versionPreviewHandlerService } from "@/ipc/handlers/version_handlers";
+import { ipc } from "@/ipc/types";
 import {
   getCurrentCommitHash,
   gitAddAll,
@@ -40,6 +35,11 @@ import {
   gitCurrentBranch,
   gitLog,
 } from "@/ipc/utils/git_utils";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import type { RestoreRecovery } from "@/version_preview/state";
 
 describe("context compaction (integration)", () => {

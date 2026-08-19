@@ -1,14 +1,14 @@
-import {
-  CommandDialog,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "./ui/command";
-import { useState, useEffect } from "react";
 import { useSearchApps } from "@/hooks/useSearchApps";
 import type { AppSearchResult } from "@/lib/schemas";
+import { useEffect, useState } from "react";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./ui/command";
 
 type AppSearchDialogProps = {
   open: boolean;

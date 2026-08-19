@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
 import {
+  type MinidumpSummary,
   browserCrashAttribution,
   parseMinidumpBuffer,
-  type MinidumpSummary,
 } from "@/utils/minidump_summary";
+import { describe, expect, it } from "vitest";
 
 // Build a minimal but valid minidump containing only the streams the parser
 // reads (module list + exception, and optionally a CrashpadInfo stream with a

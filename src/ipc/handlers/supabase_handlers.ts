@@ -1,36 +1,36 @@
+import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
 import log from "electron-log";
 import { db } from "../../db";
-import { eq } from "drizzle-orm";
 import { apps } from "../../db/schema";
-import {
-  getSupabaseClientForOrganization,
-  listSupabaseBranches,
-  getSupabaseProjectLogs,
-  getOrganizationDetails,
-  getOrganizationMembers,
-  classifyManagementApiError,
-  type SupabaseProjectLog,
-} from "../../supabase_admin/supabase_management_client";
-import { extractFunctionName } from "../../supabase_admin/supabase_utils";
+import { readSettings, writeSettings } from "../../main/settings";
+import { getDyadAppPath } from "../../paths/paths";
 import {
   detectLegacyAppKey,
   switchAppToPublishableKey,
 } from "../../supabase_admin/supabase_app_key";
-import { getDyadAppPath } from "../../paths/paths";
-import { createTypedHandler } from "./base";
-import { createAppOperationHandler } from "../utils/app_mutation_lock";
+import {
+  type SupabaseProjectLog,
+  classifyManagementApiError,
+  getOrganizationDetails,
+  getOrganizationMembers,
+  getSupabaseClientForOrganization,
+  getSupabaseProjectLogs,
+  listSupabaseBranches,
+} from "../../supabase_admin/supabase_management_client";
+import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_handler";
+import { extractFunctionName } from "../../supabase_admin/supabase_utils";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
-import { createTestOnlyLoggedHandler } from "./safe_handle";
-import { readSettings, writeSettings } from "../../main/settings";
 import { supabaseContracts } from "../types/supabase";
-import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
+import { createAppOperationHandler } from "../utils/app_mutation_lock";
 import { assertNoNeonProject } from "../utils/neon_utils";
-import { runOAuthReturnExchange } from "./connection_flow_handlers";
-import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_handler";
 import { IS_TEST_BUILD } from "../utils/test_utils";
+import { createTypedHandler } from "./base";
+import { runOAuthReturnExchange } from "./connection_flow_handlers";
+import { createTestOnlyLoggedHandler } from "./safe_handle";
 
 const logger = log.scope("supabase_handlers");
 const testOnlyHandle = createTestOnlyLoggedHandler(logger);

@@ -1,6 +1,6 @@
-import { useSettings } from "@/hooks/useSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useSettings } from "@/hooks/useSettings";
 import { showInfo } from "@/lib/toast";
 import { useTranslation } from "react-i18next";
 

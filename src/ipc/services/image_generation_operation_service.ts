@@ -1,15 +1,16 @@
-import {
-  OperationRegistry,
-  createOperationOutcomePublisher,
-  type OperationLookupIdentity,
-  type OperationDisposalCause,
-  type OperationOwner,
-} from "@/distributed_machines/operation_registry";
-import type { RequestId } from "@/distributed_machines/request_identity";
 import type {
   ActorRuntimeMetadata,
   RemoteOperationContract,
 } from "@/distributed_machines/definition";
+import {
+  type OperationDisposalCause,
+  type OperationLookupIdentity,
+  type OperationOwner,
+  OperationRegistry,
+  createOperationOutcomePublisher,
+} from "@/distributed_machines/operation_registry";
+import type { RequestId } from "@/distributed_machines/request_identity";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type {
   ImageGenerationCorrelatedOutcome,
   ImageGenerationEvent,
@@ -18,8 +19,7 @@ import type {
   ImageGenerationOperationOutcome,
 } from "@/image_generation/state";
 import type { ImageGenerationKey } from "@/image_generation/transport";
-import { systemClock, type Clock } from "@/state_machines/clock";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { type Clock, systemClock } from "@/state_machines/clock";
 
 export const IMAGE_GENERATION_MAX_PENDING_OPERATIONS = 64;
 export const IMAGE_GENERATION_MAX_RETAINED_OPERATIONS = 128;

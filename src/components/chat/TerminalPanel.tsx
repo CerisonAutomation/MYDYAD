@@ -1,23 +1,7 @@
 import "@xterm/xterm/css/xterm.css";
 
-import { ClipboardAddon } from "@xterm/addon-clipboard";
-import { FitAddon } from "@xterm/addon-fit";
-import { SearchAddon } from "@xterm/addon-search";
-import { SerializeAddon } from "@xterm/addon-serialize";
-import { Unicode11Addon } from "@xterm/addon-unicode11";
-import { WebLinksAddon } from "@xterm/addon-web-links";
-import { Terminal } from "@xterm/xterm";
-import { RotateCcw, Search, X } from "lucide-react";
-import { useAtom } from "jotai";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
-import { useTranslation } from "react-i18next";
+import { terminalFontSizeAtom } from "@/atoms/terminalAtoms";
+import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -25,14 +9,30 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Button } from "@/components/ui/button";
-import { terminalFontSizeAtom } from "@/atoms/terminalAtoms";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useReducedMotionPref } from "@/hooks/useReducedMotion";
 import { useTerminalSession } from "@/hooks/useTerminalSession";
-import { useTheme } from "@/contexts/ThemeContext";
 import { ipc } from "@/ipc/types";
-import { cn } from "@/lib/utils";
 import { showError } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { ClipboardAddon } from "@xterm/addon-clipboard";
+import { FitAddon } from "@xterm/addon-fit";
+import { SearchAddon } from "@xterm/addon-search";
+import { SerializeAddon } from "@xterm/addon-serialize";
+import { Unicode11Addon } from "@xterm/addon-unicode11";
+import { WebLinksAddon } from "@xterm/addon-web-links";
+import { Terminal } from "@xterm/xterm";
+import { useAtom } from "jotai";
+import { RotateCcw, Search, X } from "lucide-react";
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
 import { StreamingLoadingAnimation } from "./StreamingLoadingAnimation";
 import { TerminalEscapeBanner } from "./TerminalEscapeBanner";
 

@@ -1,11 +1,11 @@
+import type { RequestId } from "@/distributed_machines/request_identity";
 import { describe, expect, it } from "vitest";
+import type { ImageGenerationActorState } from "./state";
 import {
   ImageGenerationIntentEventSchema,
   ImageGenerationRemoteSnapshotSchema,
   projectImageGenerationRemoteSnapshot,
 } from "./transport";
-import type { ImageGenerationActorState } from "./state";
-import type { RequestId } from "@/distributed_machines/request_identity";
 
 describe("image generation transport", () => {
   it("publishes a safe job-list projection without absolute file paths", () => {

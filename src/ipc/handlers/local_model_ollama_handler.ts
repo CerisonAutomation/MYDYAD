@@ -1,8 +1,8 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
-import { createTypedHandler } from "./base";
 import { languageModelContracts } from "../types/language-model";
 import type { LocalModel } from "../types/language-model";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("ollama_handler");
 

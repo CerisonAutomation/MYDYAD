@@ -1,6 +1,6 @@
-import { z } from "zod";
 import type { RemoteClientDefinition } from "@/distributed_machines/remote_client";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
+import { z } from "zod";
 
 export const PLAN_HANDOFF_MACHINE_ID = "plan_handoff" as const;
 

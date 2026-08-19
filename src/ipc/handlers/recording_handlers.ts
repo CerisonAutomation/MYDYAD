@@ -1,48 +1,48 @@
 import crypto from "node:crypto";
-import log from "electron-log";
-import { session } from "electron";
 import { eq } from "drizzle-orm";
+import { session } from "electron";
+import log from "electron-log";
 
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readSettings } from "@/main/settings";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { createTypedHandler } from "./base";
-import {
-  recordingContracts,
-  type RecordingAuth,
-  type StartRecordingResult,
-} from "../types/recording";
-import { runningApps } from "../utils/process_manager";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
-import { safeSend } from "../utils/safe_sender";
 import {
-  prepareIsolatedTestDatabase,
   type IsolationAuthSetup,
   type PreparedIsolation,
   type TeardownOptions,
+  prepareIsolatedTestDatabase,
 } from "../services/isolated_test_db";
-import {
-  activeRecordings,
-  endRecordingForApp,
-  recordingStartBlockReason,
-  reserveRecordingStart,
-  type EndRecordingOptions,
-  type RecordingEndReason,
-  type RecordingEndSummary,
-} from "../services/recording_registry";
 import {
   clearRecordedTestDraft,
   setRecordedTestDraft,
 } from "../services/recorded_test_drafts";
-import { isTestRunActive } from "./tests_handlers";
-import { readSettings } from "@/main/settings";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import {
+  type EndRecordingOptions,
+  type RecordingEndReason,
+  type RecordingEndSummary,
+  activeRecordings,
+  endRecordingForApp,
+  recordingStartBlockReason,
+  reserveRecordingStart,
+} from "../services/recording_registry";
+import {
+  type RecordingAuth,
+  type StartRecordingResult,
+  recordingContracts,
+} from "../types/recording";
 import {
   isTestBranchCleanupOnly,
   restoreAppFromTestBranch,
 } from "../utils/neon_test_branch";
+import { runningApps } from "../utils/process_manager";
+import { safeSend } from "../utils/safe_sender";
+import { createTypedHandler } from "./base";
+import { isTestRunActive } from "./tests_handlers";
 
 const logger = log.scope("recording_handlers");
 

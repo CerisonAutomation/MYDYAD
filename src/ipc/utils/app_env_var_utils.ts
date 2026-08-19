@@ -3,14 +3,14 @@
  * Environment variables are sensitive and should not be logged.
  */
 
-import { getDyadAppPath } from "@/paths/paths";
-import { EnvVar } from "@/ipc/types";
-import type { AppFrameworkType } from "@/lib/framework_constants";
-import path from "path";
-import fs from "fs";
 import crypto from "crypto";
-import log from "electron-log";
+import fs from "fs";
+import path from "path";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { EnvVar } from "@/ipc/types";
+import type { AppFrameworkType } from "@/lib/framework_constants";
+import { getDyadAppPath } from "@/paths/paths";
+import log from "electron-log";
 import { queueCloudSandboxSnapshotSync } from "./cloud_sandbox_provider";
 
 const logger = log.scope("app_env_var_utils");

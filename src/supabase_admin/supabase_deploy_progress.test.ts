@@ -1,20 +1,20 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  deployAffectedSupabaseFunctions,
-  deployAllSupabaseFunctions,
-  deploySupabaseFunctions,
-  type SupabaseDeployProgress,
-} from "@/supabase_admin/supabase_utils";
+import { runSupabaseDependencyAnalysis } from "@/ipc/processors/supabase_dependency_analysis";
 import {
   bulkUpdateFunctions,
   deleteSupabaseFunction,
   deploySupabaseFunction,
   listSupabaseFunctions,
 } from "@/supabase_admin/supabase_management_client";
-import { runSupabaseDependencyAnalysis } from "@/ipc/processors/supabase_dependency_analysis";
+import {
+  type SupabaseDeployProgress,
+  deployAffectedSupabaseFunctions,
+  deployAllSupabaseFunctions,
+  deploySupabaseFunctions,
+} from "@/supabase_admin/supabase_utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/supabase_admin/supabase_management_client", async () => {
   const actual = await vi.importActual<

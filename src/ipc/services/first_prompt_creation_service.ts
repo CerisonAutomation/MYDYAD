@@ -1,5 +1,5 @@
-import log from "electron-log";
 import type { WebContents } from "electron";
+import log from "electron-log";
 
 const logger = log.scope("first_prompt_creation_service");
 

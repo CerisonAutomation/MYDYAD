@@ -1,3 +1,5 @@
+import { sameInvocationRef } from "@/state_machines/invocation_ref";
+import { ignore as ignoreTransition } from "@/state_machines/types";
 import type {
   PreviewRunState,
   ReloadReason,
@@ -7,8 +9,6 @@ import type {
   RunUrl,
   TransitionResult,
 } from "./state";
-import { sameInvocationRef } from "@/state_machines/invocation_ref";
-import { ignore as ignoreTransition } from "@/state_machines/types";
 
 function sameRunUrl(left: RunUrl | null, right: RunUrl): boolean {
   return (

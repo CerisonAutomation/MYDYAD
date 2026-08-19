@@ -1,7 +1,7 @@
+import { ipc } from "@/ipc/types";
+import { ExternalLink, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef } from "react";
-import { ExternalLink, X } from "lucide-react";
-import { ipc } from "@/ipc/types";
 import { toast } from "sonner";
 
 interface ImageLightboxProps {

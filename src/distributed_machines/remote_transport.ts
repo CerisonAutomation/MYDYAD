@@ -13,32 +13,32 @@ import {
 import type {
   ActorRuntimeMetadata,
   HostedActorRef,
-  RemoteOperationContract,
   RemoteMachineSender,
+  RemoteOperationContract,
 } from "./definition";
+import {
+  type OperationRegistry,
+  finalizeOperationAdmission,
+} from "./operation_registry";
+import type { RemoteAuthorizationDecision } from "./remote_intent_contract";
 import type {
   AnyRemoteMachineDefinition,
   RemoteMachineManifest,
 } from "./remote_manifest";
-import {
-  type MachineAddress,
-  type MachineDispatchEnvelope,
-  type MachineDispatchReceipt,
-  type MachineDisposedEnvelope,
-  type MachineOperationOutcomeEnvelope,
-  type MachineRejectedReason,
-  type MachineSnapshotEnvelope,
+import type {
+  MachineAddress,
+  MachineDispatchEnvelope,
+  MachineDispatchReceipt,
+  MachineDisposedEnvelope,
+  MachineOperationOutcomeEnvelope,
+  MachineRejectedReason,
+  MachineSnapshotEnvelope,
 } from "./remote_protocol";
 import type {
   RequestId,
   RequestIdempotencyKey,
   RequestMessageId,
 } from "./request_identity";
-import type { RemoteAuthorizationDecision } from "./remote_intent_contract";
-import {
-  finalizeOperationAdmission,
-  type OperationRegistry,
-} from "./operation_registry";
 
 export interface RemoteTransportEndpoint {
   readonly id: number;

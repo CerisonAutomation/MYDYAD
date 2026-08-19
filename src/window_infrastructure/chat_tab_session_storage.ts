@@ -1,10 +1,10 @@
-import log from "electron-log";
 import type { ChatTabSession } from "@/atoms/chatAtoms";
 import {
   PRIMARY_WINDOW_SESSION_ID,
   type TabInstanceId,
   type WindowSessionId,
 } from "@/window_infrastructure/types";
+import log from "electron-log";
 
 const logger = log.scope("chat_tab_session_storage");
 export const CHAT_TAB_SESSION_STORAGE_PREFIX = "chat-tab-session-v2:";

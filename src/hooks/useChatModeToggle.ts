@@ -1,11 +1,11 @@
-import { useCallback, useMemo } from "react";
-import { useShortcut } from "./useShortcut";
-import { usePostHog } from "posthog-js/react";
-import { ChatModeSchema } from "../lib/schemas";
-import { useChatMode } from "./useChatMode";
+import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
 import { useRouterState } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { hasManuallySelectedChatModeAtom } from "@/atoms/chatAtoms";
+import { usePostHog } from "posthog-js/react";
+import { useCallback, useMemo } from "react";
+import { ChatModeSchema } from "../lib/schemas";
+import { useChatMode } from "./useChatMode";
+import { useShortcut } from "./useShortcut";
 
 export function useChatModeToggle() {
   const routerState = useRouterState();

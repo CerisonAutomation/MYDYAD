@@ -24,12 +24,12 @@ vi.hoisted(() => {
 
 import { screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
 import { apps } from "@/db/schema";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import { eq } from "drizzle-orm";
 
 describe("local agent supabase deploy progress (integration)", () => {

@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { useAppMediaFiles } from "@/hooks/useAppMediaFiles";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { Image, ImagePlus, Loader2 } from "lucide-react";
 import { DyadAppMediaFolder } from "@/components/DyadAppMediaFolder";
+import { ImageGenerationProgressButton } from "@/components/ImageGenerationProgressButton";
+import { ImageGeneratorDialog } from "@/components/ImageGeneratorDialog";
 import { LibrarySearchBar } from "@/components/LibrarySearchBar";
 import { Button } from "@/components/ui/button";
-import { ImageGeneratorDialog } from "@/components/ImageGeneratorDialog";
-import { ImageGenerationProgressButton } from "@/components/ImageGenerationProgressButton";
+import { useAppMediaFiles } from "@/hooks/useAppMediaFiles";
+import { useLoadApps } from "@/hooks/useLoadApps";
 import { filterMediaAppsByQuery } from "@/lib/mediaUtils";
+import { Image, ImagePlus, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 export default function MediaPage() {
   const {

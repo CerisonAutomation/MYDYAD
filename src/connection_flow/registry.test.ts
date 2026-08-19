@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
+import { describe, expect, it, vi } from "vitest";
 import { createConnectionFlowRegistry } from "./registry";
 
 function setup() {

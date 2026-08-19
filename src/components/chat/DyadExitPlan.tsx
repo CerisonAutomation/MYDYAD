@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useAtomValue } from "jotai";
-import { AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
-import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
 import { usePlanHandoffState } from "@/plan_handoff/usePlanHandoff";
+import { useAtomValue } from "jotai";
+import { AlertCircle, ArrowRight, CheckCircle } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 interface DyadExitPlanProps {
   node: {

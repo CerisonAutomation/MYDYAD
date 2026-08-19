@@ -1,32 +1,32 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { app, safeStorage } from "electron";
-import {
-  readSettings,
-  resolveEffectiveSettings,
-  readEffectiveSettings,
-  getSettingsFilePath,
-  recordRendererCrash,
-  readRendererCrashRecord,
-  writeSettings,
-  tryWriteSettings,
-  encrypt,
-  decrypt,
-  notifyRendererErrorToastListenerReady,
-  writeCrashSentinel,
-  setSentinelActiveChat,
-  readCrashSentinel,
-  rewriteRecoveredSafeStorageSecretsAfterKeychainUnlock,
-} from "@/main/settings";
-import { getUserDataPath } from "@/paths/paths";
-import { UserSettings } from "@/lib/schemas";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { getRemoteDesktopConfig } from "@/ipc/shared/remote_desktop_config";
+import type { UserSettings } from "@/lib/schemas";
 import {
   getRecoveryStats,
   recoverLegacySafeStorageSecret,
 } from "@/main/safe_storage_legacy";
+import {
+  decrypt,
+  encrypt,
+  getSettingsFilePath,
+  notifyRendererErrorToastListenerReady,
+  readCrashSentinel,
+  readEffectiveSettings,
+  readRendererCrashRecord,
+  readSettings,
+  recordRendererCrash,
+  resolveEffectiveSettings,
+  rewriteRecoveredSafeStorageSecretsAfterKeychainUnlock,
+  setSentinelActiveChat,
+  tryWriteSettings,
+  writeCrashSentinel,
+  writeSettings,
+} from "@/main/settings";
+import { getUserDataPath } from "@/paths/paths";
+import { app, safeStorage } from "electron";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 
 const mockSend = vi.fn();

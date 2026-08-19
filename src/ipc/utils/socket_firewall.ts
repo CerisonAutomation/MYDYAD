@@ -1,16 +1,7 @@
-import {
-  DEFAULT_PTY_COMMAND_TIMEOUT_MS,
-  PtyCommandExecutionError,
-  runPtyCommand,
-} from "@/ipc/utils/pty_command_runner";
 import fs from "node:fs/promises";
 import path from "node:path";
-import log from "electron-log";
 import defaultApproveBuildsText from "@/data/default-approve-builds.txt?raw";
 import { gitAdd, gitCommit } from "@/ipc/utils/git_utils";
-import { PNPM_MINIMUM_RELEASE_AGE_WARNING_PREFIX } from "@/shared/packageManagerWarnings";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
-import { isVersionAtLeast } from "@/shared/version_utils";
 import {
   getManagedToolsDir,
   prependPathSegment,
@@ -18,9 +9,18 @@ import {
 } from "@/ipc/utils/managed_tools";
 import { getPathEnvKey } from "@/ipc/utils/path_env";
 import {
+  DEFAULT_PTY_COMMAND_TIMEOUT_MS,
+  PtyCommandExecutionError,
+  runPtyCommand,
+} from "@/ipc/utils/pty_command_runner";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
+import {
   buildWindowsCommandInvocation,
   resolveWindowsExecutableName,
 } from "@/ipc/utils/windows_command";
+import { PNPM_MINIMUM_RELEASE_AGE_WARNING_PREFIX } from "@/shared/packageManagerWarnings";
+import { isVersionAtLeast } from "@/shared/version_utils";
+import log from "electron-log";
 
 export const SOCKET_FIREWALL_WARNING_MESSAGE =
   "the npm firewall could not be installed. Warning: can not check if npm packages are safe";

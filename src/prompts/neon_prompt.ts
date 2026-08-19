@@ -1,8 +1,8 @@
+import type { AppFrameworkType } from "@/lib/framework_constants";
 import addAuthenticationGuide from "./guides/add-authentication.md?raw";
 import addEmailVerificationGuide from "./guides/add-email-verification.md?raw";
 import addPasswordResetGuide from "./guides/add-password-reset.md?raw";
 import { filterGuideByFramework } from "./guides/filter_guide_by_framework";
-import type { AppFrameworkType } from "@/lib/framework_constants";
 
 const normalizeGuideNewlines = (guide: string) => guide.replace(/\r\n/g, "\n");
 

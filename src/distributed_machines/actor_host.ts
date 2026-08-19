@@ -1,35 +1,35 @@
+import type { Clock, ClockHandle, IdSource } from "@/state_machines/clock";
 import {
-  TransactionalDispatcher,
   type CommandExecutor,
   type CommandScheduler,
   type DispatchTicketOutcome,
   type DispatcherError,
   type ReservedCommandBatch,
+  TransactionalDispatcher,
 } from "@/state_machines/dispatcher";
 import { TaskScope, collectDisposalError } from "@/state_machines/task_scope";
 import { TimerLeaseScope } from "@/state_machines/timer_lease";
 import { createTraceObserver } from "@/state_machines/trace";
-import type { Clock, ClockHandle, IdSource } from "@/state_machines/clock";
 import type {
   DispatchContext,
   IgnoreReason,
   TransitionObserver,
 } from "@/state_machines/types";
 import type {
-  ActorDisposalCause,
   ActorDispatchTicket,
+  ActorDisposalCause,
   ActorDisposalContext,
+  ActorEventSink,
   ActorInstanceId,
   ActorRuntimeMetadata,
   DistributedMachineDefinition,
-  ActorEventSink,
   HostedActorRef,
   MachineHostContext,
 } from "./definition";
 import {
+  type FenceHandle,
   KeyedAdmissionGate,
   KeyedAdmissionGateError,
-  type FenceHandle,
   type KeyedAdmissionGeneration,
 } from "./keyed_admission_gate";
 

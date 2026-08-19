@@ -1,12 +1,12 @@
-import type { IgnoreReason, TransitionResult } from "./types";
 import type { Clock, ClockHandle, IdSource } from "./clock";
 import { KeyedControllerHost } from "./keyed_host";
 import type { ReplaySerialization, ReplayTrace } from "./trace";
 import {
   describeTransitionValue as describe,
-  transitionValuesAreEqual as valuesAreEqual,
   validateTransitionResult,
+  transitionValuesAreEqual as valuesAreEqual,
 } from "./transition_validation";
+import type { IgnoreReason, TransitionResult } from "./types";
 
 export { validateTransitionResult } from "./transition_validation";
 

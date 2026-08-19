@@ -1,26 +1,31 @@
+import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import { promises as fsPromises } from "node:fs";
+import path from "node:path";
+import { desc, eq, inArray, like } from "drizzle-orm";
 import { app, dialog } from "electron";
 import { closeDatabase, db, getDatabaseFilePaths } from "../../db";
 import { apps, chats, messages, versions } from "../../db/schema";
-import { desc, eq, inArray, like } from "drizzle-orm";
-import { createTypedHandler } from "./base";
+import {
+  getDefaultDyadAppsDirectory,
+  getDyadAppPath,
+  getDyadAppsBaseDirectory,
+  getUserDataPath,
+  invalidateDyadAppsBaseDirectoryCache,
+  isAppLocationAccessible,
+} from "../../paths/paths";
 import { appContracts } from "../types/app";
 import type { AppFileSearchResult } from "../types/app";
 import { miscContracts } from "../types/misc";
 import { systemContracts } from "../types/system";
-import fs from "node:fs";
-import path from "node:path";
-import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
-import {
-  getDyadAppPath,
-  getDefaultDyadAppsDirectory,
-  isAppLocationAccessible,
-  getUserDataPath,
-  getDyadAppsBaseDirectory,
-  invalidateDyadAppsBaseDirectoryCache,
-} from "../../paths/paths";
-import { promises as fsPromises } from "node:fs";
+import { createTypedHandler } from "./base";
 
+import { appRelaunchRequest } from "@/main/app_relaunch_request";
+import { userInputRegistry } from "@/user_input/main";
+import { clearLegacyWindowSessionPersistence } from "@/window_infrastructure/main/window_session";
+import { addLog } from "../../lib/log_store";
+import { readSettings } from "../../main/settings";
 // Import our utility modules
 import {
   sanitizeAppDisplayName,
@@ -28,49 +33,40 @@ import {
   validateAppFolderName,
 } from "../../shared/app_names";
 import {
+  AppDeletionInProgressError,
+  type AppOperationDeletion,
+  appOperationCoordinator,
+  readAppResource,
+} from "../services/app_operation_coordinator";
+import {
+  appRuntimeService,
+  registerCloudSandboxSyncUpdateListener,
+} from "../services/app_runtime_service";
+import { forgetAppRecordedDrafts } from "../services/recorded_test_drafts";
+import {
+  assertNoActiveRecording,
+  endRecordingForApp,
+} from "../services/recording_registry";
+import {
   resolveUniqueAppName,
   resolveUniqueFolderName,
 } from "../utils/app_name_resolution";
-import {
-  AppDeletionInProgressError,
-  appOperationCoordinator,
-  readAppResource,
-  type AppOperationDeletion,
-} from "../services/app_operation_coordinator";
 import { getFilesRecursively } from "../utils/file_utils";
-import {
-  runningApps,
-  stopAppByInfo,
-  setCurrentlySelectedAppId,
-  startAppGarbageCollection,
-} from "../utils/process_manager";
-import { getEnvVar } from "../utils/read_env";
-import { readSettings } from "../../main/settings";
-import { addLog } from "../../lib/log_store";
-import { IS_TEST_BUILD } from "../utils/test_utils";
 import {
   DYAD_SCREENSHOT_DIR_NAME,
   MAX_SCREENSHOTS_PER_APP,
   SCREENSHOT_FILENAME_REGEX,
 } from "../utils/media_path_utils";
 import {
-  appRuntimeService,
-  ensureProxyForRunningApp,
-  formatCloudSandboxError,
-  registerCloudSandboxSyncUpdateListener,
-} from "../services/app_runtime_service";
-import { getIpcAppRuntimeOutput } from "../services/app_runtime_transport";
-import {
-  assertNoActiveRecording,
-  endRecordingForApp,
-} from "../services/recording_registry";
-import { forgetAppRecordedDrafts } from "../services/recorded_test_drafts";
+  runningApps,
+  setCurrentlySelectedAppId,
+  startAppGarbageCollection,
+  stopAppByInfo,
+} from "../utils/process_manager";
 import { getPtySessionManager } from "../utils/pty_session_manager";
-import { sameInvocationRef } from "@/state_machines/invocation_ref";
-import { userInputRegistry } from "@/user_input/main";
-import { clearLegacyWindowSessionPersistence } from "@/window_infrastructure/main/window_session";
-import { appRelaunchRequest } from "@/main/app_relaunch_request";
+import { getEnvVar } from "../utils/read_env";
 import { deleteTempTestUser } from "../utils/supabase_test_user";
+import { IS_TEST_BUILD } from "../utils/test_utils";
 
 /**
  * Read screenshot entries for a single app directory, filtered by filename
@@ -99,76 +95,74 @@ async function readScreenshotEntries(
   return results;
 }
 
+import type { AppSearchResult } from "@/lib/schemas";
+import {
+  deployAllSupabaseFunctions,
+  extractFunctionNameFromPath,
+  isServerFunction,
+  isSharedServerModule,
+} from "@/supabase_admin/supabase_utils";
 import log from "electron-log";
+import { normalizePath } from "../../../shared/normalizePath";
 import {
   deploySupabaseFunction,
   getSupabaseProjectName,
 } from "../../supabase_admin/supabase_management_client";
-import { createLoggedHandler } from "./safe_handle";
-import { registerTrustedIpcHandler } from "./trusted_handle";
+import { firstPromptCreationRegistry } from "../services/first_prompt_creation_service";
+import { gitService } from "../services/git_service";
 import { getLanguageModelProviders } from "../shared/language_model_helpers";
 import {
-  createCloudSandboxShareLink,
-  getCloudSandboxStatus,
   queueCloudSandboxSnapshotSync,
   reconcileCloudSandboxes,
 } from "../utils/cloud_sandbox_provider";
-import { createFromTemplate } from "./createFromTemplate";
-import { getInitialChatModeForNewChat } from "./chat_mode_resolution";
-import { ensureDyadGitignored } from "./gitignoreUtils";
 import {
+  getCurrentCommitHash,
   gitListBranches,
   gitRenameBranch,
-  getCurrentCommitHash,
 } from "../utils/git_utils";
-import { gitService } from "../services/git_service";
-import { normalizePath } from "../../../shared/normalizePath";
-import { safeJoin } from "../utils/path_utils";
-import { firstPromptCreationRegistry } from "../services/first_prompt_creation_service";
-import {
-  isServerFunction,
-  isSharedServerModule,
-  deployAllSupabaseFunctions,
-  extractFunctionNameFromPath,
-} from "@/supabase_admin/supabase_utils";
-import { getVercelTeamSlug } from "../utils/vercel_utils";
-import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
 import {
   deleteTempTestBranch,
   isTestBranchCleanupOnly,
   restoreAppFromTestBranch,
   trackedBranchId,
 } from "../utils/neon_test_branch";
-import type { AppSearchResult } from "@/lib/schemas";
+import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
+import { safeJoin } from "../utils/path_utils";
+import { getVercelTeamSlug } from "../utils/vercel_utils";
+import { getInitialChatModeForNewChat } from "./chat_mode_resolution";
+import { createFromTemplate } from "./createFromTemplate";
+import { ensureDyadGitignored } from "./gitignoreUtils";
+import { createLoggedHandler } from "./safe_handle";
+import { registerTrustedIpcHandler } from "./trusted_handle";
 
-import {
-  getRgExecutablePath,
-  MAX_FILE_SEARCH_SIZE,
-  RIPGREP_EXCLUDED_GLOBS,
-} from "../utils/ripgrep_utils";
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
-import { detectFrameworkType } from "../utils/framework_utils";
-import { readAppFileForEditor } from "../utils/bounded_text_file";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
-import { entityDisposalBus } from "@/window_infrastructure/main/entity_disposal_bus";
-import { appRunActorService } from "../services/app_run_actor_service";
-import { githubOpsActorService } from "../services/github_ops_actor_service";
-import {
-  imageGenerationActorService,
-  type ImageGenerationDeletionFence,
-} from "../services/image_generation_actor_service";
-import { imageGenerationService } from "../services/image_generation_service";
-import { githubOpsService } from "../services/github_ops_service";
-import { versionPreviewActorService } from "../services/version_preview_actor_service";
-import { appDeletionQueue } from "../services/app_deletion_queue";
-import { versionPreviewService } from "../services/version_preview_service";
+import { beginAppChatDeletion } from "@/ipc/services/app_chat_creation_fence";
 import {
   beginChatActorDeletion,
   settleChatActorsForDeletion,
   waitForChatActorIdle,
 } from "@/ipc/services/chat_actor_deletion_service";
+import { entityDisposalBus } from "@/window_infrastructure/main/entity_disposal_bus";
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { appDeletionQueue } from "../services/app_deletion_queue";
+import { appRunActorService } from "../services/app_run_actor_service";
+import { githubOpsActorService } from "../services/github_ops_actor_service";
+import { githubOpsService } from "../services/github_ops_service";
+import {
+  type ImageGenerationDeletionFence,
+  imageGenerationActorService,
+} from "../services/image_generation_actor_service";
+import { imageGenerationService } from "../services/image_generation_service";
+import { versionPreviewActorService } from "../services/version_preview_actor_service";
+import { versionPreviewService } from "../services/version_preview_service";
+import { readAppFileForEditor } from "../utils/bounded_text_file";
+import { detectFrameworkType } from "../utils/framework_utils";
+import {
+  MAX_FILE_SEARCH_SIZE,
+  RIPGREP_EXCLUDED_GLOBS,
+  getRgExecutablePath,
+} from "../utils/ripgrep_utils";
 import { blockNewStreamsForApp } from "./chat_stream_handlers";
-import { beginAppChatDeletion } from "@/ipc/services/app_chat_creation_fence";
 const logger = log.scope("app_handlers");
 
 // Cache the Dyad version at module load — package.json never changes at runtime.

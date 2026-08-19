@@ -1,5 +1,3 @@
-import { useSettings } from "@/hooks/useSettings";
-import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -8,15 +6,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ChatMode } from "@/lib/schemas";
-import { isAgent2Enabled, getEffectiveDefaultChatMode } from "@/lib/schemas";
-import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
+import { useSettings } from "@/hooks/useSettings";
 import {
   FREE_PRO_MODEL_FALLBACK_CHAT_MODE,
   isFreeProBuildModeCombination,
   isFreeProModel,
 } from "@/lib/freeProModel";
+import type { ChatMode } from "@/lib/schemas";
+import { getEffectiveDefaultChatMode, isAgent2Enabled } from "@/lib/schemas";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export function DefaultChatModeSelector() {
   const { settings, updateSettings, envVars } = useSettings();

@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { RequestId } from "@/distributed_machines/request_identity";
 import type {
   ImageGenerationActorState,
   ImageGenerationEvent,
 } from "@/image_generation/state";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageGenerationActorService } from "./image_generation_actor_service";
-import type { RequestId } from "@/distributed_machines/request_identity";
 
 const service = vi.hoisted(() => ({
   beginAppDeletion: vi.fn(),

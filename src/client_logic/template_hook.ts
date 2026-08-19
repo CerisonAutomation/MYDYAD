@@ -1,5 +1,5 @@
-import { ipc } from "@/ipc/types";
 import { DyadErrorKind } from "@/errors/dyad_error";
+import { ipc } from "@/ipc/types";
 import { getAppPort } from "../../shared/ports";
 
 import { v4 as uuidv4 } from "uuid";

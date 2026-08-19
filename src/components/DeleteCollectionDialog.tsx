@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,9 +7,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { showError, showSuccess } from "@/lib/toast";
 import { useAppCollections } from "@/hooks/useAppCollections";
 import type { AppCollection } from "@/hooks/useAppCollections";
+import { showError, showSuccess } from "@/lib/toast";
+import { Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 interface DeleteCollectionDialogProps {
   open: boolean;

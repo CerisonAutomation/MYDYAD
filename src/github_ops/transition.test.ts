@@ -1,18 +1,18 @@
-import { describe, expect, it } from "vitest";
 import {
-  assertReferenceStability,
   assertAllCommandsProducible,
   assertAllStatesReachable,
+  assertReferenceStability,
   commandsOf,
   exploreReachableStates,
   ignoreReasonOf,
 } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import {
-  INITIAL_GITHUB_OPS_STATE,
   type GithubOperation,
-  type GithubOpsEvent,
   type GithubOpsCommand,
+  type GithubOpsEvent,
   type GithubOpsState,
+  INITIAL_GITHUB_OPS_STATE,
 } from "./state";
 import { transition } from "./transition";
 

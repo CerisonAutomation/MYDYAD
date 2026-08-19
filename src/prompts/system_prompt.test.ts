@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
 import {
   BUILD_SYSTEM_PREFIX,
   getSystemPromptForChatMode,
 } from "@/prompts/system_prompt";
+import { describe, expect, it } from "vitest";
 
 describe("build system prompt", () => {
   it("uses context-sensitive component placement and error handling", () => {

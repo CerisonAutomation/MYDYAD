@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
-import { useSettings } from "@/hooks/useSettings";
 import { NeonDisconnectButton } from "@/components/NeonDisconnectButton";
+import { useSettings } from "@/hooks/useSettings";
+import { useTranslation } from "react-i18next";
 
 export function NeonIntegration() {
   const { t } = useTranslation("home");

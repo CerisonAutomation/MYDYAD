@@ -1,27 +1,27 @@
-import { createTypedHandler } from "./base";
-import { windowInfrastructureContracts } from "../types/window_infrastructure";
-import { windowRegistry } from "../../window_infrastructure/main/window_registry";
-import { queryInvalidationBus } from "../../window_infrastructure/main/query_invalidation_bus";
-import {
-  appOutputInterests,
-  chatChunkInterests,
-} from "../../window_infrastructure/main/production_high_volume";
-import { db } from "../../db";
-import { apps, chats } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import {
-  rendererMessageColumns,
-  toRendererMessage,
-} from "../utils/renderer_chat_message";
-import type { ChatResponseChunk } from "../types/chat";
-import { getWindowProductController } from "../../window_infrastructure/main/window_product_controller";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { ChatTabTransferCoordinator } from "@/window_infrastructure/main/chat_tab_transfer_coordinator";
 import { readSettings } from "@/main/settings";
 import {
   chatNotificationTarget,
   deliverChatNavigationToExistingWindow,
 } from "@/window_infrastructure/main/chat_notification_routing";
+import { ChatTabTransferCoordinator } from "@/window_infrastructure/main/chat_tab_transfer_coordinator";
+import { eq } from "drizzle-orm";
+import { db } from "../../db";
+import { apps, chats } from "../../db/schema";
+import {
+  appOutputInterests,
+  chatChunkInterests,
+} from "../../window_infrastructure/main/production_high_volume";
+import { queryInvalidationBus } from "../../window_infrastructure/main/query_invalidation_bus";
+import { getWindowProductController } from "../../window_infrastructure/main/window_product_controller";
+import { windowRegistry } from "../../window_infrastructure/main/window_registry";
+import type { ChatResponseChunk } from "../types/chat";
+import { windowInfrastructureContracts } from "../types/window_infrastructure";
+import {
+  rendererMessageColumns,
+  toRendererMessage,
+} from "../utils/renderer_chat_message";
+import { createTypedHandler } from "./base";
 
 const chatTabTransfers = new ChatTabTransferCoordinator(windowRegistry);
 

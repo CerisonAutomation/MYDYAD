@@ -1,17 +1,17 @@
-import { ChildProcess, spawn } from "node:child_process";
-import treeKill from "tree-kill";
-import log from "electron-log";
+import { type ChildProcess, spawn } from "node:child_process";
 import type { Worker } from "node:worker_threads";
+import type { AppRunInvocationRef } from "@/app_run/state";
+import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 import type { RuntimeMode2 } from "@/lib/schemas";
+import log from "electron-log";
+import treeKill from "tree-kill";
+import { readSettings } from "../../main/settings";
 import { appOperationCoordinator } from "../services/app_operation_coordinator";
 import {
   destroyCloudSandbox,
   stopCloudSandboxFileSync,
   unregisterRunningCloudSandbox,
 } from "./cloud_sandbox_provider";
-import { readSettings } from "../../main/settings";
-import type { AppRunInvocationRef } from "@/app_run/state";
-import type { AppRuntimeOutput } from "@/ipc/types/app_runtime";
 import { killProcessTreeSync } from "./kill_process_tree_sync";
 
 /**

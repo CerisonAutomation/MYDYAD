@@ -1,6 +1,6 @@
-import React from "react";
 import { Zap } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import type React from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { DyadCard, DyadCardHeader } from "./DyadCardPrimitives";
 
 interface DyadTokenSavingsProps {

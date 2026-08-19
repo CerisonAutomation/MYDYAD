@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import type { WebContents } from "electron";
+import { describe, expect, it, vi } from "vitest";
 import type { ChatStreamExecutionObserver } from "./chat_stream_handlers";
 import {
   clearPendingActorStreamCancellation,

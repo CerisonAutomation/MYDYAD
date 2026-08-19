@@ -1,14 +1,14 @@
-import { db } from "../../db";
-import { messages, apps, chats } from "../../db/schema";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { eq } from "drizzle-orm";
+import log from "electron-log";
+import { db } from "../../db";
+import { apps, chats, messages } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
 import {
   buildPackagesAttrPattern,
   executeAddDependency,
 } from "../processors/executeAddDependency";
 import { createLoggedHandler } from "./safe_handle";
-import log from "electron-log";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("dependency_handlers");
 const handle = createLoggedHandler(logger);

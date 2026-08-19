@@ -1,7 +1,7 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { App } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
 import type { UserSettings } from "@/lib/schemas";
-import type { App } from "@/ipc/types";
+import type { QueryClient } from "@tanstack/react-query";
 
 interface ShowUserInputNotificationParams {
   appId: number | null;

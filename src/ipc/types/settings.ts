@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { defineContract, createClient } from "../contracts/core";
 import { UserSettingsSchema } from "../../lib/schemas";
+import { createClient, defineContract } from "../contracts/core";
 
 export const ProviderApiKeyValidationProviderSchema = z.enum([
   "google",

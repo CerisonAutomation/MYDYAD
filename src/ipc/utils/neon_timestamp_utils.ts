@@ -1,13 +1,13 @@
-import { db } from "../../db";
-import { versions, apps } from "../../db/schema";
-import { eq, and } from "drizzle-orm";
-import { getDyadAppPath } from "../../paths/paths";
 import { neon } from "@neondatabase/serverless";
+import { and, eq } from "drizzle-orm";
+import { db } from "../../db";
+import { apps, versions } from "../../db/schema";
+import { getDyadAppPath } from "../../paths/paths";
 
-import log from "electron-log";
-import { getConnectionUri } from "@/neon_admin/neon_context";
-import { getCurrentCommitHash } from "./git_utils";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getConnectionUri } from "@/neon_admin/neon_context";
+import log from "electron-log";
+import { getCurrentCommitHash } from "./git_utils";
 
 const logger = log.scope("neon_timestamp_utils");
 

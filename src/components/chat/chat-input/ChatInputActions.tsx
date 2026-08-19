@@ -1,31 +1,31 @@
-import { useState, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { ipc } from "@/ipc/types";
+import type { ActionProposal, FileChange, Proposal, SqlQuery } from "@/lib/schemas";
 import {
+  doesSqlDeleteData,
+  doesSqlMutateSchema,
+} from "@/lib/sqlSchemaMutation";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  Check,
   ChevronDown,
   ChevronUp,
-  AlertTriangle,
-  AlertOctagon,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Database,
   FileText,
-  Check,
+  FileX,
   Loader2,
   Package,
-  FileX,
   SendToBack,
-  Database,
-  ChevronsUpDown,
-  ChevronsDownUp,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AutoApproveSwitch } from "../../AutoApproveSwitch";
 import { CodeHighlight } from "../CodeHighlight";
-import { ActionProposal, Proposal, FileChange, SqlQuery } from "@/lib/schemas";
-import { ipc } from "@/ipc/types";
 import { getNpmPackagePageUrl } from "../npmPackageUrl";
-import {
-  doesSqlMutateSchema,
-  doesSqlDeleteData,
-} from "@/lib/sqlSchemaMutation";
 import { mapActionToButton } from "./mapActionToButton";
 
 function ActionProposalActions({ proposal }: { proposal: ActionProposal }) {

@@ -1,9 +1,9 @@
 // startProxy.js – helper to launch proxy.js as a worker
 
-import { Worker } from "worker_threads";
 import path from "path";
-import log from "electron-log";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import log from "electron-log";
+import { Worker } from "worker_threads";
 import {
   PROXY_FALLBACK_MAX_ATTEMPTS,
   getProxyFallbackPortStart,

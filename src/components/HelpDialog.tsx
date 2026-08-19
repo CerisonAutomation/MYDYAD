@@ -1,3 +1,6 @@
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import { helpDialogAtom } from "@/atoms/helpDialogAtom";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -5,47 +8,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  BookOpenIcon,
-  BugIcon,
-  UploadIcon,
-  ChevronLeftIcon,
-  CheckIcon,
-  XIcon,
-  SparklesIcon,
-  ExternalLinkIcon,
-  AlertCircleIcon,
-  MessageSquareIcon,
-  CopyIcon,
-  Loader2Icon,
-  DownloadIcon,
-} from "lucide-react";
-import { ipc } from "@/ipc/types";
-import {
-  type ReactNode,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
-import { useAtom, useAtomValue } from "jotai";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { helpDialogAtom } from "@/atoms/helpDialogAtom";
-import { type SessionDebugBundle, type SystemDebugInfo } from "@/ipc/types";
-import { showError, showSuccess } from "@/lib/toast";
-import { useTranslation } from "react-i18next";
-import { HelpBotDialog } from "./HelpBotDialog";
-import { useSettings } from "@/hooks/useSettings";
-import { BugScreenshotDialog } from "./BugScreenshotDialog";
-import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
-import { type ModelSelection, type UserSettings } from "@/lib/schemas";
-import { type UserBudgetInfo } from "@/ipc/types/system";
-import { motion, AnimatePresence } from "framer-motion";
-import { formatUpdaterLogsForIssueBody } from "@/lib/debugLogFormatting";
 import { useChatMode } from "@/hooks/useChatMode";
 import { useLanguageModelsByProviders } from "@/hooks/useLanguageModelsByProviders";
+import { useSettings } from "@/hooks/useSettings";
+import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { ipc } from "@/ipc/types";
+import type { SessionDebugBundle, SystemDebugInfo } from "@/ipc/types";
+import type { UserBudgetInfo } from "@/ipc/types/system";
+import { formatUpdaterLogsForIssueBody } from "@/lib/debugLogFormatting";
 import { createModelSelection, getModelPreferenceKey } from "@/lib/modelEffort";
+import type { ModelSelection, UserSettings } from "@/lib/schemas";
+import { showError, showSuccess } from "@/lib/toast";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAtom, useAtomValue } from "jotai";
+import {
+  AlertCircleIcon,
+  BookOpenIcon,
+  BugIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  CopyIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  Loader2Icon,
+  MessageSquareIcon,
+  SparklesIcon,
+  UploadIcon,
+  XIcon,
+} from "lucide-react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
+import { BugScreenshotDialog } from "./BugScreenshotDialog";
+import { HelpBotDialog } from "./HelpBotDialog";
 
 // =============================================================================
 // Animation constants

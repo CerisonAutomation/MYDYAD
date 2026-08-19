@@ -1,14 +1,14 @@
 import fs from "node:fs";
 import * as path from "path";
 import {
-  NEXTJS_CONFIG_FILES,
-  VITE_CONFIG_FILES,
   ASTRO_CONFIG_FILES,
-  REMIX_CONFIG_FILES,
-  NUXT_CONFIG_FILES,
-  SVELTEKIT_CONFIG_FILES,
-  EXPO_CONFIG_FILES,
   type AppFrameworkType,
+  EXPO_CONFIG_FILES,
+  NEXTJS_CONFIG_FILES,
+  NUXT_CONFIG_FILES,
+  REMIX_CONFIG_FILES,
+  SVELTEKIT_CONFIG_FILES,
+  VITE_CONFIG_FILES,
 } from "@/lib/framework_constants";
 
 // LRU cache for framework detection — the result rarely changes for a given path.
@@ -218,7 +218,7 @@ export function detectNextJsMajorVersion(appPath: string): number | null {
       result = null;
       return cacheNextVersion(appPath, result);
     }
-    result = parseInt(match[0], 10);
+    result = Number.parseInt(match[0], 10);
     return cacheNextVersion(appPath, result);
   } catch {
     result = null;

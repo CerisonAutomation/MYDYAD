@@ -1,5 +1,3 @@
-import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
 import type {
@@ -8,32 +6,34 @@ import type {
 } from "@/distributed_machines/definition";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
-import { ignore } from "@/state_machines/types";
 import type { GithubOpsCommand } from "@/github_ops/state";
 import { INITIAL_GITHUB_OPS_STATE } from "@/github_ops/state";
 import { transition } from "@/github_ops/transition";
 import {
   GITHUB_OPS_INVOCATION_KIND,
   GITHUB_OPS_MACHINE_ID,
+  type GithubOpsActorState,
+  type GithubOpsIntentEvent,
   GithubOpsIntentEventSchema,
+  type GithubOpsInvocationRef,
+  type GithubOpsKey,
   GithubOpsKeySchema,
+  type GithubOpsProducerEvent,
   GithubOpsRemoteSnapshotSchema,
-  githubOpsKey,
+  type GithubOpsWireEvent,
   githubOpsFailureKind,
+  githubOpsKey,
   isGithubOpsStateSensitiveIntent,
   projectGithubOpsRemoteSnapshot,
   toGithubOpsDomainEvent,
-  type GithubOpsActorState,
-  type GithubOpsIntentEvent,
-  type GithubOpsInvocationRef,
-  type GithubOpsKey,
-  type GithubOpsProducerEvent,
-  type GithubOpsWireEvent,
 } from "@/github_ops/transport";
-import { githubOpsService } from "./github_ops_service";
-import { safeGithubOpsErrorMessage } from "./github_ops_safe_error";
+import { ignore } from "@/state_machines/types";
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { eq } from "drizzle-orm";
+import type { z } from "zod";
 import { githubOpsPresentationService } from "./github_ops_presentation_service";
+import { safeGithubOpsErrorMessage } from "./github_ops_safe_error";
+import { githubOpsService } from "./github_ops_service";
 
 type GithubOpsActorCommand =
   | {

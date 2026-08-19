@@ -1,35 +1,35 @@
-import { IpcMainInvokeEvent } from "electron";
-import { writeSettings, readSettings } from "../../main/settings";
-import * as schema from "../../db/schema";
-import { db } from "../../db";
-import { apps } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import log from "electron-log";
-import { createVercelClient, VERCEL_API_BASE } from "../utils/vercel_utils";
 import * as fs from "fs";
 import * as path from "path";
-import { CreateProjectFramework } from "@vercel/sdk/models/createprojectregion.js";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { getDyadAppPath } from "@/paths/paths";
 import { slugifyAppPath } from "@/shared/slugify";
-import { createTypedHandler } from "./base";
+import type { CreateProjectFramework } from "@vercel/sdk/models/createprojectregion.js";
+import { eq } from "drizzle-orm";
+import type { IpcMainInvokeEvent } from "electron";
+import log from "electron-log";
+import { db } from "../../db";
+import * as schema from "../../db/schema";
+import { apps } from "../../db/schema";
+import { readSettings, writeSettings } from "../../main/settings";
 import {
+  type ConnectToExistingVercelProjectParams,
+  type CreateVercelProjectParams,
+  type CreateVercelProjectResult,
+  type DisconnectVercelProjectParams,
+  type GetVercelDeploymentsParams,
+  type IsVercelProjectAvailableParams,
+  type SaveVercelAccessTokenParams,
+  type VercelDeployment,
+  type VercelProject,
   vercelContracts,
-  SaveVercelAccessTokenParams,
-  IsVercelProjectAvailableParams,
-  CreateVercelProjectParams,
-  CreateVercelProjectResult,
-  ConnectToExistingVercelProjectParams,
-  GetVercelDeploymentsParams,
-  DisconnectVercelProjectParams,
-  VercelProject,
-  VercelDeployment,
 } from "../types/vercel";
 import {
   previewNeonVercelSync,
-  syncNeonConfigToVercel,
   removeNeonEnvVarsFromVercel,
+  syncNeonConfigToVercel,
 } from "../utils/vercel_neon_sync";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { VERCEL_API_BASE, createVercelClient } from "../utils/vercel_utils";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("vercel_handlers");
 

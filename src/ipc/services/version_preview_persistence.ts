@@ -1,14 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
-import { z } from "zod";
 import { getUserDataPath } from "@/paths/paths";
 import {
-  CLOSED_STATE,
   type BranchSwitchFallback,
+  CLOSED_STATE,
   type PreviewSession,
   type PreviewState,
   type RestoreRecovery,
 } from "@/version_preview/state";
+import { z } from "zod";
 
 const persistedSessionSchema = z
   .object({

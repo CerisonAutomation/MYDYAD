@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Layers, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Layers, Loader2 } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
-import { CustomTagState } from "./stateTypes";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadCompactionProps {
   node: {

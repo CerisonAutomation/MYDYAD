@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import type { UserBudgetInfo } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
 

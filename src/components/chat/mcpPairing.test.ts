@@ -1,6 +1,6 @@
+import { parseFullMessage } from "@/lib/streamingMessageParser";
 import { describe, expect, it } from "vitest";
 import { buildMcpPairing } from "./mcpPairing";
-import { parseFullMessage } from "@/lib/streamingMessageParser";
 
 // Builds the block list for the out-of-order interleaving the AI SDK emits
 // for two parallel tools: callA, callB, then results in completion order.

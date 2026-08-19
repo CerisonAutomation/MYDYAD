@@ -1,32 +1,33 @@
-import React, {
+import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedChatIdAtom } from "@/atoms/chatAtoms";
+import {
+  clearPlanAnnotations,
+  planAcceptInNewChatByChatIdAtom,
+  planAnnotationsAtom,
+} from "@/atoms/planAtoms";
+import { VanillaMarkdownParser } from "@/components/chat/VanillaMarkdownParser";
+import { Button } from "@/components/ui/button";
+import { useChatMode } from "@/hooks/useChatMode";
+import { usePlan } from "@/hooks/usePlan";
+import { usePlanDocument } from "@/hooks/usePlanDocument";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import {
+  usePlanHandoff,
+  usePlanHandoffState,
+} from "@/plan_handoff/usePlanHandoff";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { AlertCircle, Check, FileText } from "lucide-react";
+import type React from "react";
+import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Check, FileText } from "lucide-react";
-import { VanillaMarkdownParser } from "@/components/chat/VanillaMarkdownParser";
-import {
-  clearPlanAnnotations,
-  planAcceptInNewChatByChatIdAtom,
-  planAnnotationsAtom,
-} from "@/atoms/planAtoms";
-import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
-import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { usePlan } from "@/hooks/usePlan";
-import { useChatMode } from "@/hooks/useChatMode";
-import { usePlanDocument } from "@/hooks/usePlanDocument";
-import {
-  usePlanHandoff,
-  usePlanHandoffState,
-} from "@/plan_handoff/usePlanHandoff";
-import { SelectionCommentButton } from "./plan/SelectionCommentButton";
-import { CommentsFloatingButton } from "./plan/CommentsFloatingButton";
 import { CommentPopover } from "./plan/CommentPopover";
+import { CommentsFloatingButton } from "./plan/CommentsFloatingButton";
+import { SelectionCommentButton } from "./plan/SelectionCommentButton";
 import {
   applyPlanAnnotationHighlights,
   clearPlanAnnotationHighlights,

@@ -1,31 +1,31 @@
-import { useState } from "react";
-import {
-  ArrowUp,
-  Info,
-  KeyRound,
-  Trash2,
-  Clipboard,
-  Eye,
-  EyeOff,
-} from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import type { UserSettings } from "@/lib/schemas";
+import { showError } from "@/lib/toast";
+import {
+  ArrowUp,
+  Clipboard,
+  Eye,
+  EyeOff,
+  Info,
+  KeyRound,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 import { AzureConfiguration } from "./AzureConfiguration";
 import { VertexConfiguration } from "./VertexConfiguration";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { UserSettings } from "@/lib/schemas";
-import { showError } from "@/lib/toast";
 
 // Helper function to mask ENV API keys (move or duplicate if needed elsewhere)
 const maskEnvApiKey = (key: string | undefined): string => {

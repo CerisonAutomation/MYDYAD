@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ipc } from "@/ipc/types";
-import { showError, showSuccess } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { ipc } from "@/ipc/types";
+import { showError, showSuccess } from "@/lib/toast";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface RenameChatDialogProps {
   chatId: number;

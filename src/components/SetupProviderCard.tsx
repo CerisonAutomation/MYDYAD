@@ -1,6 +1,6 @@
-import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
 
 type SetupProviderVariant = "google" | "openrouter" | "dyad";
 

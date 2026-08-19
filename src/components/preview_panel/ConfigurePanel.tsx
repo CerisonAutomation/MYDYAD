@@ -1,37 +1,37 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { NeonConnector } from "@/components/NeonConnector";
+import { SupabaseConnector } from "@/components/SupabaseConnector";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIntegrationContinue } from "@/hooks/useIntegrationContinue";
+import { ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
+import { showError, showSuccess } from "@/lib/toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import {
-  Trash2,
+  ArrowRight,
+  Database,
   Edit2,
+  HelpCircle,
+  Loader2,
   Plus,
   Save,
-  X,
-  HelpCircle,
-  ArrowRight,
   Terminal,
-  Database,
-  Loader2,
+  Trash2,
+  X,
 } from "lucide-react";
-import { showError, showSuccess } from "@/lib/toast";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
-import { ipc } from "@/ipc/types";
-import { useNavigate } from "@tanstack/react-router";
-import { NeonConfigure } from "./NeonConfigure";
-import { SupabaseConnector } from "@/components/SupabaseConnector";
-import { NeonConnector } from "@/components/NeonConnector";
-import { useIntegrationContinue } from "@/hooks/useIntegrationContinue";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { queryKeys } from "@/lib/queryKeys";
+import { NeonConfigure } from "./NeonConfigure";
 
 const AppCommandsTitle = () => (
   <div className="flex items-center gap-2">

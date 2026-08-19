@@ -1,8 +1,8 @@
+import { queryKeys } from "@/lib/queryKeys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { queryKeys } from "@/lib/queryKeys";
 import {
   useLegacyTests,
   useMigrateLegacyTests,

@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { computeLineDiffStats } from "./lineDiffStats";
 import {
   DIFF_BINARY_PLACEHOLDER,
   DIFF_TOO_LARGE_PLACEHOLDER,
 } from "@/shared/diff_placeholders";
+import { describe, expect, it } from "vitest";
+import { computeLineDiffStats } from "./lineDiffStats";
 
 describe("computeLineDiffStats", () => {
   it("returns zeros for identical content", () => {

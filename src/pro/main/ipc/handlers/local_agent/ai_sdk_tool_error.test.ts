@@ -1,7 +1,7 @@
 import type { LanguageModelV3StreamPart } from "@ai-sdk/provider";
-import { describe, expect, it } from "vitest";
 import { InvalidToolInputError, streamText, tool } from "ai";
 import { MockLanguageModelV3, simulateReadableStream } from "ai/test";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 describe("AI SDK pre-execution tool errors", () => {

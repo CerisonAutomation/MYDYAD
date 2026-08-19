@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import type { RequestId } from "@/distributed_machines/request_identity";
 import type {
   ImageGenerationInvocationRef,
   ImageGenerationOperationOutcome,
 } from "@/image_generation/state";
 import { createFakeClock } from "@/state_machines/testing";
+import { describe, expect, it } from "vitest";
 import {
   IMAGE_GENERATION_MAX_RETAINED_OPERATIONS,
   ImageGenerationOperationService,

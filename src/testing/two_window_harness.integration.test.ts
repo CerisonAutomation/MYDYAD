@@ -1,10 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
-import { queryKeys } from "@/lib/queryKeys";
-import { TwoWindowHarness } from "./two_window_harness";
 import {
   assertTrustedRenderer,
   configureTrustedRenderer,
 } from "@/ipc/utils/renderer_security";
+import { queryKeys } from "@/lib/queryKeys";
+import { describe, expect, it, vi } from "vitest";
+import { TwoWindowHarness } from "./two_window_harness";
 
 describe("two-window infrastructure harness", () => {
   it("dispatches from either window and reloads or destroys independently", () => {

@@ -1,27 +1,27 @@
-import { createTypedHandler } from "./base";
-import { mediaContracts } from "../types/media";
+import fs from "node:fs";
+import path from "node:path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { eq } from "drizzle-orm";
+import { app as electronApp, shell } from "electron";
+import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
 import { getDyadAppPath } from "../../paths/paths";
-import { safeJoin } from "../utils/path_utils";
-import { getMimeType, MIME_TYPE_MAP } from "../utils/mime_utils";
-import { DYAD_MEDIA_DIR_NAME } from "../utils/media_path_utils";
 import { INVALID_FILE_NAME_CHARS } from "../../shared/media_validation";
-import { ensureDyadGitignored } from "./gitignoreUtils";
 import {
   appOperationCoordinator,
   readAppResource,
 } from "../services/app_operation_coordinator";
-import fs from "node:fs";
-import path from "node:path";
-import { eq } from "drizzle-orm";
-import log from "electron-log";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { app as electronApp, shell } from "electron";
+import { mediaContracts } from "../types/media";
+import { DYAD_MEDIA_DIR_NAME } from "../utils/media_path_utils";
 import {
   getMediaThumbnailCacheRoot,
   invalidateMediaThumbnailCache,
 } from "../utils/media_thumbnail";
+import { MIME_TYPE_MAP, getMimeType } from "../utils/mime_utils";
+import { safeJoin } from "../utils/path_utils";
+import { createTypedHandler } from "./base";
+import { ensureDyadGitignored } from "./gitignoreUtils";
 
 const logger = log.scope("media_handlers");
 

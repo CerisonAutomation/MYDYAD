@@ -1,34 +1,34 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getUserDataPath } from "../paths/user_data_path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
-  LastKnownPerformanceSchema,
-  SecretSchema,
-  StoredUserSettingsSchema,
-  UserSettingsSchema,
-  type UserSettings,
-  Secret,
-  VertexProviderSetting,
-  migrateStoredSettings,
-} from "../lib/schemas";
-import {
-  app,
-  BrowserWindow,
-  safeStorage,
-  type WebContents,
-  type BrowserWindow as BrowserWindowInstance,
-} from "electron";
-import { v4 as uuidv4 } from "uuid";
-import log from "electron-log";
+  type RemoteDesktopConfig,
+  getRemoteDesktopConfig,
+} from "@/ipc/shared/remote_desktop_config";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import { DEFAULT_TEMPLATE_ID } from "@/shared/templates";
 import { DEFAULT_THEME_ID } from "@/shared/themes";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import {
-  getRemoteDesktopConfig,
-  type RemoteDesktopConfig,
-} from "@/ipc/shared/remote_desktop_config";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+  BrowserWindow,
+  type BrowserWindow as BrowserWindowInstance,
+  type WebContents,
+  app,
+  safeStorage,
+} from "electron";
+import log from "electron-log";
+import { v4 as uuidv4 } from "uuid";
 import { ZodError } from "zod";
+import {
+  LastKnownPerformanceSchema,
+  type Secret,
+  SecretSchema,
+  StoredUserSettingsSchema,
+  type UserSettings,
+  UserSettingsSchema,
+  type VertexProviderSetting,
+  migrateStoredSettings,
+} from "../lib/schemas";
+import { getUserDataPath } from "../paths/user_data_path";
 import {
   getRecoveryStats,
   recoverLegacySafeStorageSecret,

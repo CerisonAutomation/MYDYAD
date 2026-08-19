@@ -1,10 +1,9 @@
 import { ipc } from "@/ipc/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Button } from "./ui/button";
 import { BugIcon, Camera } from "lucide-react";
 import { useState } from "react";
 import { ScreenshotSuccessDialog } from "./ScreenshotSuccessDialog";
-import { getLastErrorScreenshot } from "@/utils/error_screenshot";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface BugScreenshotDialogProps {
   isOpen: boolean;

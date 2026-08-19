@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import type { WindowSessionId } from "../types";
 import { HighVolumeWindowInterests } from "./high_volume_interests";
-import { WindowRegistry, type WindowEndpoint } from "./window_registry";
+import { type WindowEndpoint, WindowRegistry } from "./window_registry";
 
 function endpoint(id: number) {
   let onDestroyed: (() => void) | undefined;

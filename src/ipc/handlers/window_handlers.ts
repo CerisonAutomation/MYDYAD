@@ -1,9 +1,9 @@
+import { platform } from "os";
+import { getInitialLoadIsFirstSession } from "@/main/settings";
 import { BrowserWindow } from "electron";
 import log from "electron-log";
-import { platform } from "os";
-import { createTypedHandler } from "./base";
 import { systemContracts } from "../types/system";
-import { getInitialLoadIsFirstSession } from "@/main/settings";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("window-handlers");
 

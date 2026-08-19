@@ -1,18 +1,18 @@
-import log from "electron-log";
-import { eq } from "drizzle-orm";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getDyadAppPath } from "@/paths/paths";
 import { NeonAuthSupportedAuthProvider } from "@neondatabase/api-client";
-import { getNeonClient } from "../../neon_admin/neon_management_client";
-import { getConnectionUri } from "../../neon_admin/neon_context";
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { apps } from "../../db/schema";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { getConnectionUri } from "../../neon_admin/neon_context";
+import { getNeonClient } from "../../neon_admin/neon_management_client";
 import {
   generateCookieSecret,
   readEnvVarsOrEmpty,
   updateNeonEnvVars,
 } from "../utils/app_env_var_utils";
 import { detectFrameworkType } from "./framework_utils";
-import { getDyadAppPath } from "@/paths/paths";
 
 export type NeonBranchType = "production" | "development";
 

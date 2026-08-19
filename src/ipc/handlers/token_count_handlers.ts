@@ -1,38 +1,38 @@
+import { eq } from "drizzle-orm";
+import log from "electron-log";
 import { db } from "../../db";
 import { chats } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { buildNeonPromptForApp } from "../../neon_admin/neon_prompt_context";
+import { getDyadAppPath } from "../../paths/paths";
+import {
+  SUPABASE_NOT_AVAILABLE_SYSTEM_PROMPT,
+  getSupabaseAvailableSystemPrompt,
+} from "../../prompts/supabase_prompt";
 import {
   constructSystemPrompt,
   readAiRules,
 } from "../../prompts/system_prompt";
-import { getThemePromptById } from "../utils/theme_utils";
 import {
-  getSupabaseAvailableSystemPrompt,
-  SUPABASE_NOT_AVAILABLE_SYSTEM_PROMPT,
-} from "../../prompts/supabase_prompt";
-import { buildNeonPromptForApp } from "../../neon_admin/neon_prompt_context";
-import { getDyadAppPath } from "../../paths/paths";
-import { detectFrameworkType } from "../utils/framework_utils";
-import log from "electron-log";
-import { extractCodebase } from "../../utils/codebase";
-import {
-  getSupabaseContext,
   getSupabaseClientCode,
+  getSupabaseContext,
 } from "../../supabase_admin/supabase_context";
+import { extractCodebase } from "../../utils/codebase";
+import { detectFrameworkType } from "../utils/framework_utils";
+import { getThemePromptById } from "../utils/theme_utils";
 
-import { TokenCountParams, TokenCountResult } from "@/ipc/types";
-import { estimateTokens, getContextWindow } from "../utils/token_utils";
-import { createLoggedHandler } from "./safe_handle";
-import { validateChatContext } from "../utils/context_paths_utils";
-import { readSettings } from "@/main/settings";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { TokenCountParams, TokenCountResult } from "@/ipc/types";
 import {
   normalizeModelSelection,
   resolveDefaultModelSelection,
 } from "@/ipc/utils/model_effort";
-import { extractMentionedAppsCodebasesFromPrompt } from "../utils/mention_apps";
 import { isLocalAgentBackedMode, isTurboEditsV2Enabled } from "@/lib/schemas";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { readSettings } from "@/main/settings";
+import { validateChatContext } from "../utils/context_paths_utils";
+import { extractMentionedAppsCodebasesFromPrompt } from "../utils/mention_apps";
+import { estimateTokens, getContextWindow } from "../utils/token_utils";
 import { resolveChatModeForTurn } from "./chat_mode_resolution";
+import { createLoggedHandler } from "./safe_handle";
 
 const logger = log.scope("token_count_handlers");
 

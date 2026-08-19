@@ -1,12 +1,12 @@
+import {
+  CHAT_PROMPT_LENGTH_LIMIT_MESSAGE,
+  MAX_CHAT_PROMPT_CHARS,
+} from "@/shared/chatAttachmentLimits";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "jotai";
 import type { PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useStreamChat } from "./useStreamChat";
-import {
-  CHAT_PROMPT_LENGTH_LIMIT_MESSAGE,
-  MAX_CHAT_PROMPT_CHARS,
-} from "@/shared/chatAttachmentLimits";
 
 const CHAT_ID = 42;
 

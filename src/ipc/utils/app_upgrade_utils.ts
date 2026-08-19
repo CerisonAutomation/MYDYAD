@@ -1,17 +1,17 @@
-import log from "electron-log";
 import fs from "node:fs";
 import path from "node:path";
-import { gitAddAll, gitCommit } from "./git_utils";
-import { simpleSpawn } from "./simpleSpawn";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import {
-  isPnpmIgnoredBuildsError,
-  PNPM_PM_ON_FAIL_IGNORE_ARG,
-} from "./socket_firewall";
+import log from "electron-log";
+import { gitAddAll, gitCommit } from "./git_utils";
 import {
   recordAndReportDeniedPnpmBuilds,
   resolvePnpmIgnoredBuilds,
 } from "./pnpm_denied_builds";
+import { simpleSpawn } from "./simpleSpawn";
+import {
+  PNPM_PM_ON_FAIL_IGNORE_ARG,
+  isPnpmIgnoredBuildsError,
+} from "./socket_firewall";
 
 export const logger = log.scope("app_upgrade_utils");
 

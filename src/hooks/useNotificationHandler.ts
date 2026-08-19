@@ -1,15 +1,15 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef } from "react";
-import { useRouterState } from "@tanstack/react-router";
 import { useStreamFinished } from "@/chat_stream/ChatStreamProvider";
 import { useUserInputRequests } from "@/user_input/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouterState } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef } from "react";
 import { ipc } from "../ipc/types";
 import { showWarning } from "../lib/toast";
 
 import { resolveAppNameForAppId, resolveChatSummary } from "../lib/chatUtils";
 
-import { useSettings } from "./useSettings";
 import type { UserInputDescriptorPayload } from "../ipc/types/user_input";
+import { useSettings } from "./useSettings";
 
 // Auto-close timer for completion notifications (give user enough time to navigate to chat completed)
 const AUTO_CLOSE_MS = 10_000;

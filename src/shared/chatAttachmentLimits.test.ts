@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  inspectBase64DataUrl,
-  MAX_CHAT_ATTACHMENT_BYTES,
   MAX_CHAT_ATTACHMENTS,
   MAX_CHAT_ATTACHMENTS_TOTAL_BYTES,
+  MAX_CHAT_ATTACHMENT_BYTES,
+  inspectBase64DataUrl,
   validateChatAttachmentFiles,
   validateSerializedChatAttachments,
 } from "./chatAttachmentLimits";

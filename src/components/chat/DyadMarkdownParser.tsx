@@ -2,87 +2,85 @@ import React, {
   useDeferredValue,
   useMemo,
   useRef,
-  type ComponentProps,
 } from "react";
 import ReactMarkdown from "react-markdown";
 
-import { DyadWrite } from "./DyadWrite";
-import { DyadRename } from "./DyadRename";
-import { DyadCopy } from "./DyadCopy";
-import { DyadDelete } from "./DyadDelete";
-import { DyadAddDependency } from "./DyadAddDependency";
-import { DyadExecuteSql } from "./DyadExecuteSql";
-import { DyadLogs } from "./DyadLogs";
-import { DyadGrep } from "./DyadGrep";
-import { DyadSearchChats } from "./DyadSearchChats";
-import { DyadReadChat } from "./DyadReadChat";
-import { DyadExploreCode } from "./DyadExploreCode";
-import { DyadExploreChatHistory } from "./DyadExploreChatHistory";
-import { DyadAddIntegration } from "./DyadAddIntegration";
-import { DyadEnableNitro } from "./DyadEnableNitro";
-import { DyadEdit } from "./DyadEdit";
-import { DyadSearchReplace } from "./DyadSearchReplace";
-import { DyadCodebaseContext } from "./DyadCodebaseContext";
-import { DyadThink } from "./DyadThink";
-import { MARKDOWN_COMPONENTS, REMARK_PLUGINS } from "./markdown_shared";
-import { useAtomValue } from "jotai";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
+import { isStreamActive } from "@/chat_stream/transition";
 import {
   useChatStreamPreview,
   useChatStreamState,
 } from "@/hooks/useChatStream";
-import { isStreamActive } from "@/chat_stream/transition";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
-import { DyadOutput } from "./DyadOutput";
-import { DyadProblemSummary } from "./DyadProblemSummary";
-import { DyadSecurityFinding } from "./DyadSecurityFinding";
-import { ipc } from "@/ipc/types";
-import { DyadMcpToolCall } from "./DyadMcpToolCall";
-import { DyadMcpToolResult } from "./DyadMcpToolResult";
+import type { SuggestedAction } from "@/lib/schemas";
 import {
-  buildMcpPairing,
-  EMPTY_MCP_PAIRING,
-  type McpPairing,
-  type CustomTagBlock,
-} from "./mcpPairing";
-import { DyadMcpToolSearch } from "./DyadMcpToolSearch";
-import { DyadMcpToolSchema } from "./DyadMcpToolSchema";
-import { DyadWebSearchResult } from "./DyadWebSearchResult";
-import { DyadWebSearch } from "./DyadWebSearch";
-import { DyadWebCrawl } from "./DyadWebCrawl";
-import { DyadWebFetch } from "./DyadWebFetch";
-import { DyadImageGeneration } from "./DyadImageGeneration";
-import { DyadCodeSearchResult } from "./DyadCodeSearchResult";
-import { DyadCodeSearch } from "./DyadCodeSearch";
-import { DyadRead } from "./DyadRead";
-import { DyadListFiles } from "./DyadListFiles";
-import { DyadDatabaseSchema } from "./DyadDatabaseSchema";
-import { DyadDbTableSchema } from "./DyadDbTableSchema";
-import { DyadSupabaseProjectInfo } from "./DyadSupabaseProjectInfo";
-import { DyadNeonProjectInfo } from "./DyadNeonProjectInfo";
-import { DyadStatus } from "./DyadStatus";
-import { DyadCompaction } from "./DyadCompaction";
-import { DyadWritePlan } from "./DyadWritePlan";
-import { DyadExitPlan } from "./DyadExitPlan";
-import { DyadQuestionnaire } from "./DyadQuestionnaire";
-import { DyadStepLimit } from "./DyadStepLimit";
-import { DyadAppBlueprintCard } from "./DyadAppBlueprintCard";
-import { DyadTestAssertionsCard } from "./DyadTestAssertionsCard";
-import { DyadReadGuide } from "./DyadReadGuide";
-import { DyadScript } from "./DyadScript";
-import { DyadGit } from "./DyadGit";
-import { mapActionToButton } from "./chat-input/mapActionToButton";
-import { SuggestedAction } from "@/lib/schemas";
-import { FixAllErrorsButton } from "./FixAllErrorsButton";
-import {
-  advanceParser,
   type Block,
+  type ParserState,
+  advanceParser,
   getOpenBlock,
   initialParserState,
   parseFullMessage,
-  type ParserState,
 } from "@/lib/streamingMessageParser";
+import { useAtomValue } from "jotai";
+import { DyadAddDependency } from "./DyadAddDependency";
+import { DyadAddIntegration } from "./DyadAddIntegration";
+import { DyadAppBlueprintCard } from "./DyadAppBlueprintCard";
+import { DyadCodeSearch } from "./DyadCodeSearch";
+import { DyadCodeSearchResult } from "./DyadCodeSearchResult";
+import { DyadCodebaseContext } from "./DyadCodebaseContext";
+import { DyadCompaction } from "./DyadCompaction";
+import { DyadCopy } from "./DyadCopy";
+import { DyadDatabaseSchema } from "./DyadDatabaseSchema";
+import { DyadDbTableSchema } from "./DyadDbTableSchema";
+import { DyadDelete } from "./DyadDelete";
+import { DyadEdit } from "./DyadEdit";
+import { DyadEnableNitro } from "./DyadEnableNitro";
+import { DyadExecuteSql } from "./DyadExecuteSql";
+import { DyadExitPlan } from "./DyadExitPlan";
+import { DyadExploreChatHistory } from "./DyadExploreChatHistory";
+import { DyadExploreCode } from "./DyadExploreCode";
+import { DyadGit } from "./DyadGit";
+import { DyadGrep } from "./DyadGrep";
+import { DyadImageGeneration } from "./DyadImageGeneration";
+import { DyadListFiles } from "./DyadListFiles";
+import { DyadLogs } from "./DyadLogs";
+import { DyadMcpToolCall } from "./DyadMcpToolCall";
+import { DyadMcpToolResult } from "./DyadMcpToolResult";
+import { DyadMcpToolSchema } from "./DyadMcpToolSchema";
+import { DyadMcpToolSearch } from "./DyadMcpToolSearch";
+import { DyadNeonProjectInfo } from "./DyadNeonProjectInfo";
+import { DyadOutput } from "./DyadOutput";
+import { DyadProblemSummary } from "./DyadProblemSummary";
+import { DyadQuestionnaire } from "./DyadQuestionnaire";
+import { DyadRead } from "./DyadRead";
+import { DyadReadChat } from "./DyadReadChat";
+import { DyadReadGuide } from "./DyadReadGuide";
+import { DyadRename } from "./DyadRename";
+import { DyadScript } from "./DyadScript";
+import { DyadSearchChats } from "./DyadSearchChats";
+import { DyadSearchReplace } from "./DyadSearchReplace";
+import { DyadSecurityFinding } from "./DyadSecurityFinding";
+import { DyadStatus } from "./DyadStatus";
+import { DyadStepLimit } from "./DyadStepLimit";
+import { DyadSupabaseProjectInfo } from "./DyadSupabaseProjectInfo";
+import { DyadTestAssertionsCard } from "./DyadTestAssertionsCard";
+import { DyadThink } from "./DyadThink";
+import { DyadWebCrawl } from "./DyadWebCrawl";
+import { DyadWebFetch } from "./DyadWebFetch";
+import { DyadWebSearch } from "./DyadWebSearch";
+import { DyadWebSearchResult } from "./DyadWebSearchResult";
+import { DyadWrite } from "./DyadWrite";
+import { DyadWritePlan } from "./DyadWritePlan";
+import { FixAllErrorsButton } from "./FixAllErrorsButton";
+import { ToolCardErrorBoundary } from "./ToolCardErrorBoundary";
+import { mapActionToButton } from "./chat-input/mapActionToButton";
+import { MARKDOWN_COMPONENTS, REMARK_PLUGINS } from "./markdown_shared";
+import {
+  type CustomTagBlock,
+  EMPTY_MCP_PAIRING,
+  type McpPairing,
+  buildMcpPairing,
+} from "./mcpPairing";
+import type { CustomTagState, } from "./stateTypes";
 
 interface DyadMarkdownParserProps {
   content: string;

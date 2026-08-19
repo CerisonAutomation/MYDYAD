@@ -1,3 +1,11 @@
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { resolve } from "node:path";
 /**
  * Chat-history recall benchmark.
  *
@@ -14,15 +22,7 @@
  * benchmark-results/chat-history/<run>/results.jsonl and summarized in
  * summary.md; the analysis happens on the recorded data.
  */
-import { describe, it, beforeAll, afterAll, expect } from "vitest";
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
-import { resolve } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 if (!process.env.DYAD_PRO_API_KEY && process.env.DYAD_PRO_KEY) {
   process.env.DYAD_PRO_API_KEY = process.env.DYAD_PRO_KEY;
@@ -30,26 +30,26 @@ if (!process.env.DYAD_PRO_API_KEY && process.env.DYAD_PRO_KEY) {
 
 import { SONNET_4_6 } from "@/ipc/shared/language_model_constants";
 import {
-  GPT_5_4,
-  getEvalModel,
-  hasDyadProKey,
-  type EvalProvider,
-} from "./helpers/get_eval_model";
-import {
-  loadScenarios,
-  validateScenario,
-  seedWorld,
-  makeEvalContext,
-  runCurrentArm,
-  runSubagentArm,
-  runControlArm,
-  scoreMechanically,
-  judgeAnswer,
+  type ArmResult,
   type ScenarioFile,
   type ScenarioQuery,
   type SeededWorld,
-  type ArmResult,
+  judgeAnswer,
+  loadScenarios,
+  makeEvalContext,
+  runControlArm,
+  runCurrentArm,
+  runSubagentArm,
+  scoreMechanically,
+  seedWorld,
+  validateScenario,
 } from "./helpers/chat_history_harness";
+import {
+  type EvalProvider,
+  GPT_5_4,
+  getEvalModel,
+  hasDyadProKey,
+} from "./helpers/get_eval_model";
 
 // The model the explore_chat_history plan would use for its sub-agent
 // (explore_code_subagent.ts SUBAGENT_MODEL) — primary comparison model.

@@ -1,7 +1,7 @@
 import { TransactionalDispatcher } from "@/state_machines/dispatcher";
 import {
-  runDeepLinkWindowReadinessCommand,
   type ReadinessQueue,
+  runDeepLinkWindowReadinessCommand,
 } from "./commands";
 import type {
   DeepLinkWindowReadinessCommand,

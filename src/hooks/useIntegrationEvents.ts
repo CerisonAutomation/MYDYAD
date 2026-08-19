@@ -1,11 +1,11 @@
-import { useEffect, useRef } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSettings } from "./useSettings";
-import { integrationProviderSelectionAtom } from "@/atoms/integrationAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { integrationProviderSelectionAtom } from "@/atoms/integrationAtoms";
 import { ipc } from "@/ipc/types";
 import { showUserInputNotification } from "@/lib/userInputNotification";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useRef } from "react";
+import { useSettings } from "./useSettings";
 
 /**
  * Shows integration notifications from the generic user-input protocol and

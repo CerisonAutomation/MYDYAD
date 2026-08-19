@@ -1,15 +1,15 @@
-import { useCallback } from "react";
-import { useAtomValue, useSetAtom, useStore } from "jotai";
-import { integrationProviderSelectionAtom } from "@/atoms/integrationAtoms";
 import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
-import { useLoadApp } from "@/hooks/useLoadApp";
+import { integrationProviderSelectionAtom } from "@/atoms/integrationAtoms";
 import { getCompletedIntegrationProvider } from "@/components/chat/dyadAddIntegrationUtils";
-import { getUserInputReadModel } from "@/user_input/read_model";
+import { useLoadApp } from "@/hooks/useLoadApp";
 import {
   usePendingIntegrations,
   useRespondingRequestIds,
 } from "@/user_input/hooks";
+import { getUserInputReadModel } from "@/user_input/read_model";
+import { useAtomValue, useSetAtom, useStore } from "jotai";
+import { useCallback } from "react";
 
 /**
  * Shared continue logic for the integration setup flow. Request lifecycle

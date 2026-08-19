@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { ipc } from "@/ipc/types";
 import {
+  type TerminalDataPayload,
   TerminalDataPayloadSchema,
   TerminalExitPayloadSchema,
-  type TerminalDataPayload,
   type TerminalOpenResult,
 } from "@/ipc/types/terminal";
 import { showSuccess, showWarning } from "@/lib/toast";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type TerminalStatus = "idle" | "connecting" | "ready" | "exited" | "error";
 

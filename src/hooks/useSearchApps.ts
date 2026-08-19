@@ -1,7 +1,7 @@
 import { ipc } from "@/ipc/types";
-import { AppSearchResult } from "@/lib/schemas";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import type { AppSearchResult } from "@/lib/schemas";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export function useSearchApps(query: string) {
   const enabled = Boolean(query && query.trim().length > 0);

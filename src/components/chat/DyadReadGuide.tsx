@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { CustomTagState } from "./stateTypes";
 import { BookOpen } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  DyadCard,
-  DyadCardHeader,
   DyadBadge,
+  DyadCard,
+  DyadCardContent,
+  DyadCardHeader,
   DyadExpandIcon,
   DyadStateIndicator,
-  DyadCardContent,
 } from "./DyadCardPrimitives";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadReadGuideProps {
   node: {

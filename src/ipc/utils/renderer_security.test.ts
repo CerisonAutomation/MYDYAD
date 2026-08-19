@@ -1,9 +1,9 @@
 // @vitest-environment node
 
-import type { IpcMainInvokeEvent } from "electron";
-import { describe, expect, it } from "vitest";
 import { DyadErrorKind } from "@/errors/dyad_error";
 import { router } from "@/router";
+import type { IpcMainInvokeEvent } from "electron";
+import { describe, expect, it } from "vitest";
 import {
   assertTrustedRenderer,
   configureTrustedRenderer,

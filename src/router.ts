@@ -1,18 +1,18 @@
 import { createRouter } from "@tanstack/react-router";
-import { rootRoute } from "./routes/root";
-import { homeRoute } from "./routes/home";
+import { appDetailsRoute } from "./routes/app-details";
+import { appsRoute } from "./routes/apps";
 import { chatRoute } from "./routes/chat";
+import { homeRoute } from "./routes/home";
+import { libraryRoute } from "./routes/library";
+import { mediaRoute } from "./routes/media";
+import { pluginDetailRoute } from "./routes/plugin-detail";
+import { pluginsRoute } from "./routes/plugins";
+import { promptsRoute } from "./routes/prompts";
+import { rootRoute } from "./routes/root";
 import { settingsRoute } from "./routes/settings";
 import { providerSettingsRoute } from "./routes/settings/providers/$provider";
-import { appDetailsRoute } from "./routes/app-details";
 import { templatesRoute } from "./routes/templates";
-import { pluginsRoute } from "./routes/plugins";
-import { pluginDetailRoute } from "./routes/plugin-detail";
-import { libraryRoute } from "./routes/library";
-import { appsRoute } from "./routes/apps";
 import { themesRoute } from "./routes/themes";
-import { promptsRoute } from "./routes/prompts";
-import { mediaRoute } from "./routes/media";
 
 // Lazy-loaded route components for code splitting
 // Each page becomes a separate chunk, reducing initial bundle size
@@ -42,9 +42,9 @@ const routeTree = rootRoute.addChildren([
   settingsRoute.addChildren([providerSettingsRoute]),
 ]);
 
+import { useNavigate } from "@tanstack/react-router";
 // src/components/NotFoundRedirect.tsx
 import * as React from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
 export function NotFoundRedirect() {

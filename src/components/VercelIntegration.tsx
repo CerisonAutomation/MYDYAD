@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/hooks/useSettings";
-import { showSuccess, showError } from "@/lib/toast";
+import { showError, showSuccess } from "@/lib/toast";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export function VercelIntegration() {
   const { t } = useTranslation(["home", "common"]);

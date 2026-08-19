@@ -1,12 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import type { IdSource } from "@/state_machines/clock";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
-import type { IdSource } from "@/state_machines/clock";
+import { describe, expect, it, vi } from "vitest";
 import {
-  createMcpOAuthRegistry,
   type McpOAuthListenerRequest,
+  createMcpOAuthRegistry,
 } from "./registry";
 
 async function flush(): Promise<void> {

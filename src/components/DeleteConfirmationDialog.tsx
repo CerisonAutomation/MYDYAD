@@ -1,6 +1,3 @@
-import { useTranslation } from "react-i18next";
-import React from "react";
-import { Trash2, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +10,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
+import { Loader2, Trash2 } from "lucide-react";
+import type React from "react";
+import { useTranslation } from "react-i18next";
 
 interface DeleteConfirmationDialogProps {
   itemName: string;

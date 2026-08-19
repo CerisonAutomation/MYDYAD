@@ -1,16 +1,14 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { Capability, StructuredValue } from "mustardscript";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { getDyadMediaDir } from "@/ipc/utils/media_path_utils";
+import type { Capability, StructuredValue } from "mustardscript";
 import {
-  buildSandboxCapabilitiesWithObserver,
   type SandboxHostCallObserver,
+  buildSandboxCapabilitiesWithObserver,
 } from "./capabilities";
 import {
-  clampSandboxWallClockTimeoutMs,
-  clampSandboxTimeoutMs,
   SANDBOX_ALLOCATION_BUDGET,
   SANDBOX_CALL_DEPTH_LIMIT,
   SANDBOX_HEAP_LIMIT_BYTES,
@@ -19,6 +17,8 @@ import {
   SANDBOX_MAX_OUTSTANDING_HOST_CALLS,
   SANDBOX_SCRIPT_SOURCE_LIMIT_BYTES,
   SANDBOX_UI_OUTPUT_LIMIT_BYTES,
+  clampSandboxTimeoutMs,
+  clampSandboxWallClockTimeoutMs,
 } from "./limits";
 
 type MustardModule = typeof import("mustardscript");

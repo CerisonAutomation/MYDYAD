@@ -1,10 +1,10 @@
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
+import type { AppFrameworkType } from "@/lib/framework_constants";
 import log from "electron-log";
 import { TURBO_EDITS_V2_SYSTEM_PROMPT } from "../pro/main/prompts/turbo_edits_v2_prompt";
 import { constructLocalAgentPrompt } from "./local_agent_prompt";
 import { constructPlanModePrompt } from "./plan_mode_prompt";
-import type { AppFrameworkType } from "@/lib/framework_constants";
 
 const logger = log.scope("system_prompt");
 

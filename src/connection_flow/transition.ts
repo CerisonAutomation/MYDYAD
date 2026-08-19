@@ -7,10 +7,10 @@
 
 import { sameInvocationRef } from "@/state_machines/invocation_ref";
 import {
-  change,
-  ignore as ignoreTransition,
   type IgnoreReason as SharedIgnoreReason,
   type TransitionResult as SharedTransitionResult,
+  change,
+  ignore as ignoreTransition,
 } from "@/state_machines/types";
 import type { ConnectionFlowEvent, ConnectionFlowState } from "./state";
 

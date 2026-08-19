@@ -1,19 +1,19 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DyadErrorKind } from "@/errors/dyad_error";
 import {
-  generateSchemaDiff,
   NotImplementedMigrationError,
   PgSchemaDiffError,
   UnsupportedPostgresVersionError,
+  generateSchemaDiff,
 } from "ts-pg-schema-diff";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  detectDestructiveStatements,
-  generateNeonMigrationStatements,
   MIGRATION_SCHEMA_DIFF_CONNECTION_OPTIONS,
   MIGRATION_SCHEMA_DIFF_INCLUDE_SCHEMAS,
   deriveDestructiveReasons,
+  detectDestructiveStatements,
+  generateNeonMigrationStatements,
   logger,
 } from "./migration_utils";
-import { DyadErrorKind } from "@/errors/dyad_error";
 
 vi.mock("ts-pg-schema-diff", async () => {
   const actual =

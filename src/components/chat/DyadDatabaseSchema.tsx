@@ -1,12 +1,12 @@
-import React from "react";
-import { CustomTagState } from "./stateTypes";
 import { Database } from "lucide-react";
+import type React from "react";
 import {
+  DyadBadge,
   DyadCard,
   DyadCardHeader,
-  DyadBadge,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadDatabaseSchemaProps {
   node: {

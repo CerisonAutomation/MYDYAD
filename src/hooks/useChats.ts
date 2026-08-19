@@ -1,6 +1,6 @@
 import { ipc } from "@/ipc/types";
-import type { ChatSummary } from "@/lib/schemas";
 import { queryKeys } from "@/lib/queryKeys";
+import type { ChatSummary } from "@/lib/schemas";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useChats(appId: number | null) {

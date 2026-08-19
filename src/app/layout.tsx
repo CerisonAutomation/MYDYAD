@@ -1,53 +1,53 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { ThemeProvider } from "../contexts/ThemeContext";
-import { DeepLinkProvider } from "../contexts/DeepLinkContext";
-import { Toaster } from "sonner";
-import { TitleBar } from "./TitleBar";
-import { useEffect, useMemo, type ReactNode } from "react";
-import { useRunApp, useAppOutputSubscription } from "@/hooks/useRunApp";
-import { useAtomValue, useSetAtom } from "jotai";
-import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
-import { useSettings } from "@/hooks/useSettings";
-import { DEFAULT_ZOOM_LEVEL } from "@/lib/schemas";
-import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
-import { usePlanEvents } from "@/hooks/usePlanEvents";
-import { useIntegrationEvents } from "@/hooks/useIntegrationEvents";
-import { useAppBlueprintEvents } from "@/hooks/useAppBlueprintEvents";
-import { useTestRunEvents } from "@/hooks/useTestRunEvents";
-import { useZoomShortcuts } from "@/hooks/useZoomShortcuts";
-import { useChatStreamRuntime } from "@/hooks/useChatStream";
-import { useReopenClosedTab } from "@/hooks/useReopenClosedTab";
-import { VersionPreviewProvider } from "@/version_preview/VersionPreviewProvider";
 import {
   AppRunRemoteProvider,
   useAppRunRemoteManager,
 } from "@/app_run/AppRunRemoteProvider";
-import { PlanHandoffProvider } from "@/plan_handoff/PlanHandoffProvider";
-import i18n from "@/i18n";
-import { LanguageSchema } from "@/lib/schemas";
-import { useShortcut } from "@/hooks/useShortcut";
-import { useIsMac } from "@/hooks/useChatModeToggle";
-import { ReleaseNotesDialog } from "@/components/ReleaseNotesDialog";
+import { PreviewErrorFacadeProvider } from "@/app_wiring/preview_error_facade";
+import { usePreviewErrorFacade } from "@/app_wiring/preview_error_facade";
+import { previewModeAtom, selectedAppIdAtom } from "@/atoms/appAtoms";
+import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
 import { ForceCloseDialog } from "@/components/ForceCloseDialog";
+import { ReleaseNotesDialog } from "@/components/ReleaseNotesDialog";
 import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
-import { ImageGenerationProvider } from "@/image_generation/ImageGenerationProvider";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import {
-  FirstPromptProvider,
   type FirstPromptChatStream,
+  FirstPromptProvider,
 } from "@/first_prompt/FirstPromptProvider";
-import { systemClock, uuidIdSource } from "@/state_machines/clock";
-import { useStreamChat } from "@/hooks/useStreamChat";
-import { PreviewIframeProvider } from "@/preview_iframe/PreviewIframeProvider";
 import { GithubOpsProvider } from "@/github_ops/GithubOpsProvider";
+import { useAppBlueprintEvents } from "@/hooks/useAppBlueprintEvents";
+import { useIsMac } from "@/hooks/useChatModeToggle";
+import { useChatStreamRuntime } from "@/hooks/useChatStream";
+import { useIntegrationEvents } from "@/hooks/useIntegrationEvents";
+import { usePlanEvents } from "@/hooks/usePlanEvents";
+import { useReopenClosedTab } from "@/hooks/useReopenClosedTab";
+import { useAppOutputSubscription, useRunApp } from "@/hooks/useRunApp";
+import { useSettings } from "@/hooks/useSettings";
+import { useShortcut } from "@/hooks/useShortcut";
+import { useStreamChat } from "@/hooks/useStreamChat";
+import { useSyncDefaultChatMode } from "@/hooks/useSyncDefaultChatMode";
+import { useTestRunEvents } from "@/hooks/useTestRunEvents";
+import { useZoomShortcuts } from "@/hooks/useZoomShortcuts";
+import i18n from "@/i18n";
+import { ImageGenerationProvider } from "@/image_generation/ImageGenerationProvider";
+import { DEFAULT_ZOOM_LEVEL } from "@/lib/schemas";
+import { LanguageSchema } from "@/lib/schemas";
+import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+import { PlanHandoffProvider } from "@/plan_handoff/PlanHandoffProvider";
+import { PreviewIframeProvider } from "@/preview_iframe/PreviewIframeProvider";
 import {
   ScreenshotProvider,
   useScreenshotManager,
 } from "@/screenshot/ScreenshotProvider";
-import { useSyncDefaultChatMode } from "@/hooks/useSyncDefaultChatMode";
-import { PreviewErrorFacadeProvider } from "@/app_wiring/preview_error_facade";
-import { usePreviewErrorFacade } from "@/app_wiring/preview_error_facade";
-import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+import { systemClock, uuidIdSource } from "@/state_machines/clock";
+import { VersionPreviewProvider } from "@/version_preview/VersionPreviewProvider";
+import { useAtomValue, useSetAtom } from "jotai";
+import { type ReactNode, useEffect, useMemo } from "react";
+import { Toaster } from "sonner";
+import { DeepLinkProvider } from "../contexts/DeepLinkContext";
+import { ThemeProvider } from "../contexts/ThemeContext";
+import { TitleBar } from "./TitleBar";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const { streamMessage } = useStreamChat({ hasChatId: false });

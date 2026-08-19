@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronDown, Copy, Eye, EyeOff } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { ipc } from "@/ipc/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { queryKeys } from "@/lib/queryKeys";
+import { ipc } from "@/ipc/types";
 import { getErrorMessage } from "@/lib/errors";
+import { queryKeys } from "@/lib/queryKeys";
+import { useQuery } from "@tanstack/react-query";
+import { Check, ChevronDown, Copy, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface DatabaseEnvVarsProps {
   appId: number;

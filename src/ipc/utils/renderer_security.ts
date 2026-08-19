@@ -1,5 +1,5 @@
-import type { IpcMainInvokeEvent } from "electron";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import type { IpcMainInvokeEvent } from "electron";
 
 type RendererTrustPolicy = {
   devServerOrigin: string | null;

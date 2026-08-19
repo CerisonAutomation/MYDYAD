@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import {
-  extractCodebaseStarted,
   extractCodebaseFinished,
+  extractCodebaseStarted,
   isExtractCodebaseActive,
   resetExtractCodebaseCount,
 } from "@/utils/memory_activity";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("memory_activity", () => {
   beforeEach(() => {

@@ -23,14 +23,14 @@ vi.hoisted(() => {
 
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
-import { isIpcInvokeEnvelope, unwrapIpcEnvelope } from "@/ipc/contracts/core";
 import { db } from "@/db";
 import { apps } from "@/db/schema";
+import { isIpcInvokeEnvelope, unwrapIpcEnvelope } from "@/ipc/contracts/core";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import { eq } from "drizzle-orm";
 
 interface SentEvent {

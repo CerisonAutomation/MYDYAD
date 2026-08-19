@@ -11,24 +11,24 @@ import { DyadError, DyadErrorKind } from "../errors/dyad_error";
 import type { Clock, ClockHandle, IdSource } from "../state_machines/clock";
 import { createTraceObserver } from "../state_machines/trace";
 import {
-  observeTransition,
   type TransitionObserver,
+  observeTransition,
 } from "../state_machines/types";
 import {
-  createUserInputCommandRunner,
   type UserInputCommand,
   type UserInputCommandRunner,
+  createUserInputCommandRunner,
 } from "./commands";
 import {
-  isLiveUserInputState,
   type NewUserInputDescriptor,
   type UserInputDescriptor,
   type UserInputEvent,
   type UserInputParkValue,
   type UserInputResponse,
   type UserInputState,
+  isLiveUserInputState,
 } from "./state";
-import { transition, type UserInputIgnoreReason } from "./transition";
+import { type UserInputIgnoreReason, transition } from "./transition";
 
 const CONSENT_DEADLINE_MS = 5 * 60 * 1_000;
 const INTEGRATION_DEADLINE_MS = 30 * 60 * 1_000;

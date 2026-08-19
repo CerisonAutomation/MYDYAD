@@ -1,16 +1,13 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import {
-  CheckSquare,
-  FolderPlus,
-  Loader2,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
-import { useAtom } from "jotai";
-import { Button } from "@/components/ui/button";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { AddOrEditCollectionDialog } from "@/components/AddOrEditCollectionDialog";
+import { AppShowcaseCard } from "@/components/AppShowcaseCard";
+import { type AppsView, AppsViewTabs } from "@/components/AppsViewTabs";
+import { AssignAppsToCollectionDialog } from "@/components/AssignAppsToCollectionDialog";
+import { CollectionDetailView } from "@/components/CollectionDetailView";
+import { CollectionFolderCard } from "@/components/CollectionFolderCard";
+import { DeleteCollectionDialog } from "@/components/DeleteCollectionDialog";
 import { BackButton } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -19,25 +16,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import {
+  type AppCollection,
+  useAppCollections,
+} from "@/hooks/useAppCollections";
+import { useAppThumbnails } from "@/hooks/useAppThumbnails";
 import { useLoadApps } from "@/hooks/useLoadApps";
 import { useOpenApp } from "@/hooks/useOpenApp";
-import { AppShowcaseCard } from "@/components/AppShowcaseCard";
-import { useAppThumbnails } from "@/hooks/useAppThumbnails";
-import { sortAppsForShowcase } from "@/lib/sortApps";
 import { ipc } from "@/ipc/types";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { sortAppsForShowcase } from "@/lib/sortApps";
 import { showError } from "@/lib/toast";
-import { AppsViewTabs, type AppsView } from "@/components/AppsViewTabs";
+import { cn } from "@/lib/utils";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtom } from "jotai";
 import {
-  useAppCollections,
-  type AppCollection,
-} from "@/hooks/useAppCollections";
-import { CollectionFolderCard } from "@/components/CollectionFolderCard";
-import { CollectionDetailView } from "@/components/CollectionDetailView";
-import { AddOrEditCollectionDialog } from "@/components/AddOrEditCollectionDialog";
-import { AssignAppsToCollectionDialog } from "@/components/AssignAppsToCollectionDialog";
-import { DeleteCollectionDialog } from "@/components/DeleteCollectionDialog";
+  CheckSquare,
+  FolderPlus,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 
 export default function AppsPage() {
   const navigate = useNavigate();

@@ -1,23 +1,23 @@
 import { createGoogle } from "@ai-sdk/google";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { streamText, type LanguageModel } from "ai";
+import { type LanguageModel, streamText } from "ai";
 import log from "electron-log";
 
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
 import type { ProviderApiKeyValidationProvider } from "@/ipc/types";
-import { readEffectiveSettings } from "@/main/settings";
+import { getDyadEngineBaseUrl } from "@/ipc/utils/dyad_engine_url";
+import { createDyadEngine } from "@/ipc/utils/llm_engine_provider";
+import { getOpenRouterAppAttributionHeaders } from "@/ipc/utils/openrouter_attribution";
+import { fastTextOutput } from "@/ipc/utils/stream_text_utils";
+import { getTestFetchOption } from "@/ipc/utils/test_fetch_override";
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
 import {
   findInvalidProviderApiKeyCharacter,
   formatInvalidProviderApiKeyMessage,
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
 import type { UserSettings } from "@/lib/schemas";
-import { createDyadEngine } from "@/ipc/utils/llm_engine_provider";
-import { fastTextOutput } from "@/ipc/utils/stream_text_utils";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
-import { getDyadEngineBaseUrl } from "@/ipc/utils/dyad_engine_url";
-import { getTestFetchOption } from "@/ipc/utils/test_fetch_override";
-import { getOpenRouterAppAttributionHeaders } from "@/ipc/utils/openrouter_attribution";
+import { readEffectiveSettings } from "@/main/settings";
 
 const logger = log.scope("provider_api_key_validation");
 

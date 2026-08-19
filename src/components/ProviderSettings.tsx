@@ -1,28 +1,22 @@
 import {
   Card,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { useNavigate } from "@tanstack/react-router";
-import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
 import type { LanguageModelProvider } from "@/ipc/types";
+import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
+import { useNavigate } from "@tanstack/react-router";
 
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
 import { useCustomLanguageModelProvider } from "@/hooks/useCustomLanguageModelProvider";
-import { GiftIcon, PlusIcon, Trash2, Edit } from "lucide-react";
-import { Skeleton } from "./ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { Edit, GiftIcon, PlusIcon, Trash2 } from "lucide-react";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Skeleton } from "./ui/skeleton";
 
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +27,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { CreateCustomProviderDialog } from "./CreateCustomProviderDialog";
 

@@ -1,6 +1,16 @@
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import path from "node:path";
 
+import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  Outlet,
+  RouterProvider,
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router";
 /**
  * setupHybridChatHarness — the "hybrid" chat-flow harness: the real React
  * <ChatPanel> (React Testing Library under happy-dom) wired to the REAL
@@ -31,6 +41,7 @@ import path from "node:path";
  * electron mock handle exported from `src/testing/hybrid.setup.ts`.
  */
 import {
+  type RenderResult,
   act,
   cleanup,
   fireEvent,
@@ -38,102 +49,58 @@ import {
   screen,
   waitFor,
   within,
-  type RenderResult,
 } from "@testing-library/react";
-import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-  Outlet,
-  RouterProvider,
-} from "@tanstack/react-router";
-import { createStore, Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import React, { Suspense, lazy, useCallback, useEffect } from "react";
 import { Toaster } from "sonner";
 import { fetch as undiciFetch } from "undici";
 import { expect } from "vitest";
 
-// IMPORTANT: `./chat_flow_harness` must be imported BEFORE `@/components/ChatPanel`.
-// Loading it first pulls an app module that initializes `tslib`'s CJS interop
-// helpers; without that, ChatPanel's transitive `react-remove-scroll` (Radix)
-// throws "tslib_1.__importStar is not a function" at module load. Do not
-// reorder these two below each other.
+import { TitleBar } from "@/app/TitleBar";
 import {
-  setupChatFlowHarness,
-  type ChatFlowHarness,
-  type ChatFlowHarnessOptions,
-} from "./chat_flow_harness";
-import type { RendererEvent } from "./electron_mock";
+  AppRunRemoteProvider,
+  useAppRunRemoteManager,
+} from "@/app_run/AppRunRemoteProvider";
+import { AppRunRemoteManager } from "@/app_run/remote_manager";
+import { TestAppRunRemoteConnection } from "@/app_run/testing";
+import {
+  DeferredPreviewErrorFacade,
+  PreviewErrorFacadeProvider,
+} from "@/app_wiring/preview_error_facade";
+import { registerRendererIpcListeners } from "@/app_wiring/registerRendererIpcListeners";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import {
   attachmentsAtom,
   chatInputValuesByIdAtom,
   selectedChatIdAtom,
 } from "@/atoms/chatAtoms";
+import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
 import { selectedComponentsPreviewAtom } from "@/atoms/previewAtoms";
+import { clearRecorderForAppAtom } from "@/atoms/recorderAtoms";
 import {
   clearTestRuntimeForAppAtom,
   testRunOutputByAppIdAtom,
 } from "@/atoms/testRuntimeAtoms";
-import { clearRecorderForAppAtom } from "@/atoms/recorderAtoms";
-import { planAcceptInNewChatByChatIdAtom } from "@/atoms/planAtoms";
-import { registerRendererIpcListeners } from "@/app_wiring/registerRendererIpcListeners";
-import { useChatStreamRuntime } from "@/hooks/useChatStream";
-import { usePlanEvents } from "@/hooks/usePlanEvents";
-import { useAppBlueprintEvents } from "@/hooks/useAppBlueprintEvents";
-import { ChatPanel } from "@/components/ChatPanel";
+import { ChatStreamProvider } from "@/chat_stream/ChatStreamProvider";
+import { hasSessionChatQueue } from "@/chat_stream/persistence";
+import { ChatStreamRemoteManager } from "@/chat_stream/remote_manager";
 import { AppList } from "@/components/AppList";
 import { ChatList } from "@/components/ChatList";
-import { PrivacyBanner } from "@/components/TelemetryBanner";
+import { ChatPanel } from "@/components/ChatPanel";
 import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
-import { VersionPreviewProvider } from "@/version_preview/VersionPreviewProvider";
-import { PreviewIframeProvider } from "@/preview_iframe/PreviewIframeProvider";
-import { PreviewIframeManager } from "@/preview_iframe/manager";
-import { createPreviewIframeCommandAdapter } from "@/preview_iframe/commands";
-import {
-  DeferredPreviewErrorFacade,
-  PreviewErrorFacadeProvider,
-} from "@/app_wiring/preview_error_facade";
-import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
-import { PackageManagerWarningStore } from "@/package_manager_warnings/store";
-import {
-  ScreenshotProvider,
-  useScreenshotManager,
-} from "@/screenshot/ScreenshotProvider";
-import { AppRunRemoteManager } from "@/app_run/remote_manager";
-import {
-  AppRunRemoteProvider,
-  useAppRunRemoteManager,
-} from "@/app_run/AppRunRemoteProvider";
-import { TestAppRunRemoteConnection } from "@/app_run/testing";
-import { PlanHandoffProvider } from "@/plan_handoff/PlanHandoffProvider";
-import { ChatStreamRemoteManager } from "@/chat_stream/remote_manager";
-import { hasSessionChatQueue } from "@/chat_stream/persistence";
-import { ChatStreamProvider } from "@/chat_stream/ChatStreamProvider";
-import {
-  EntityDisposalProvider,
-  useEntityDisposal,
-  useRegisterEntityDisposer,
-} from "@/state_machines/react";
-import { ImageGenerationProvider } from "@/image_generation/ImageGenerationProvider";
-import { FirstPromptProvider } from "@/first_prompt/FirstPromptProvider";
-import { GithubOpsProvider } from "@/github_ops/GithubOpsProvider";
-import { uuidIdSource } from "@/state_machines/clock";
-import {
-  createFakeClock,
-  createSequentialIdSource,
-  type FakeClock,
-} from "@/state_machines/testing";
+import { PrivacyBanner } from "@/components/TelemetryBanner";
 import { PlanPanel } from "@/components/preview_panel/PlanPanel";
 import { SecurityPanel } from "@/components/preview_panel/SecurityPanel";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { TitleBar } from "@/app/TitleBar";
 import { DeepLinkProvider } from "@/contexts/DeepLinkContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { chats } from "@/db/schema";
+import { FirstPromptProvider } from "@/first_prompt/FirstPromptProvider";
+import { GithubOpsProvider } from "@/github_ops/GithubOpsProvider";
+import { useAppBlueprintEvents } from "@/hooks/useAppBlueprintEvents";
+import { useChatStreamRuntime } from "@/hooks/useChatStream";
+import { usePlanEvents } from "@/hooks/usePlanEvents";
+import { ImageGenerationProvider } from "@/image_generation/ImageGenerationProvider";
 import { ipc } from "@/ipc/types";
 import type {
   ComponentSelection,
@@ -141,15 +108,48 @@ import type {
   McpServer,
 } from "@/ipc/types";
 import { setModelClientFetchForTesting } from "@/ipc/utils/get_model_client";
+import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+import { PackageManagerWarningStore } from "@/package_manager_warnings/store";
+import { PlanHandoffProvider } from "@/plan_handoff/PlanHandoffProvider";
+import { PreviewIframeProvider } from "@/preview_iframe/PreviewIframeProvider";
+import { createPreviewIframeCommandAdapter } from "@/preview_iframe/commands";
+import { PreviewIframeManager } from "@/preview_iframe/manager";
+import { appDetailsSearchSchema } from "@/routes/appDetailsSearchSchema";
 // Import from the dedicated schema module, NOT "@/routes/chat": the route file
 // statically imports ChatPage -> PreviewPanel -> Monaco, which would load into
 // every hybrid test and throw "Canceled" rejections on teardown.
 import { chatSearchSchema } from "@/routes/chatSearchSchema";
-import { appDetailsSearchSchema } from "@/routes/appDetailsSearchSchema";
+import {
+  ScreenshotProvider,
+  useScreenshotManager,
+} from "@/screenshot/ScreenshotProvider";
+import { uuidIdSource } from "@/state_machines/clock";
+import {
+  EntityDisposalProvider,
+  useEntityDisposal,
+  useRegisterEntityDisposer,
+} from "@/state_machines/react";
+import {
+  type FakeClock,
+  createFakeClock,
+  createSequentialIdSource,
+} from "@/state_machines/testing";
+import { VersionPreviewProvider } from "@/version_preview/VersionPreviewProvider";
+// IMPORTANT: `./chat_flow_harness` must be imported BEFORE `@/components/ChatPanel`.
+// Loading it first pulls an app module that initializes `tslib`'s CJS interop
+// helpers; without that, ChatPanel's transitive `react-remove-scroll` (Radix)
+// throws "tslib_1.__importStar is not a function" at module load. Do not
+// reorder these two below each other.
+import {
+  type ChatFlowHarness,
+  type ChatFlowHarnessOptions,
+  setupChatFlowHarness,
+} from "./chat_flow_harness";
+import type { RendererEvent } from "./electron_mock";
 
 import {
-  installRendererIpcBridge,
   type RendererIpcBridge,
+  installRendererIpcBridge,
 } from "./renderer_ipc_bridge";
 
 const SECOND_SETUP_ERROR =

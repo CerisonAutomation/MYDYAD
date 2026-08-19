@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   acknowledgeConnectionFlow,
   cancelConnectionFlow,
@@ -6,15 +8,17 @@ import {
   useConnectionFlow,
   useUnsolicitedConnectionReturn,
 } from "@/hooks/useConnectionFlow";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-import { ipc, type SupabaseProject } from "@/ipc/types";
-import { toast } from "sonner";
-import { useSettings } from "@/hooks/useSettings";
-import { useSupabase } from "@/hooks/useSupabase";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -24,40 +28,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLoadApp } from "@/hooks/useLoadApp";
 import {
   useLegacySupabaseKey,
   useSwitchToPublishableKey,
 } from "@/hooks/useLegacySupabaseKey";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { useSettings } from "@/hooks/useSettings";
+import { useSupabase } from "@/hooks/useSupabase";
+import { type SupabaseProject, ipc } from "@/ipc/types";
+import { toast } from "sonner";
 
-// @ts-ignore
-import supabaseLogoLight from "../../assets/supabase/supabase-logo-wordmark--light.svg";
-// @ts-ignore
-import supabaseLogoDark from "../../assets/supabase/supabase-logo-wordmark--dark.svg";
 // @ts-ignore
 import connectSupabaseDark from "../../assets/supabase/connect-supabase-dark.svg";
 // @ts-ignore
 import connectSupabaseLight from "../../assets/supabase/connect-supabase-light.svg";
+// @ts-ignore
+import supabaseLogoDark from "../../assets/supabase/supabase-logo-wordmark--dark.svg";
+// @ts-ignore
+import supabaseLogoLight from "../../assets/supabase/supabase-logo-wordmark--light.svg";
 
-import { ExternalLink, Info, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getErrorMessage } from "@/lib/errors";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useTheme } from "@/contexts/ThemeContext";
+import { getErrorMessage } from "@/lib/errors";
 import { isSupabaseConnected } from "@/lib/schemas";
+import { ExternalLink, Info, Plus, RefreshCw, Trash2 } from "lucide-react";
 
 function PasteCallbackInput() {
   const [url, setUrl] = useState("");

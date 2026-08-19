@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
-import { localTemplatesData, type Template } from "@/shared/templates";
 import { queryKeys } from "@/lib/queryKeys";
+import { type Template, localTemplatesData } from "@/shared/templates";
+import { useQuery } from "@tanstack/react-query";
 
 export function useTemplates() {
   const query = useQuery({

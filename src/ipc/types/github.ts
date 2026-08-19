@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineContract, createClient } from "../contracts/core";
+import { createClient, defineContract } from "../contracts/core";
 import { AppSchema } from "./app";
 
 // =============================================================================

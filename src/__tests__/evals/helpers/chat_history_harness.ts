@@ -1,3 +1,15 @@
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
+import { drainChatSearchIndexOnce } from "@/pro/main/ipc/handlers/local_agent/chat_search_indexer";
+import {
+  type ChatSearchTestHarness,
+  makeAgentContext,
+  setupChatSearchTestDb,
+} from "@/pro/main/ipc/handlers/local_agent/tools/chat_search_spec_utils";
+import { projectChatMessageForSearch } from "@/pro/main/ipc/handlers/local_agent/tools/chat_search_text";
+import { readChatTool } from "@/pro/main/ipc/handlers/local_agent/tools/read_chat";
+import { searchChatsTool } from "@/pro/main/ipc/handlers/local_agent/tools/search_chats";
+import type { AgentContext } from "@/pro/main/ipc/handlers/local_agent/tools/types";
 /**
  * Harness for the chat-history recall benchmark.
  *
@@ -19,23 +31,11 @@
  * LLM judge grades final-answer correctness against a per-query rubric.
  */
 import {
-  generateText,
-  isStepCount,
   type LanguageModel,
   type ToolSet,
+  generateText,
+  isStepCount,
 } from "ai";
-import { readFileSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
-import { searchChatsTool } from "@/pro/main/ipc/handlers/local_agent/tools/search_chats";
-import { readChatTool } from "@/pro/main/ipc/handlers/local_agent/tools/read_chat";
-import { projectChatMessageForSearch } from "@/pro/main/ipc/handlers/local_agent/tools/chat_search_text";
-import { drainChatSearchIndexOnce } from "@/pro/main/ipc/handlers/local_agent/chat_search_indexer";
-import {
-  setupChatSearchTestDb,
-  makeAgentContext,
-  type ChatSearchTestHarness,
-} from "@/pro/main/ipc/handlers/local_agent/tools/chat_search_spec_utils";
-import type { AgentContext } from "@/pro/main/ipc/handlers/local_agent/tools/types";
 
 // ── Fixture schema ─────────────────────────────────────────────
 

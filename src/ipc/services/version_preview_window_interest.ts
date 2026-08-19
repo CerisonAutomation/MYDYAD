@@ -1,6 +1,6 @@
 import {
-  windowRegistry,
   type WindowRegistry,
+  windowRegistry,
 } from "@/window_infrastructure/main/window_registry";
 
 export type VersionPreviewWindowRelease =

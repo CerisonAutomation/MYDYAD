@@ -1,8 +1,8 @@
-import { z } from "zod";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type { InvocationRef } from "@/state_machines/invocation_ref";
 import { sameInvocationRef } from "@/state_machines/invocation_ref";
 import { change, ignore, stay } from "@/state_machines/types";
+import { z } from "zod";
 import type {
   ActorLifecyclePolicy,
   DistributedMachineDefinition,
@@ -12,10 +12,10 @@ import {
   DEFAULT_REMOTE_INTENT_ENVELOPE_BYTES,
   DEFAULT_REMOTE_SNAPSHOT_ENVELOPE_BYTES,
   PROTOCOL_V1_REFUSAL_MAP,
+  type RuntimeRemoteIntentContract,
   allowRemoteAuthorization,
   defineRuntimeRemoteIntentContract,
   denyRemoteAuthorization,
-  type RuntimeRemoteIntentContract,
 } from "../remote_intent_contract";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "../remote_protocol";
 

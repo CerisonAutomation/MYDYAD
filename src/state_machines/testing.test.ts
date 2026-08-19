@@ -10,7 +10,7 @@ import {
   exploreReachableStates,
   ignoreReasonOf,
 } from "./testing";
-import { change, ignore, stay, type TransitionResult } from "./types";
+import { type TransitionResult, change, ignore, stay } from "./types";
 
 describe("state-machine test kit", () => {
   it("constructs ignored, changed, and command-only applied results", () => {

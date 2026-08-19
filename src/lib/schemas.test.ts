@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { migrateStoredSettings, StoredUserSettingsSchema } from "@/lib/schemas";
+import { StoredUserSettingsSchema, migrateStoredSettings } from "@/lib/schemas";
+import { describe, expect, it } from "vitest";
 
 const baseSettings = {
   selectedModel: { name: "auto", provider: "auto" },

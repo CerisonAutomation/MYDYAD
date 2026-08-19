@@ -9,17 +9,17 @@
  * was unmounted).
  */
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
-import { ipc } from "@/ipc/types";
 import {
   CONNECTION_FLOW_PROVIDERS,
-  DISCONNECTED_FLOW_STATE,
-  isActiveFlowState,
   type ConnectionFlowInvocationRef,
   type ConnectionFlowProvider,
   type ConnectionFlowState,
+  DISCONNECTED_FLOW_STATE,
+  isActiveFlowState,
 } from "@/connection_flow/state";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { ipc } from "@/ipc/types";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 type FlowSnapshot = Record<ConnectionFlowProvider, ConnectionFlowState>;
 

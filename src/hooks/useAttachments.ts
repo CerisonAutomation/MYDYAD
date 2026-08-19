@@ -1,9 +1,10 @@
-import React, { useCallback, useRef, useState } from "react";
-import type { FileAttachment } from "@/ipc/types";
-import { useAtom } from "jotai";
 import { attachmentsAtom } from "@/atoms/chatAtoms";
+import type { FileAttachment } from "@/ipc/types";
 import { showError } from "@/lib/toast";
 import { validateChatAttachmentFiles } from "@/shared/chatAttachmentLimits";
+import { useAtom } from "jotai";
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
 
 export function useAttachments() {
   const [attachments, setAttachments] = useAtom(attachmentsAtom);

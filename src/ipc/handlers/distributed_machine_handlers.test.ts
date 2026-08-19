@@ -1,6 +1,5 @@
 // @vitest-environment node
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActorHost } from "@/distributed_machines/actor_host";
 import { createRemoteMachineManifest } from "@/distributed_machines/remote_manifest";
 import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
@@ -11,6 +10,7 @@ import {
   createSequentialIdSource,
 } from "@/state_machines/testing";
 import { WindowRegistry } from "@/window_infrastructure/main/window_registry";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { configureTrustedRenderer } from "../utils/renderer_security";
 
 const mocks = vi.hoisted(() => ({

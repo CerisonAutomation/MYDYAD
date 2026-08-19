@@ -1,4 +1,4 @@
-import React from "react";
+
 import ReactMarkdown from "react-markdown";
 import { MARKDOWN_COMPONENTS, REMARK_PLUGINS } from "./markdown_shared";
 

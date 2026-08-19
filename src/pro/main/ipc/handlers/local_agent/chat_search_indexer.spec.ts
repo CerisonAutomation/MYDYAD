@@ -7,8 +7,8 @@ import {
   stopChatSearchIndexer,
 } from "./chat_search_indexer";
 import {
-  setupChatSearchTestDb,
   type ChatSearchTestHarness,
+  setupChatSearchTestDb,
 } from "./tools/chat_search_spec_utils";
 
 vi.mock("electron-log", () => ({

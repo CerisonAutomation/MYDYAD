@@ -1,15 +1,15 @@
+import { Trash2 } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
-import { Trash2 } from "lucide-react";
-import type { DyadTagNode } from "./stateTypes";
 import {
+  DyadBadge,
   DyadCard,
   DyadCardHeader,
-  DyadBadge,
-  DyadFilePath,
   DyadDescription,
+  DyadFilePath,
 } from "./DyadCardPrimitives";
-import { CustomTagState } from "./stateTypes";
+import type { DyadTagNode } from "./stateTypes";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadDeleteProps {
   children?: ReactNode;

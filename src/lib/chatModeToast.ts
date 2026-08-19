@@ -1,6 +1,6 @@
 import { toast } from "sonner";
-import type { ChatMode } from "./schemas";
 import type { ChatModeFallbackReason } from "./chatMode";
+import type { ChatMode } from "./schemas";
 
 export function getChatModeDisplayName(mode: ChatMode, isPro: boolean): string {
   switch (mode) {

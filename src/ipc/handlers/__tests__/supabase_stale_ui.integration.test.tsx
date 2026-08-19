@@ -9,17 +9,17 @@ vi.hoisted(() => {
   process.env.E2E_TEST_BUILD = "true";
 });
 
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
-import { h } from "@/testing/hybrid.setup";
 import { db } from "@/db";
 import { apps, chats } from "@/db/schema";
+import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import { eq } from "drizzle-orm";
 
 describe("supabase stale app details UI (integration)", () => {

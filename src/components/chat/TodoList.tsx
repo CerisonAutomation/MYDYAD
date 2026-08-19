@@ -1,14 +1,14 @@
-import React, { useState } from "react";
 import type { AgentTodo } from "@/ipc/types";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
-  Circle,
-  Loader2,
   ChevronDown,
   ChevronUp,
+  Circle,
   ListTodo,
+  Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface TodoListProps {
   todos: AgentTodo[];

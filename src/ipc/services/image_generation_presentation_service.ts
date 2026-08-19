@@ -3,8 +3,8 @@ import type {
   ImageGenerationJob,
 } from "@/image_generation/state";
 import {
-  windowRegistry,
   type WindowRegistry,
+  windowRegistry,
 } from "@/window_infrastructure/main/window_registry";
 import type { WindowSessionId } from "@/window_infrastructure/types";
 

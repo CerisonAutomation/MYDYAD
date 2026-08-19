@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
 import {
   ALLOWED_ANNOTATION_KEYS,
   crashAnnotationEventFields,
   crashPerformanceEventFields,
 } from "@/utils/crash_telemetry_fields";
+import { describe, expect, it } from "vitest";
 
 describe("crashPerformanceEventFields", () => {
   it("flattens working sets and activity into scalar fields", () => {

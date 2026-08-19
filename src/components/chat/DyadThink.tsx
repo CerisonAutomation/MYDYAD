@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
-import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
-import { CustomTagState, type DyadTagNode } from "./stateTypes";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { DyadTokenSavings } from "./DyadTokenSavings";
+import { VanillaMarkdownParser } from "./VanillaMarkdownParser";
+import type { CustomTagState, DyadTagNode } from "./stateTypes";
 
 interface DyadThinkProps {
   node?: DyadTagNode;
@@ -38,8 +39,8 @@ export const DyadThink: React.FC<DyadThinkProps> = ({ children, node }) => {
 
   // If it's token savings format, render DyadTokenSavings component
   if (tokenSavingsMatch) {
-    const originalTokens = parseFloat(tokenSavingsMatch[1]);
-    const smartContextTokens = parseFloat(tokenSavingsMatch[2]);
+    const originalTokens = Number.parseFloat(tokenSavingsMatch[1]);
+    const smartContextTokens = Number.parseFloat(tokenSavingsMatch[2]);
     return (
       <DyadTokenSavings
         originalTokens={originalTokens}

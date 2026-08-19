@@ -1,18 +1,18 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DyadErrorKind } from "@/errors/dyad_error";
-import type { RemoveFileAndCommitResult } from "../services/git_service";
 import { apps } from "@/db/schema";
-import { appOperationCoordinator } from "../services/app_operation_coordinator";
-import { activeRecordings } from "../services/recording_registry";
+import { DyadErrorKind } from "@/errors/dyad_error";
 import {
   type HandlerTestHarness,
   setupHandlerTestHarness,
 } from "@/testing/handler_test_harness";
+import { appOperationCoordinator } from "../services/app_operation_coordinator";
+import type { RemoveFileAndCommitResult } from "../services/git_service";
+import { activeRecordings } from "../services/recording_registry";
 
 // Every app folder lives under one throwaway base so the delete handler runs
 // against real directories (its path guards resolve symlinks on disk).

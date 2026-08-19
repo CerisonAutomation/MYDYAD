@@ -1,8 +1,8 @@
-import type { GithubOperation, GithubOpsBanner, GithubOpsState } from "./state";
 import {
-  selectGithubOpsCapabilities,
   type GithubOpsCapabilities,
+  selectGithubOpsCapabilities,
 } from "./capabilities";
+import type { GithubOperation, GithubOpsBanner, GithubOpsState } from "./state";
 import { continuationOperation } from "./transition";
 
 export interface GithubOpsProjection {

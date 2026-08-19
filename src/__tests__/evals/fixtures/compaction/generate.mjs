@@ -469,7 +469,7 @@ async function main() {
   const fileState = {};
   let recap = "";
   const phaseMessages = [];
-  let totalUsage = { prompt_tokens: 0, completion_tokens: 0 };
+  const totalUsage = { prompt_tokens: 0, completion_tokens: 0 };
 
   for (const phase of spec.phases) {
     const required = requiredStringsForPhase(spec, phase);

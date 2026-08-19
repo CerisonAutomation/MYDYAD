@@ -1,15 +1,3 @@
-import { useState } from "react";
-import {
-  Image,
-  MoreVertical,
-  MessageSquarePlus,
-  Pencil,
-  Trash2,
-  MoveRight,
-  Expand,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { buildDyadMediaThumbnailUrl } from "@/lib/dyadMediaUrl";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,6 +6,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { MediaFile } from "@/ipc/types";
+import { buildDyadMediaThumbnailUrl } from "@/lib/dyadMediaUrl";
+import { cn } from "@/lib/utils";
+import {
+  Expand,
+  Image,
+  MessageSquarePlus,
+  MoreVertical,
+  MoveRight,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 
 export function MediaFileThumbnail({
   file,

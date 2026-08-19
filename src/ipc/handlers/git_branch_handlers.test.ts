@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { IpcMainInvokeEvent } from "electron";
+import type { IpcMainInvokeEvent } from "electron";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const registeredHandlers = vi.hoisted(
   () => [] as Array<(event: any, input: any) => Promise<unknown>>,
@@ -87,18 +87,18 @@ vi.mock("@/main/settings", () => ({
   readSettings: vi.fn(),
 }));
 
+import { db } from "@/db";
 import {
   handleDeleteBranch,
   registerGithubBranchHandlers,
 } from "@/ipc/handlers/git_branch_handlers";
+import { reserveRecordingStart } from "@/ipc/services/recording_registry";
+import { createAppOperationHandler } from "@/ipc/utils/app_mutation_lock";
 import {
+  gitDeleteBranch,
   gitListBranches,
   gitListRemoteBranches,
-  gitDeleteBranch,
 } from "@/ipc/utils/git_utils";
-import { db } from "@/db";
-import { createAppOperationHandler } from "@/ipc/utils/app_mutation_lock";
-import { reserveRecordingStart } from "@/ipc/services/recording_registry";
 
 const mockEvent = {} as IpcMainInvokeEvent;
 

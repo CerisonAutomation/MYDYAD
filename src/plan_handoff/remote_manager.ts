@@ -1,12 +1,12 @@
+import { IpcRemoteMachineConnection } from "@/distributed_machines/ipc_connection";
 import { RemoteMachineClient } from "@/distributed_machines/remote_client";
 import type { RemoteMachineClientConnection } from "@/distributed_machines/remote_client";
-import { IpcRemoteMachineConnection } from "@/distributed_machines/ipc_connection";
-import { uuidIdSource, type IdSource } from "@/state_machines/clock";
+import { type IdSource, uuidIdSource } from "@/state_machines/clock";
 import {
-  planHandoffClientDefinition,
-  planHandoffKey,
   type PlanHandoffIntent,
   type PlanHandoffRemoteSnapshot,
+  planHandoffClientDefinition,
+  planHandoffKey,
 } from "./transport";
 
 export type PlanHandoffRemoteConnection = RemoteMachineClientConnection & {

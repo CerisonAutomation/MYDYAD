@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { KeyedControllerHost, type KeyedController } from "./keyed_host";
+import { type KeyedController, KeyedControllerHost } from "./keyed_host";
 
 class FakeController implements KeyedController<number> {
   private snapshot = 0;

@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { TransactionalDispatcher, type DispatcherError } from "./dispatcher";
+import { type DispatcherError, TransactionalDispatcher } from "./dispatcher";
 import {
-  runControllerConformanceSuite,
   type ControllerConformanceAdapter,
+  runControllerConformanceSuite,
 } from "./testing";
 import {
+  type DispatchContext,
+  type TransitionResult,
   change,
   ignore,
   stay,
-  type DispatchContext,
-  type TransitionResult,
 } from "./types";
 
 type TestState = { value: number };

@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   ASSERTION_PROPOSAL_VERSION,
+  type AssertionPlanItem,
   AssertionProposalPayloadSchema,
-  buildPlanItems,
-  countAssertions,
   MAX_STEP_TEXT_DISPLAY_LENGTH,
   MAX_STEP_TEXT_LENGTH,
+  buildPlanItems,
+  countAssertions,
   moveAssertion,
-  type AssertionPlanItem,
 } from "./assertion_proposal";
 import { RECORDED_TEST_DRAFT_VERSION } from "./draft";
 

@@ -1,16 +1,16 @@
-import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
 import type { RemoteClientDefinition } from "@/distributed_machines/remote_client";
+import { REMOTE_MACHINE_PROTOCOL_VERSION } from "@/distributed_machines/remote_protocol";
+import { appRunRemoteIntentContract } from "./remote_intent_contract";
 import type { AppRunIgnoreReason } from "./state";
 import {
+  type AppRunIntentEvent,
   AppRunIntentEventSchema,
+  type AppRunKey,
   AppRunKeySchema,
+  type AppRunRemoteSnapshot,
   AppRunRemoteSnapshotSchema,
   projectAppRunRemoteSnapshot,
-  type AppRunIntentEvent,
-  type AppRunKey,
-  type AppRunRemoteSnapshot,
 } from "./transport";
-import { appRunRemoteIntentContract } from "./remote_intent_contract";
 
 export const appRunClientDefinition = {
   id: "app_run",

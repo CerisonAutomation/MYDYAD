@@ -1,15 +1,15 @@
 import fsAsync from "node:fs/promises";
 import path from "node:path";
+import { readSettings } from "@/main/settings";
+import log from "electron-log";
+import { glob } from "glob";
 import { gitListFilesNative } from "../ipc/utils/git_utils";
 import { isPathIgnoredByGitIgnore } from "../ipc/utils/gitignore_utils";
-import log from "electron-log";
 import { IS_TEST_BUILD } from "../ipc/utils/test_utils";
-import { glob } from "glob";
-import { AppChatContext } from "../lib/schemas";
-import { readSettings } from "@/main/settings";
+import type { AppChatContext } from "../lib/schemas";
 import {
-  extractCodebaseStarted,
   extractCodebaseFinished,
+  extractCodebaseStarted,
 } from "./memory_activity";
 
 const logger = log.scope("utils/codebase");

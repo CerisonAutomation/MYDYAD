@@ -1,19 +1,20 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import {
-  Image,
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  Check,
-  X,
-  Plus,
-  Trash2,
-} from "lucide-react";
 import {
   APP_BLUEPRINT_VISUAL_TYPES,
   type AppBlueprintVisual,
   type AppBlueprintVisualEditableField,
 } from "@/ipc/types/app_blueprint";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Image,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CustomTagState } from "./stateTypes";
 
 type VisualType = (typeof APP_BLUEPRINT_VISUAL_TYPES)[number];

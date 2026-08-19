@@ -1,9 +1,9 @@
 import path from "node:path";
-import { describe, expect, it } from "vitest";
 import {
   buildDesktopFile,
   computeExecCommand,
 } from "@/main/linux_protocol_registration";
+import { describe, expect, it } from "vitest";
 
 describe("computeExecCommand", () => {
   it("pins NODE_ENV and the absolute userData for the dev relaunch", () => {

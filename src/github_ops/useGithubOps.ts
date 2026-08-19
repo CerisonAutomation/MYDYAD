@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useDistributedMachine } from "@/distributed_machines/react";
 import { showError } from "@/lib/toast";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { githubOpsClientDefinition } from "./client_definition";
 import { projectGithubOps } from "./projection";
 import type { GithubOpsEvent } from "./state";
-import { githubOpsKey, type GithubOpsIntentEvent } from "./transport";
+import { type GithubOpsIntentEvent, githubOpsKey } from "./transport";
 
 const UNAVAILABLE_CAPABILITIES = {
   canSync: false,

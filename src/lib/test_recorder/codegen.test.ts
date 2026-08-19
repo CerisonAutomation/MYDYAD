@@ -8,10 +8,10 @@ import {
   recordedSpecFileName,
 } from "./codegen";
 import {
-  draftIncludesSignIn,
   RECORDED_TEST_DRAFT_VERSION,
   type RecordedTestAuthMode,
   type RecordedTestDraft,
+  draftIncludesSignIn,
 } from "./draft";
 import type { RecordedAction } from "./types";
 

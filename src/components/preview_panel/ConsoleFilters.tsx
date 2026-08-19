@@ -1,9 +1,9 @@
-import { Filter, X, Trash2 } from "lucide-react";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Filter, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface ConsoleFiltersProps {

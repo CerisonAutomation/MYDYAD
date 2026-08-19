@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
-import { ChevronsUpDown, Check, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export function AppSearchSelect({
   apps,

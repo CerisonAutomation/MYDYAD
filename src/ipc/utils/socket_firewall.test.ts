@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PtyCommandExecutionError } from "@/ipc/utils/pty_command_runner";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
+import { PtyCommandExecutionError } from "@/ipc/utils/pty_command_runner";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { runPtyCommandMock } = vi.hoisted(() => ({
   runPtyCommandMock: vi.fn(),
@@ -20,29 +20,29 @@ vi.mock("@/ipc/utils/pty_command_runner", async () => {
 });
 
 import {
-  buildPtyInvocation,
+  type CommandRunner,
+  DYAD_ALLOW_BUILDS_CACHE_TTL_MS,
+  PACKAGE_MANAGER_PROBE_TIMEOUT_MS,
+  type PackageManager,
+  SOCKET_FIREWALL_PROBE_TIMEOUT_MS,
+  SOCKET_FIREWALL_WARNING_MESSAGE,
   buildAddDependencyCommand,
+  buildPtyInvocation,
   buildUpdateDependencyCommand,
   detectPreferredPackageManager,
-  DYAD_ALLOW_BUILDS_CACHE_TTL_MS,
   ensurePnpmAllowBuildsConfigured,
   ensureSocketFirewallInstalled,
   getBestEffortPnpmRebuildCommand,
   getManagedPnpmBinDir,
   getPackageManagerCommandEnv,
   getPnpmMinimumReleaseAgeSupport,
-  PACKAGE_MANAGER_PROBE_TIMEOUT_MS,
   parsePnpmIgnoredBuildsFromModulesYaml,
   parsePnpmIgnoredBuildsFromOutput,
   readPnpmIgnoredBuilds,
   recordDeniedPnpmBuilds,
   resolveExecutableName,
   runCommand,
-  SOCKET_FIREWALL_PROBE_TIMEOUT_MS,
-  SOCKET_FIREWALL_WARNING_MESSAGE,
   updatePnpmAllowBuildsConfigContent,
-  type CommandRunner,
-  type PackageManager,
 } from "./socket_firewall";
 
 async function withPlatform<T>(

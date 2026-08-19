@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
-import { themesData, type Theme } from "@/shared/themes";
 import { queryKeys } from "@/lib/queryKeys";
+import { type Theme, themesData } from "@/shared/themes";
+import { useQuery } from "@tanstack/react-query";
 
 export function useThemes() {
   const query = useQuery({

@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,12 +13,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { showError, showSuccess } from "@/lib/toast";
 import { useAppCollections } from "@/hooks/useAppCollections";
-import { cn } from "@/lib/utils";
-import { buildCollectionNameByAppId } from "@/lib/appCollections";
-import type { ListedApp } from "@/ipc/types/app";
 import type { AppCollection } from "@/hooks/useAppCollections";
+import type { ListedApp } from "@/ipc/types/app";
+import { buildCollectionNameByAppId } from "@/lib/appCollections";
+import { showError, showSuccess } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { Loader2, Plus, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface AddOrEditCollectionDialogProps {
   open: boolean;

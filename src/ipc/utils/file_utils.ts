@@ -1,9 +1,9 @@
-import fs from "node:fs";
+
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import fsExtra from "fs-extra";
-import { generateCuteAppName } from "../../lib/utils";
 import { normalizePath } from "../../../shared/normalizePath";
+import { generateCuteAppName } from "../../lib/utils";
 
 // Directories to exclude when scanning files
 const EXCLUDED_DIRS = ["node_modules", ".git", ".next"];
@@ -109,7 +109,7 @@ export async function writeMigrationFile(
   const migrationNumbers = files
     .map((file) => {
       const match = file.match(/^(\d{4})_/);
-      return match ? parseInt(match[1], 10) : -1;
+      return match ? Number.parseInt(match[1], 10) : -1;
     })
     .filter((num) => num !== -1);
 

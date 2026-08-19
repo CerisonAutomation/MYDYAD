@@ -1,5 +1,5 @@
 import { slugify, slugifyAppPath } from "@/shared/slugify";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("slugify", () => {
   it("lowercases and replaces non-alphanumerics with single hyphens", () => {

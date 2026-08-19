@@ -1,5 +1,5 @@
-import type { QueryKey } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import type { QueryKey } from "@tanstack/react-query";
 import type { QueryInvalidationScope } from "./types";
 
 export function queryKeysForInvalidationScope(

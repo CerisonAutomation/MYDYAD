@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { setDatabaseForTesting } from "@/db";
 import { apps, chats, messages } from "@/db/schema";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
 
 const {
   mockSafeSend,

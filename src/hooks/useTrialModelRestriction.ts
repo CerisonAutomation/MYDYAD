@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useUserBudgetInfo } from "./useUserBudgetInfo";
-import { useSettings } from "./useSettings";
 import { isDyadProEnabled } from "../lib/schemas";
+import { useSettings } from "./useSettings";
+import { useUserBudgetInfo } from "./useUserBudgetInfo";
 
 const AUTO_MODEL = { name: "auto", provider: "auto" };
 

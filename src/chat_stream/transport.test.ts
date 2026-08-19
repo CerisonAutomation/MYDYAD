@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import {
   MAX_CHAT_ATTACHMENTS_TOTAL_BYTES,
   MAX_CHAT_ERROR_CHARS,
   MAX_CHAT_PROMPT_CHARS,
 } from "@/shared/chatAttachmentLimits";
+import { describe, expect, it } from "vitest";
 import {
   CHAT_STREAM_MAX_DISPATCH_ENVELOPE_BYTES,
   CHAT_STREAM_MAX_QUEUE_BYTES,

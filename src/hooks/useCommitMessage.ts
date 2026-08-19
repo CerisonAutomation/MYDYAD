@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
 import {
+  type CommitDialogSource,
   commitMessageDraftAtom,
   openCommitDialogAtom,
-  type CommitDialogSource,
 } from "@/atoms/commitAtoms";
 import { generateDefaultCommitMessage } from "@/components/chat/uncommittedFileStatus";
 import type { UncommittedFile } from "@/hooks/useUncommittedFiles";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * The commit message a commit dialog shows, plus whether that dialog is the one

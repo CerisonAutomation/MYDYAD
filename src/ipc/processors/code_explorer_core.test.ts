@@ -5,14 +5,14 @@ import * as ts from "typescript";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
-  buildCodeExplorerIndex,
-  exploreCode,
-} from "../../../workers/code_explorer/core";
-import {
   clearCodeExplorerWorkerCachesForTests,
   processCodeExplorer,
   processCodeExplorerWithTypeScript,
 } from "../../../workers/code_explorer/code_explorer_worker";
+import {
+  buildCodeExplorerIndex,
+  exploreCode,
+} from "../../../workers/code_explorer/core";
 
 const tempDirs: string[] = [];
 

@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
 import {
   replaceSlashSkillReference,
   slugForPrompt,
 } from "@/ipc/utils/replaceSlashSkillReference";
+import { describe, expect, it } from "vitest";
 
 describe("replaceSlashSkillReference", () => {
   it("returns original when no slash-slug pattern present", () => {

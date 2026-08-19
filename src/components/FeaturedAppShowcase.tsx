@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
-import { useLoadApps } from "@/hooks/useLoadApps";
-import { useOpenApp } from "@/hooks/useOpenApp";
 import { AppShowcaseCard } from "@/components/AppShowcaseCard";
 import { useAppThumbnails } from "@/hooks/useAppThumbnails";
+import { useLoadApps } from "@/hooks/useLoadApps";
+import { useOpenApp } from "@/hooks/useOpenApp";
 import { sortAppsForShowcase } from "@/lib/sortApps";
+import { useNavigate } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
+import { useMemo } from "react";
 
 const MAX_FEATURED_APPS = 10;
 

@@ -1,4 +1,4 @@
-import { isAgent2Enabled, type LargeLanguageModel } from "@/lib/schemas";
+import { ModelSearchDialog } from "@/components/ModelSearchDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,40 +6,20 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useEffect, type ReactNode } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { usePostHog } from "posthog-js/react";
-import { ModelSearchDialog } from "@/components/ModelSearchDialog";
-import { useLocalModels } from "@/hooks/useLocalModels";
 import { useLocalLMSModels } from "@/hooks/useLMStudioModels";
 import { useLanguageModelsByProviders } from "@/hooks/useLanguageModelsByProviders";
+import { useLocalModels } from "@/hooks/useLocalModels";
+import { type LargeLanguageModel, isAgent2Enabled } from "@/lib/schemas";
+import { useNavigate } from "@tanstack/react-router";
+import { usePostHog } from "posthog-js/react";
+import { type ReactNode, useEffect, useState } from "react";
 
-import { ipc, type LanguageModel, LocalModel } from "@/ipc/types";
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
-import { useSettings } from "@/hooks/useSettings";
 import { PriceBadge } from "@/components/PriceBadge";
-import { cn } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { useTrialModelRestriction } from "@/hooks/useTrialModelRestriction";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  Loader2,
-  LockIcon,
-  SearchIcon,
-  SparklesIcon,
-} from "lucide-react";
 import { ProviderIcon } from "@/components/ProviderIcon";
 import {
   Dialog,
@@ -48,8 +28,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useChatMode } from "@/hooks/useChatMode";
 import { useFreeModelQuota } from "@/hooks/useFreeModelQuota";
+import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { useSettings } from "@/hooks/useSettings";
+import { useTrialModelRestriction } from "@/hooks/useTrialModelRestriction";
+import { type LanguageModel, type LocalModel, ipc } from "@/ipc/types";
 import {
   FREE_PRO_MODEL_FALLBACK_CHAT_MODE,
   FREE_PRO_MODEL_NAME,
@@ -57,14 +46,25 @@ import {
   isFreeProLanguageModel,
   isFreeProModel,
 } from "@/lib/freeProModel";
-import { useRouterState } from "@tanstack/react-router";
-import { useChatMode } from "@/hooks/useChatMode";
 import {
   createModelSelection,
   formatEffortLevel,
   getEffortSettings,
   getModelPreferenceKey,
 } from "@/lib/modelEffort";
+import { queryKeys } from "@/lib/queryKeys";
+import { cn } from "@/lib/utils";
+import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouterState } from "@tanstack/react-router";
+import {
+  CheckIcon,
+  ChevronRightIcon,
+  Loader2,
+  LockIcon,
+  SearchIcon,
+  SparklesIcon,
+} from "lucide-react";
 
 const SCROLL_AREA_CLASS = "max-h-100 overflow-y-auto scrollbar-on-hover";
 

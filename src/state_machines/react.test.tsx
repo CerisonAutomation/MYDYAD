@@ -1,22 +1,22 @@
-import { StrictMode, type ReactNode } from "react";
 import { act, render, renderHook, screen } from "@testing-library/react";
+import { type ReactNode, StrictMode } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { EntityDisposalRegistry } from "./entity_disposal";
 import {
-  useControllerSnapshot,
-  createMachineProvider,
   EntityDisposalProvider,
+  type KeyedSnapshotSource,
+  createMachineProvider,
+  useControllerSnapshot,
   useEntityDisposal,
   useKeyedController,
   useKeyedMachineSelector,
   useMachineSelector,
+  useMainHostedSubscriptionPagehideRelease,
   useManagerLifecycle,
   useManagerPagehideDisposal,
-  useMainHostedSubscriptionPagehideRelease,
   useProjectionSource,
-  type KeyedSnapshotSource,
 } from "./react";
 import { SnapshotStore } from "./snapshot_store";
-import { EntityDisposalRegistry } from "./entity_disposal";
 
 class Source implements KeyedSnapshotSource<number, number> {
   private values = new Map<number, number>();

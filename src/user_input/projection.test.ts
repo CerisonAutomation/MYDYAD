@@ -7,8 +7,8 @@ import type {
   UserInputDescriptorPayload,
 } from "@/ipc/types/user_input";
 import {
-  getUserInputReadModel,
   type UserInputReadModelIpc,
+  getUserInputReadModel,
 } from "./read_model";
 import { selectPendingQuestionnaires } from "./selectors";
 

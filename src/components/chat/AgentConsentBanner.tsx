@@ -1,23 +1,23 @@
-import React from "react";
-import { Button } from "../ui/button";
-import {
-  X,
-  Bot,
-  Info,
-  ShieldCheck,
-  Check,
-  Ban,
-  AlertTriangle,
-  Loader2,
-} from "lucide-react";
 import type { PendingToolConsent } from "@/user_input/selectors";
+import {
+  AlertTriangle,
+  Ban,
+  Bot,
+  Check,
+  Info,
+  Loader2,
+  ShieldCheck,
+  X,
+} from "lucide-react";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "../ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { useTranslation } from "react-i18next";
 
 const INPUT_PREVIEW_COLLAPSED_LINES = 6;
 const INPUT_PREVIEW_EXPANDED_MAX_HEIGHT = "40vh";

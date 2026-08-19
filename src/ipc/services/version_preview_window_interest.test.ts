@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { WindowRegistry } from "@/window_infrastructure/main/window_registry";
+import { describe, expect, it } from "vitest";
 import {
   VersionPreviewWindowInterestService,
   type VersionPreviewWindowRelease,

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  dispatchDueFollowUp,
   type FollowUpDispatchDeps,
+  dispatchDueFollowUp,
 } from "./follow_up_dispatch";
 
 function setup(overrides: Partial<FollowUpDispatchDeps> = {}) {

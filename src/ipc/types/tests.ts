@@ -1,16 +1,16 @@
 import { z } from "zod";
-import {
-  createClient,
-  createEventClient,
-  defineContract,
-  defineEvent,
-} from "../contracts/core";
 // Relative imports: this module is pulled into the preload bundle, which cannot
 // resolve the "@/" alias.
 import {
   AssertionPlanItemSchema,
   MAX_PLAN_ITEMS,
 } from "../../lib/test_recorder/assertion_proposal";
+import {
+  createClient,
+  createEventClient,
+  defineContract,
+  defineEvent,
+} from "../contracts/core";
 
 /** A UUID today; sized so a different id scheme doesn't have to revisit this. */
 const MAX_PROPOSAL_ID_LENGTH = 128;

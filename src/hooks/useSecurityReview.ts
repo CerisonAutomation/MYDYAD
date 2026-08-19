@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { useQuery } from "@tanstack/react-query";
 
 export function useSecurityReview(appId: number | null) {
   return useQuery({

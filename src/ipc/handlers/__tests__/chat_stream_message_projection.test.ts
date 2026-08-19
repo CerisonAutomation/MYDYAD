@@ -13,8 +13,8 @@ vi.mock("electron", async () => {
 
 import { messages } from "@/db/schema";
 import {
-  setupChatFlowHarness,
   type ChatFlowHarness,
+  setupChatFlowHarness,
 } from "@/testing/chat_flow_harness";
 
 describe("legacy chat stream message projection", () => {

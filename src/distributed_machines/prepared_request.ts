@@ -1,4 +1,4 @@
-import type { RequestIdentity, RequestId } from "./request_identity";
+import type { RequestId, RequestIdentity } from "./request_identity";
 
 export type AdmissionRefusal<Reason> = {
   readonly kind: "refused";

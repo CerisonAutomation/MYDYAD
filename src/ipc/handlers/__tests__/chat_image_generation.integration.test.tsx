@@ -19,11 +19,11 @@ vi.hoisted(() => {
 
 import { messages } from "@/db/schema";
 import type { UserSettings } from "@/lib/schemas";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 const PRO_SETTINGS: Partial<UserSettings> = {
   enableDyadPro: true,

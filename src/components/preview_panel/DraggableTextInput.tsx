@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { X } from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface DraggableTextInputProps {
   input: {

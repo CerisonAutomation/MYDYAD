@@ -1,13 +1,13 @@
-import { useSetAtom } from "jotai";
+import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import {
-  selectedChatIdAtom,
-  pushRecentViewedChatIdAtom,
   addSessionOpenedChatIdAtom,
   chatInputValueAtom,
+  pushRecentViewedChatIdAtom,
   scrollToBottomRequestedChatIdsAtom,
+  selectedChatIdAtom,
 } from "@/atoms/chatAtoms";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { useNavigate } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 
 export function useSelectChat() {
   const setSelectedChatId = useSetAtom(selectedChatIdAtom);

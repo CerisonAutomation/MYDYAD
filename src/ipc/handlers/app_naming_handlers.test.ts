@@ -1,18 +1,18 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DyadErrorKind } from "@/errors/dyad_error";
 import { apps, chats } from "@/db/schema";
+import { DyadErrorKind } from "@/errors/dyad_error";
+import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
+import { activeRecordings } from "@/ipc/services/recording_registry";
+import { configureTrustedRenderer } from "@/ipc/utils/renderer_security";
 import {
   type HandlerTestHarness,
   setupHandlerTestHarness,
 } from "@/testing/handler_test_harness";
-import { configureTrustedRenderer } from "@/ipc/utils/renderer_security";
-import { activeRecordings } from "@/ipc/services/recording_registry";
-import { appOperationCoordinator } from "@/ipc/services/app_operation_coordinator";
 
 // All app folders live under one throwaway base so the filesystem-probing
 // conflict checks (and actual folder moves) run against real directories.
@@ -120,10 +120,10 @@ vi.mock("@/ipc/utils/neon_test_branch", async (importOriginal) => {
   };
 });
 
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { firstPromptCreationRegistry } from "../services/first_prompt_creation_service";
 import { registerAppHandlers } from "./app_handlers";
 import { registerImportHandlers } from "./import_handlers";
-import { firstPromptCreationRegistry } from "../services/first_prompt_creation_service";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
 
 async function invokeImportHandler<TOutput>(
   channel: string,

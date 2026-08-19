@@ -1,16 +1,11 @@
+import type { ChatStreamInvocationRef } from "@/chat_stream/invocation";
 import { z } from "zod";
 import {
-  defineContract,
-  defineStream,
-  createClient,
-  createStreamClient,
-} from "../contracts/core";
-import {
+  type ChatMode,
   ChatModeSchema,
   ModelSelectionSchema,
   StoredChatModeSchema,
   migrateStoredChatMode,
-  type ChatMode,
 } from "../../lib/schemas";
 import {
   CHAT_ATTACHMENT_COUNT_LIMIT_MESSAGE,
@@ -21,7 +16,12 @@ import {
   MAX_CHAT_WIRE_ID_CHARS,
   validateSerializedChatAttachments,
 } from "../../shared/chatAttachmentLimits";
-import type { ChatStreamInvocationRef } from "@/chat_stream/invocation";
+import {
+  createClient,
+  createStreamClient,
+  defineContract,
+  defineStream,
+} from "../contracts/core";
 
 // =============================================================================
 // Chat Schemas

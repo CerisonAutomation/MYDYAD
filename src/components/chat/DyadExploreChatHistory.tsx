@@ -1,10 +1,9 @@
+import { History } from "lucide-react";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { History } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CodeHighlight } from "./CodeHighlight";
-import { CustomTagState } from "./stateTypes";
 import {
   DyadBadge,
   DyadCard,
@@ -13,6 +12,7 @@ import {
   DyadExpandIcon,
   DyadStateIndicator,
 } from "./DyadCardPrimitives";
+import type { CustomTagState } from "./stateTypes";
 
 interface DyadExploreChatHistoryProps {
   children?: ReactNode;

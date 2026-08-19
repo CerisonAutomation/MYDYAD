@@ -1,44 +1,26 @@
+import {
+  type FilePart,
+  type ModelMessage,
+  type TextPart,
+  type TextStreamPart,
+  type ToolSet,
+  hasToolCall,
+  isStepCount,
+  streamText,
+} from "ai";
+import { type IpcMainInvokeEvent, type WebContents, app } from "electron";
 import { v4 as uuidv4 } from "uuid";
-import { app, type IpcMainInvokeEvent, type WebContents } from "electron";
-import { createTypedHandler } from "./base";
+import { ChatStreamParamsSchema, chatContracts } from "../types/chat";
 import {
   computeStreamingPatch,
   fastTextOutput,
 } from "../utils/stream_text_utils";
-import { chatContracts, ChatStreamParamsSchema } from "../types/chat";
-import {
-  ModelMessage,
-  TextPart,
-  FilePart,
-  streamText,
-  ToolSet,
-  TextStreamPart,
-  isStepCount,
-  hasToolCall,
-} from "ai";
+import { createTypedHandler } from "./base";
 
-import { db } from "../../db";
-import { chats, messages } from "../../db/schema";
-import { scheduleChatSearchIndexing } from "../../pro/main/ipc/handlers/local_agent/chat_search_indexer";
-import { and, eq, isNull } from "drizzle-orm";
-import type { SmartContextMode } from "../../lib/schemas";
-import {
-  constructSystemPrompt,
-  readAiRules,
-} from "../../prompts/system_prompt";
-import { detectFrameworkType } from "../utils/framework_utils";
-import { getThemePromptById } from "../utils/theme_utils";
-import {
-  getSupabaseAvailableSystemPrompt,
-  SUPABASE_NOT_AVAILABLE_SYSTEM_PROMPT,
-} from "../../prompts/supabase_prompt";
-import { registerTrustedIpcHandler } from "./trusted_handle";
-import { buildNeonPromptForApp } from "../../neon_admin/neon_prompt_context";
-import { getDyadAppPath } from "../../paths/paths";
-import { buildDyadMediaUrl } from "../../lib/dyadMediaUrl";
-import type { ChatStreamParams } from "@/ipc/types";
+import * as crypto from "crypto";
+import fs from "node:fs";
+import * as path from "path";
 import type { ChatStreamInvocationRef } from "@/chat_stream/invocation";
-import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
 import type {
   ChatStreamChunkPayload,
   ChatStreamEndPayload,
@@ -46,41 +28,59 @@ import type {
   ChatStreamStartPayload,
   ChatStreamTransportEndPayload,
 } from "@/chat_stream/protocol";
+import type { SerializableChatTurnIntent } from "@/chat_stream/transport";
+import { MAX_CHAT_TURNS_IN_CONTEXT } from "@/constants/settings_constants";
 import { DyadError, DyadErrorKind, isDyadError } from "@/errors/dyad_error";
-import { CodebaseFile, extractCodebase } from "../../utils/codebase";
+import type { ChatStreamParams } from "@/ipc/types";
+import { doesSqlDeleteData } from "@/lib/sqlSchemaMutation";
+import { and, eq, isNull } from "drizzle-orm";
+import log from "electron-log";
+import { readFile, writeFile } from "fs/promises";
+import { db } from "../../db";
+import { chats, messages } from "../../db/schema";
+import { buildDyadMediaUrl } from "../../lib/dyadMediaUrl";
+import type { SmartContextMode } from "../../lib/schemas";
+import { buildNeonPromptForApp } from "../../neon_admin/neon_prompt_context";
+import { getDyadAppPath } from "../../paths/paths";
+import { scheduleChatSearchIndexing } from "../../pro/main/ipc/handlers/local_agent/chat_search_indexer";
+import { SECURITY_REVIEW_SYSTEM_PROMPT } from "../../prompts/security_review_prompt";
+import { SUMMARIZE_CHAT_SYSTEM_PROMPT } from "../../prompts/summarize_chat_system_prompt";
+import {
+  SUPABASE_NOT_AVAILABLE_SYSTEM_PROMPT,
+  getSupabaseAvailableSystemPrompt,
+} from "../../prompts/supabase_prompt";
+import {
+  constructSystemPrompt,
+  readAiRules,
+} from "../../prompts/system_prompt";
+import {
+  getSupabaseClientCode,
+  getSupabaseContext,
+} from "../../supabase_admin/supabase_context";
+import { type CodebaseFile, extractCodebase } from "../../utils/codebase";
 import {
   dryRunSearchReplace,
   processFullResponseActions,
 } from "../processors/response_processor";
+import { validateChatContext } from "../utils/context_paths_utils";
 import { getDyadExecuteSqlTags } from "../utils/dyad_tag_parser";
-import { doesSqlDeleteData } from "@/lib/sqlSchemaMutation";
-import {
-  streamTestResponse,
-  getTestResponse,
-  noteAck,
-} from "./testing_chat_handlers";
-import { getModelClient, ModelClient } from "../utils/get_model_client";
+import { detectFrameworkType } from "../utils/framework_utils";
+import { type ModelClient, getModelClient } from "../utils/get_model_client";
+import { sanitizeMcpToolResult } from "../utils/mcp_result_sanitizer";
 import {
   normalizeModelSelection,
   resolveDefaultModelSelection,
 } from "../utils/model_effort";
-import log from "electron-log";
+import { getAiHeaders, getProviderOptions } from "../utils/provider_options";
 import { sendTelemetryEvent } from "../utils/telemetry";
-import {
-  getSupabaseContext,
-  getSupabaseClientCode,
-} from "../../supabase_admin/supabase_context";
-import { SUMMARIZE_CHAT_SYSTEM_PROMPT } from "../../prompts/summarize_chat_system_prompt";
-import { SECURITY_REVIEW_SYSTEM_PROMPT } from "../../prompts/security_review_prompt";
-import fs from "node:fs";
-import * as path from "path";
-import * as crypto from "crypto";
-import { readFile, writeFile } from "fs/promises";
+import { getThemePromptById } from "../utils/theme_utils";
 import { getMaxTokens, getTemperature } from "../utils/token_utils";
-import { MAX_CHAT_TURNS_IN_CONTEXT } from "@/constants/settings_constants";
-import { validateChatContext } from "../utils/context_paths_utils";
-import { getProviderOptions, getAiHeaders } from "../utils/provider_options";
-import { sanitizeMcpToolResult } from "../utils/mcp_result_sanitizer";
+import {
+  getTestResponse,
+  noteAck,
+  streamTestResponse,
+} from "./testing_chat_handlers";
+import { registerTrustedIpcHandler } from "./trusted_handle";
 
 import {
   clearPendingLocalAgentInputsForChat,
@@ -88,46 +88,12 @@ import {
 } from "../../pro/main/ipc/handlers/local_agent/local_agent_handler";
 import { userInputRegistry } from "../../user_input/main";
 
-import { safeSend, type SafeSender } from "../utils/safe_sender";
+import { withChatQueueLock } from "@/chat_stream/queue_lock";
 import {
-  releaseChatProducerInterest,
-  sendChatChunk,
-} from "@/window_infrastructure/main/production_high_volume";
-import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
-import { cancelOrphanedBaseStream } from "../utils/stream_text_utils";
-import { cleanFullResponse } from "../utils/cleanFullResponse";
-import { escapeXmlAttr, escapeXmlContent } from "../../../shared/xmlEscape";
-import { isCodeExplorerReady } from "../processors/code_explorer";
-import { appendCancelledResponseNotice } from "@/shared/chatCancellation";
-import {
-  isModelRefusal,
   MODEL_REFUSAL_WARNING,
+  isModelRefusal,
 } from "@/ipc/utils/model_refusal";
-import {
-  extractMentionedAppsCodebasesFromPrompt,
-  persistReferencedAppIds,
-  readStoredReferencedAppIds,
-  resolveStickyReferencedApps,
-  type MentionedAppCodebaseEntry,
-  type MentionedAppReference,
-} from "../utils/mention_apps";
-import {
-  parseMediaMentions,
-  stripResolvedMediaMentions,
-} from "@/shared/parse_media_mentions";
-import { prompts as promptsTable } from "../../db/schema";
-import { inArray } from "drizzle-orm";
-import { replacePromptReference } from "../utils/replacePromptReference";
-import { replaceSlashSkillReference } from "../utils/replaceSlashSkillReference";
-import { resolveMediaMentions } from "../utils/resolve_media_mentions";
-import { parsePlanFile, validatePlanId } from "./planUtils";
-import { ensureDyadGitignored } from "./gitignoreUtils";
-import {
-  appendAttachmentManifestEntriesWithLogicalNames,
-  createUniqueAttachmentLogicalName,
-  DYAD_MEDIA_DIR_NAME,
-  type AttachmentManifestEntryInput,
-} from "../utils/media_path_utils";
+import { isFreeProModel } from "@/lib/freeProModel";
 import {
   isBasicAgentMode,
   isDyadProEnabled,
@@ -135,38 +101,72 @@ import {
   isSupabaseConnected,
   isTurboEditsV2Enabled,
 } from "@/lib/schemas";
-import { isFreeProModel } from "@/lib/freeProModel";
+import { readSettings, setSentinelActiveChat } from "@/main/settings";
+import { appendCancelledResponseNotice } from "@/shared/chatCancellation";
+import {
+  parseMediaMentions,
+  stripResolvedMediaMentions,
+} from "@/shared/parse_media_mentions";
+import { AI_STREAMING_ERROR_MESSAGE_PREFIX } from "@/shared/texts";
+import {
+  releaseChatProducerInterest,
+  sendChatChunk,
+} from "@/window_infrastructure/main/production_high_volume";
+import { queryInvalidationBus } from "@/window_infrastructure/main/query_invalidation_bus";
+import { inArray } from "drizzle-orm";
+import { escapeXmlAttr, escapeXmlContent } from "../../../shared/xmlEscape";
+import { prompts as promptsTable } from "../../db/schema";
+import { inspectBase64DataUrl } from "../../shared/chatAttachmentLimits";
+import { isCodeExplorerReady } from "../processors/code_explorer";
+import { getAiMessagesJsonIfWithinLimit } from "../utils/ai_messages_utils";
+import {
+  type PendingStoredChatAttachment,
+  type StoredChatAttachment,
+  buildLocalAgentAttachmentInfo,
+  getInlineImageMimeType,
+  hasScriptReadableAttachment,
+  isTextFile,
+  resolveAttachmentDeliveryConfig,
+} from "../utils/chat_attachment_utils";
+import { cleanFullResponse } from "../utils/cleanFullResponse";
+import { getCurrentCommitHash } from "../utils/git_utils";
+import {
+  type AttachmentManifestEntryInput,
+  DYAD_MEDIA_DIR_NAME,
+  appendAttachmentManifestEntriesWithLogicalNames,
+  createUniqueAttachmentLogicalName,
+} from "../utils/media_path_utils";
+import {
+  type MentionedAppCodebaseEntry,
+  type MentionedAppReference,
+  extractMentionedAppsCodebasesFromPrompt,
+  persistReferencedAppIds,
+  readStoredReferencedAppIds,
+  resolveStickyReferencedApps,
+} from "../utils/mention_apps";
+import { toRendererMessage } from "../utils/renderer_chat_message";
+import { replacePromptReference } from "../utils/replacePromptReference";
+import { replaceSlashSkillReference } from "../utils/replaceSlashSkillReference";
+import { resolveMediaMentions } from "../utils/resolve_media_mentions";
+import { type SafeSender, safeSend } from "../utils/safe_sender";
+import { cancelOrphanedBaseStream } from "../utils/stream_text_utils";
+import {
+  type VersionedFiles,
+  processChatMessagesWithVersionedFiles as getVersionedFiles,
+} from "../utils/versioned_codebase_context";
 import {
   assertChatModeCompatibleWithModel,
   normalizeStoredChatMode,
   resolveChatModeForTurn,
 } from "./chat_mode_resolution";
 import { acceptChatTurn } from "./chat_turn_acceptance";
-import { withChatQueueLock } from "@/chat_stream/queue_lock";
 import {
   getFreeAgentQuotaStatus,
   markMessageAsUsingFreeAgentQuota,
   unmarkMessageAsUsingFreeAgentQuota,
 } from "./free_agent_quota_handlers";
-import { AI_STREAMING_ERROR_MESSAGE_PREFIX } from "@/shared/texts";
-import { getCurrentCommitHash } from "../utils/git_utils";
-import {
-  processChatMessagesWithVersionedFiles as getVersionedFiles,
-  VersionedFiles,
-} from "../utils/versioned_codebase_context";
-import { getAiMessagesJsonIfWithinLimit } from "../utils/ai_messages_utils";
-import { readSettings, setSentinelActiveChat } from "@/main/settings";
-import {
-  buildLocalAgentAttachmentInfo,
-  getInlineImageMimeType,
-  hasScriptReadableAttachment,
-  isTextFile,
-  resolveAttachmentDeliveryConfig,
-  type PendingStoredChatAttachment,
-  type StoredChatAttachment,
-} from "../utils/chat_attachment_utils";
-import { inspectBase64DataUrl } from "../../shared/chatAttachmentLimits";
-import { toRendererMessage } from "../utils/renderer_chat_message";
+import { ensureDyadGitignored } from "./gitignoreUtils";
+import { parsePlanFile, validatePlanId } from "./planUtils";
 
 type AsyncIterableStream<T> = AsyncIterable<T> & ReadableStream<T>;
 
@@ -873,7 +873,7 @@ export function registerChatStreamHandlers() {
     event: IpcMainInvokeEvent,
     req: ChatStreamParams,
   ) => {
-    let attachmentPaths: string[] = [];
+    const attachmentPaths: string[] = [];
     const abortController = new AbortController();
     let trackedStream: TrackedStream | undefined;
     // Set on every successful terminal path — including the agent-mode branches
@@ -1993,7 +1993,7 @@ This conversation includes one or more image attachments. When the user uploads 
 
         if (isSummarizeIntent) {
           const previousChat = await db.query.chats.findFirst({
-            where: eq(chats.id, parseInt(req.prompt.split("=")[1])),
+            where: eq(chats.id, Number.parseInt(req.prompt.split("=")[1])),
             with: {
               messages: {
                 orderBy: (messages, { asc }) => [

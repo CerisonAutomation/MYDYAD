@@ -1,12 +1,12 @@
 import type { Clock, ClockHandle, IdSource } from "@/state_machines/clock";
 import { TaskScope } from "@/state_machines/task_scope";
+import type { FirstPromptCommandRunner } from "./controller";
 import type {
   FirstPromptChatMode,
   FirstPromptCommand,
   FirstPromptEvent,
   FirstPromptPayload,
 } from "./state";
-import type { FirstPromptCommandRunner } from "./controller";
 
 export const PROVIDER_CHECK_TIMEOUT_MS = 10_000;
 

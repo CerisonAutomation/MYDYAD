@@ -1,6 +1,3 @@
-import { createStore } from "jotai";
-import { QueryClient } from "@tanstack/react-query";
-import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   MachineAddress,
   MachineDispatchEnvelope,
@@ -8,6 +5,9 @@ import type {
 } from "@/distributed_machines/remote_protocol";
 import { ipc } from "@/ipc/types";
 import { createSequentialIdSource } from "@/state_machines/testing";
+import { QueryClient } from "@tanstack/react-query";
+import { createStore } from "jotai";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ChatStreamRemoteManager } from "./remote_manager";
 import type { ChatStreamRemoteConnection } from "./remote_manager";
 import { unavailableChatStreamSnapshot } from "./transport";

@@ -1,6 +1,6 @@
+import { eq } from "drizzle-orm";
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { eq } from "drizzle-orm";
 
 const h = vi.hoisted(() => {
   process.env.NODE_ENV = "development";
@@ -14,8 +14,8 @@ vi.mock("electron", async () => {
 
 import { chats } from "@/db/schema";
 import {
-  setupChatFlowHarness,
   type ChatFlowHarness,
+  setupChatFlowHarness,
 } from "@/testing/chat_flow_harness";
 
 describe("chat mode preconditions", () => {

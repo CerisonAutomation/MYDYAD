@@ -1,5 +1,3 @@
-import React from "react";
-import { useSettings } from "@/hooks/useSettings";
 import { SettingField } from "@/components/settings/SettingField";
 import {
   Select,
@@ -9,6 +7,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEFAULT_MAX_TOOL_CALL_STEPS } from "@/constants/settings_constants";
+import { useSettings } from "@/hooks/useSettings";
+import type React from "react";
 import { useTranslation } from "react-i18next";
 
 interface OptionInfo {
@@ -52,7 +52,7 @@ export const MaxToolCallStepsSelector: React.FC = () => {
     if (value === "default") {
       updateSettings({ maxToolCallSteps: undefined });
     } else {
-      const numValue = parseInt(value, 10);
+      const numValue = Number.parseInt(value, 10);
       updateSettings({ maxToolCallSteps: numValue });
     }
   };

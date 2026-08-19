@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
 import {
   parseMediaMentions,
   stripResolvedMediaMentions,
 } from "@/shared/parse_media_mentions";
+import { describe, expect, it } from "vitest";
 
 describe("parseMediaMentions", () => {
   it("parses @media mentions from prompt text", () => {

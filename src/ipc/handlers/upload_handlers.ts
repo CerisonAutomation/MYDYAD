@@ -1,9 +1,9 @@
-import log from "electron-log";
-import fetch from "node-fetch";
-import { createTypedHandler } from "./base";
-import { systemContracts } from "../types/system";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { assertNotPrivateIp } from "@/pro/main/ipc/handlers/local_agent/tools/network_utils";
+import log from "electron-log";
+import fetch from "node-fetch";
+import { systemContracts } from "../types/system";
+import { createTypedHandler } from "./base";
 
 const logger = log.scope("upload_handlers");
 

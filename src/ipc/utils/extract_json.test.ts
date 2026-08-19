@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  SCAN_BUDGET_FACTOR,
   extractJson,
   extractJsonWithScan,
-  SCAN_BUDGET_FACTOR,
 } from "./extract_json";
 
 describe("extractJson", () => {

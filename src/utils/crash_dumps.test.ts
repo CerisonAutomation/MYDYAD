@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
+  deleteDump,
   listDumpFiles,
   listDumpFilesRecursive,
-  deleteDump,
   moveDump,
   pruneDumps,
 } from "@/utils/crash_dumps";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("crash_dumps", () => {
   let dir: string;

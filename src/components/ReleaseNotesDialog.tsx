@@ -1,11 +1,7 @@
+import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ExternalLink } from "lucide-react";
 
-import { useAppVersion } from "@/hooks/useAppVersion";
-import { useSettings } from "@/hooks/useSettings";
-import { useTheme } from "@/contexts/ThemeContext";
-import { ipc } from "@/ipc/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useAppVersion } from "@/hooks/useAppVersion";
+import { useSettings } from "@/hooks/useSettings";
+import { ipc } from "@/ipc/types";
 
 // Track whether we've already checked release notes this session.
 let hasCheckedReleaseNotes = false;

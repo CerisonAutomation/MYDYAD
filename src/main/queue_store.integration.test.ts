@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { readPersistedQueue } from "@/main/queue_store";
 import { setDatabaseForTesting } from "@/db";
 import { apps, chats } from "@/db/schema";
-import { createInMemoryTestDb, type TestDb } from "@/testing/test_db";
 import type { PersistedQueuedMessage } from "@/ipc/types/queue";
+import { readPersistedQueue } from "@/main/queue_store";
+import { type TestDb, createInMemoryTestDb } from "@/testing/test_db";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 let tempDir: string;
 let db: TestDb;

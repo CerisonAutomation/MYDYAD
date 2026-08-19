@@ -1,6 +1,6 @@
-import { useSettings } from "@/hooks/useSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useSettings } from "@/hooks/useSettings";
 import { useTranslation } from "react-i18next";
 
 export function TelemetrySwitch() {

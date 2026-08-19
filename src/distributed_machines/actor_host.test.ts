@@ -1,14 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
-import {
-  change,
-  ignore,
-  stay,
-  type DispatchContext,
-} from "@/state_machines/types";
 import {
   createFakeClock,
   createSequentialIdSource,
 } from "@/state_machines/testing";
+import {
+  type DispatchContext,
+  change,
+  ignore,
+  stay,
+} from "@/state_machines/types";
+import { describe, expect, it, vi } from "vitest";
 import {
   ActorAdmissionError,
   ActorHost,

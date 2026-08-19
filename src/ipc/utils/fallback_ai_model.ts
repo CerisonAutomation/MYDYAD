@@ -1,3 +1,4 @@
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type {
   LanguageModelV3,
   LanguageModelV3CallOptions,
@@ -5,7 +6,6 @@ import type {
 } from "@ai-sdk/provider";
 import type { LanguageModel } from "ai";
 import log from "electron-log";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("fallback_model");
 
@@ -140,12 +140,12 @@ export function createFallback(settings: FallbackSettings): LanguageModel {
 class FallbackModel implements LanguageModelV3 {
   readonly specificationVersion = "v3" as const;
   private readonly settings: FallbackSettings;
-  private currentModelIndex: number = 0;
+  private currentModelIndex = 0;
   private lastModelReset: number = Date.now();
   private readonly modelResetInterval: number;
   private readonly retryAfterOutput: boolean;
   private readonly maxRetries: number;
-  private isRetrying: boolean = false;
+  private isRetrying = false;
 
   constructor(settings: FallbackSettings) {
     // Validate settings

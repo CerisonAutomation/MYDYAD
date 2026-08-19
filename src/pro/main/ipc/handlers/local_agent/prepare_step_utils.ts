@@ -5,15 +5,15 @@
  * in local_agent_handler.ts, enabling isolated unit testing.
  */
 
-import { FilePart, ModelMessage, TextPart, UserModelMessage } from "ai";
-import type { UserMessageContentPart, Todo } from "./tools/types";
 import {
   cleanMessage,
   isToolCallPart,
   isToolResultPart,
   sanitizeToolCallTranscript,
 } from "@/ipc/utils/ai_messages_utils";
+import type { FilePart, ModelMessage, TextPart, UserModelMessage } from "ai";
 import { validateImageDimensions } from "./tools/image_utils";
+import type { Todo, UserMessageContentPart } from "./tools/types";
 
 /**
  * Check if a single todo is incomplete (pending or in_progress).

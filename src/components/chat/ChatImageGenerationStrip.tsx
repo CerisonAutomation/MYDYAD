@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { useAtom, useAtomValue } from "jotai";
-import { X, Loader2, Plus, AlertCircle, RotateCcw } from "lucide-react";
-import { dismissedImageGenerationJobIdsAtom } from "@/atoms/imageGenerationAtoms";
-import { useChatImageGenerationJobs } from "@/image_generation/hooks";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { dismissedImageGenerationJobIdsAtom } from "@/atoms/imageGenerationAtoms";
 import { useGenerateImage } from "@/hooks/useGenerateImage";
-import { buildDyadMediaUrlForApp } from "@/lib/dyadMediaUrl";
-import { ImageLightbox } from "./ImageLightbox";
+import { useChatImageGenerationJobs } from "@/image_generation/hooks";
 import type { ImageGenerationJobView } from "@/image_generation/state";
+import { buildDyadMediaUrlForApp } from "@/lib/dyadMediaUrl";
+import { useAtom, useAtomValue } from "jotai";
+import { AlertCircle, Loader2, Plus, RotateCcw, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ImageLightbox } from "./ImageLightbox";
 
 interface ChatImageGenerationStripProps {
   onGenerateImage: () => void;

@@ -1,17 +1,17 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { runSupabaseDependencyAnalysis } from "@/ipc/processors/supabase_dependency_analysis";
 import log from "electron-log";
+import type { SupabaseFunctionImpact } from "../../shared/supabase_dependency_analysis_types";
+import { SUPABASE_BUNDLE_ONLY_DEPLOY_CONCURRENCY } from "./supabase_deploy_queue";
 import {
+  type DeployedFunctionResponse,
   bulkUpdateFunctions,
   deleteSupabaseFunction,
   deploySupabaseFunction,
   listSupabaseFunctions,
-  type DeployedFunctionResponse,
 } from "./supabase_management_client";
-import { SUPABASE_BUNDLE_ONLY_DEPLOY_CONCURRENCY } from "./supabase_deploy_queue";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
-import { runSupabaseDependencyAnalysis } from "@/ipc/processors/supabase_dependency_analysis";
-import type { SupabaseFunctionImpact } from "../../shared/supabase_dependency_analysis_types";
 
 export type { SupabaseFunctionImpact } from "../../shared/supabase_dependency_analysis_types";
 

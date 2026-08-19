@@ -7,11 +7,11 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { eq } from "drizzle-orm";
 
 import { messages } from "@/db/schema";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 
 describe("local-agent grep cards (integration)", () => {
   let harness: HybridChatHarness;

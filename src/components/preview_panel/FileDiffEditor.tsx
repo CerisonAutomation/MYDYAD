@@ -1,7 +1,7 @@
-import { DiffEditor } from "@monaco-editor/react";
 import { beforeMonacoMount } from "@/components/chat/monaco";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getLanguage } from "@/utils/get_language";
+import { DiffEditor } from "@monaco-editor/react";
 
 interface FileDiffEditorProps {
   filePath: string;

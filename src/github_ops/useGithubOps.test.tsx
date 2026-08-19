@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { INITIAL_GITHUB_OPS_STATE } from "./state";
 import { projectGithubOps } from "./projection";
+import { INITIAL_GITHUB_OPS_STATE } from "./state";
 import { useGithubOps } from "./useGithubOps";
 
 const mocks = vi.hoisted(() => ({

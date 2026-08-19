@@ -1,14 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Globe, Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { ipc, App } from "@/ipc/types";
-import { useSettings } from "@/hooks/useSettings";
-import { useLoadApp } from "@/hooks/useLoadApp";
-import { useVercelDeployments } from "@/hooks/useVercelDeployments";
-import { queryKeys } from "@/lib/queryKeys";
+import {} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,10 +9,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useLoadApp } from "@/hooks/useLoadApp";
+import { useSettings } from "@/hooks/useSettings";
+import { useVercelDeployments } from "@/hooks/useVercelDeployments";
+import { type App, ipc } from "@/ipc/types";
+import { queryKeys } from "@/lib/queryKeys";
 import { slugifyAppPath } from "@/shared/slugify";
+import { useQuery } from "@tanstack/react-query";
+import { Globe, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface VercelConnectorProps {
   appId: number | null;

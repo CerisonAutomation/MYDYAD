@@ -1,6 +1,6 @@
+import { ipc } from "@/ipc/types";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { ipc } from "@/ipc/types";
 
 const customLink = ({
   node: _node,

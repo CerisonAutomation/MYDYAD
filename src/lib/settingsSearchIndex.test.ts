@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   SECTION_IDS,
-  SETTING_IDS,
   SETTINGS_SEARCH_INDEX,
+  SETTING_IDS,
 } from "./settingsSearchIndex";
 
 describe("SETTINGS_SEARCH_INDEX", () => {

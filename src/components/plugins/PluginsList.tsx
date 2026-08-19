@@ -1,10 +1,10 @@
-import { useMemo } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMcp } from "@/hooks/useMcp";
 import { useMcpCatalog } from "@/hooks/useMcpCatalog";
 import type { CatalogInput } from "@/ipc/types/mcp_catalog";
+import { useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { AddPluginDialog, useOauthStorageEncrypted } from "./AddPluginDialog";
 import { OauthPlaintextStorageAlert } from "./OauthPlaintextStorageAlert";
 import { PluginSummaryCard } from "./PluginSummaryCard";

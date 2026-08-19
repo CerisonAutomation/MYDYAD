@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
-import { Folder, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,11 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { showError, showSuccess } from "@/lib/toast";
 import { useAppCollections } from "@/hooks/useAppCollections";
-import type { ListedApp } from "@/ipc/types/app";
 import type { AppCollection } from "@/hooks/useAppCollections";
+import type { ListedApp } from "@/ipc/types/app";
+import { showError, showSuccess } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { Folder, Loader2, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface AssignAppsToCollectionDialogProps {
   open: boolean;

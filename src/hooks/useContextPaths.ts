@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { ipc } from "@/ipc/types";
-import { GlobPath, ContextPathResults } from "@/lib/schemas";
 import { queryKeys } from "@/lib/queryKeys";
+import type { ContextPathResults, GlobPath } from "@/lib/schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 export function useContextPaths() {
   const queryClient = useQueryClient();

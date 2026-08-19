@@ -9,20 +9,20 @@
  * - At most one Git-mutating command per result.
  */
 
+import {
+  type IgnoreReason,
+  type TransitionResult as SharedTransitionResult,
+  ignore as ignoreTransition,
+} from "@/state_machines/types";
 import type {
-  ExitIntent,
   BranchSwitchFallback,
+  ExitIntent,
   PreviewCommand,
   PreviewEvent,
   PreviewSession,
   PreviewState,
 } from "./state";
 import { CLOSED_STATE } from "./state";
-import {
-  ignore as ignoreTransition,
-  type IgnoreReason,
-  type TransitionResult as SharedTransitionResult,
-} from "@/state_machines/types";
 
 export type PreviewIgnoreReason = IgnoreReason<
   "invalid-in-current-state" | "no-change"

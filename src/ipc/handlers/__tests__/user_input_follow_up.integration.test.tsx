@@ -12,11 +12,11 @@ import {
 
 import { messages } from "@/db/schema";
 import { ipc } from "@/ipc/types";
-import {
-  setupHybridChatHarness,
-  type HybridChatHarness,
-} from "@/testing/hybrid_chat_harness";
 import { h } from "@/testing/hybrid.setup";
+import {
+  type HybridChatHarness,
+  setupHybridChatHarness,
+} from "@/testing/hybrid_chat_harness";
 import { userInputRegistry } from "@/user_input/main";
 
 describe("main-owned user-input follow-up recovery (integration)", () => {

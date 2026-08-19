@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/db", () => ({
   db: {
@@ -21,13 +21,13 @@ vi.mock("@/ipc/utils/git_utils", async (importOriginal) => ({
   isGitStatusClean: vi.fn(),
 }));
 
+import { db } from "@/db";
 import {
   ensureCleanWorkspace,
   normalizeGitHubRepoName,
   prepareLocalBranch,
 } from "@/ipc/handlers/github_handlers";
 import { createAppOperationHandler } from "@/ipc/utils/app_mutation_lock";
-import { db } from "@/db";
 import {
   gitCheckout,
   gitListBranches,

@@ -1,5 +1,5 @@
-import type { Components as ReactMarkdownComponents } from "react-markdown";
 import type { ReactNode } from "react";
+import type { Components as ReactMarkdownComponents } from "react-markdown";
 import type { DyadTagNode } from "./stateTypes";
 
 // Extend the ReactMarkdown Components type to include our custom components
