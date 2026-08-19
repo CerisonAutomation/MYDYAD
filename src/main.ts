@@ -37,6 +37,8 @@ console.log(
 // (which bypasses Dyad's own safeStorage calls), this eliminates all
 // Keychain prompts.
 app.commandLine.appendSwitch("password-store", "basic");
+// Increase V8 memory limits for large JSON parsing
+app.commandLine.appendSwitch("js-flags", "--max-old-space-size=8192 --max-semi-space-size=64");
 
 import fs from "fs";
 import { pathToFileURL } from "node:url";
@@ -185,23 +187,76 @@ log.scope.labelPadding = false;
 // Fix: patch at the stream level + transport level + global handler.
 
 function patchStreamEpipe(stream: NodeJS.WriteStream | NodeJS.Socket) {
+  // Patch the internal _write method to catch EPIPE before it propagates
+  const writable = stream as any;
+  if (writable._write) {
+    const original_write = writable._write;
+    writable._write = function _patchedWrite(
+      chunk: any,
+      encoding: BufferEncoding,
+      callback: (error?: Error | null) => void
+    ) {
+      try {
+        original_write.call(this, chunk, encoding, callback);
+      } catch (err: any) {
+        if (err?.code === "EPIPE") {
+          callback(null); // swallow EPIPE
+          return;
+        }
+        callback(err);
+      }
+    };
+  }
+
+  // Also patch _writev (batched writes) if it exists
+  if (writable._writev) {
+    const original_writev = writable._writev;
+    writable._writev = function _patchedWritev(
+      chunks: Array<{ chunk: any; encoding: BufferEncoding }>,
+      callback: (error?: Error | null) => void
+    ) {
+      try {
+        original_writev.call(this, chunks, callback);
+      } catch (err: any) {
+        if (err?.code === "EPIPE") {
+          callback(null);
+          return;
+        }
+        callback(err);
+      }
+    };
+  }
+
+  // Patch the public write method as well
   const originalWrite = stream.write;
-  const patchedWrite = function patchedWrite(
-    this: typeof stream,
+  stream.write = function patchedWrite(
     ...args: Parameters<typeof originalWrite>
   ): boolean {
     try {
       return originalWrite.apply(this, args);
     } catch (err: any) {
-      if (err?.code === "EPIPE") return true; // silently swallow
+      if (err?.code === "EPIPE") return true;
       throw err;
     }
   } as typeof originalWrite;
-  stream.write = patchedWrite;
+
+  // Handle error events
+  stream.on('error', (err: any) => {
+    if (err?.code === 'EPIPE') return;
+    process.nextTick(() => { throw err; });
+  });
 }
 
 if (process.stdout) patchStreamEpipe(process.stdout);
 if (process.stderr) patchStreamEpipe(process.stderr);
+
+// Also wrap console methods to prevent EPIPE from propagating
+const originalConsoleError = console.error;
+const originalConsoleDebug = console.debug;
+const originalConsoleWarn = console.warn;
+console.error = (...args: any[]) => { try { originalConsoleError.apply(console, args); } catch (e: any) { if (e?.code !== 'EPIPE') throw e; } };
+console.debug = (...args: any[]) => { try { originalConsoleDebug.apply(console, args); } catch (e: any) { if (e?.code !== 'EPIPE') throw e; } };
+console.warn = (...args: any[]) => { try { originalConsoleWarn.apply(console, args); } catch (e: any) { if (e?.code !== 'EPIPE') throw e; } };
 
 const consoleTransport = log.transports.console;
 if (consoleTransport) {
@@ -218,9 +273,30 @@ if (consoleTransport) {
   }
 }
 
+// Also patch console methods directly to catch EPIPE from any call site
+for (const method of ['log', 'info', 'warn', 'error', 'debug'] as const) {
+  const original = console[method];
+  console[method] = function (...args: any[]) {
+    try {
+      return original.apply(console, args);
+    } catch (err: any) {
+      if (err?.code === 'EPIPE') return;
+      throw err;
+    }
+  } as typeof original;
+}
+
 process.on("uncaughtException", (error: Error) => {
   if ((error as NodeJS.ErrnoException).code === "EPIPE") return;
-  throw error;
+  // For non-EPIPE errors, only throw if there are listeners to avoid crashes
+  if (process.listenerCount('uncaughtException') > 1) {
+    throw error;
+  }
+  console.error("[FATAL] Uncaught exception:", error);
+});
+
+process.on("unhandledRejection", (reason: any) => {
+  if (reason?.code === "EPIPE") return;
 });
 const execFileAsync = promisify(execFile);
 

@@ -169,14 +169,14 @@ Use this when you need to slice, search, count, aggregate, summarize file conten
 
 Supported language surface:
 - let/const, functions, closures, arrow functions, async/await, promises, arrays, plain objects, Map, Set, if/switch, loops, break/continue, try/catch/finally, throw, template literals, destructuring, optional chaining, nullish coalescing, JSON, Math, and conservative Array/String/Object/Date/Intl/RegExp helpers.
-- Top-level await is supported. Top-level return is not supported; return the final expression value instead, e.g. \`const text = await read_file("attachments:data.csv"); text.length;\`.
+- Top-level await is supported. Top-level return is not supported; return the final expression value instead, e.g. \\const text = await read_file("attachments:data.csv"); text.length;\.
 - The script has no ambient authority. It can only act through the host functions below.
 
 Recommendations:
 - Avoid defining nested helper functions in the main function.
 
 Unsupported / unavailable:
-- No var, import/export, require, CommonJS, npm packages, Node APIs, browser/DOM APIs, process, module, exports, global, environment variables, subprocesses, network/fetch, fetch, timers, setTimeout, setInterval, eval, Function constructor, with, classes, generators, custom iterator authoring, Symbols, WeakMap, WeakSet, typed arrays, ArrayBuffer, shared memory, atomics, Proxy, accessors, full prototype/property-descriptor semantics, or arbitrary filesystem access.
+- No var, import/export, require, CommonJS, npm packages, Node APIs, browser/DOM APIs, process, module, exports, global, environment variables, subprocesses, network/fetch, timers, setTimeout, setInterval, eval, Function constructor, with, classes, generators, custom iterator authoring, Symbols, WeakMap, WeakSet, typed arrays, ArrayBuffer, shared memory, atomics, Proxy, accessors, full prototype/property-descriptor semantics, or arbitrary filesystem access. Use \`http_request\` for network calls instead of \`fetch\`.
 - String.prototype.localeCompare is not supported; compare with <, >, or === instead.
 - \`console.*\` is not available.
 - Unsupported syntax or unsupported built-in behavior fails closed with an error. Rewrite using simpler JavaScript when that happens.
@@ -224,6 +224,7 @@ declare function read_file(
 declare function list_files(dir?: "." | "attachments:" | string): Promise<string[]>;
 
 declare function file_stats(path: string): Promise<FileStats>;
+declare function http_request(url: string, options?: { method?: string; headers?: Record<string, string>; body?: string }): Promise<string>;
 ${includeWriteFile ? WRITE_FILE_HOST_DECLARATIONS : ""}
 \`\`\`
 

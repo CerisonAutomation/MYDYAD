@@ -56,5 +56,22 @@ export default defineConfig({
         "chromium-bidi",
       ],
     },
+    // Rolldown (Vite 8) uses rolldownOptions for externals
+    rolldownOptions: {
+      external: [
+        "better-sqlite3",
+        "dyad-keychain-reader",
+        "node-pty",
+        "mustardscript",
+        "pg",
+        "playwright",
+        "playwright-core",
+        "chromium-bidi",
+        // Playwright sub-dependencies
+        "chromium-bidi/lib/cjs/bidiMapper/BidiMapper",
+        // Node builtins that may not be caught by the default list
+        "node:*",
+      ],
+    },
   },
 });

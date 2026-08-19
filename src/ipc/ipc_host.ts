@@ -6,6 +6,7 @@ import { registerAppCollectionHandlers } from "./handlers/app_collection_handler
 import { registerAppEnvVarsHandlers } from "./handlers/app_env_vars_handlers";
 import { registerAppHandlers } from "./handlers/app_handlers";
 import { registerAppUpgradeHandlers } from "./handlers/app_upgrade_handlers";
+import { registerBrowserToolkitHandlers } from "./handlers/browser_toolkit_handlers";
 import { registerCapacitorHandlers } from "./handlers/capacitor_handlers";
 import { registerChatHandlers } from "./handlers/chat_handlers";
 import { registerChatStreamHandlers } from "./handlers/chat_stream_handlers";
@@ -90,6 +91,7 @@ export function registerIpcHandlers() {
   registerProHandlers();
   registerContextPathsHandlers();
   registerAppUpgradeHandlers();
+  registerBrowserToolkitHandlers();
   registerCapacitorHandlers();
   registerAppEnvVarsHandlers();
   registerTemplateHandlers();

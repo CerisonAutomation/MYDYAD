@@ -158,7 +158,7 @@ const MAX_ERROR_RESPONSE_BODY_DEPTH = 5;
 const STREAM_RETRY_BASE_DELAY_MS = 400;
 const STREAM_CONTINUE_MESSAGE =
   "[System] Your previous response stream was interrupted by a transient network error. Continue from exactly where you left off and do not repeat text that has already been sent.";
-const TOOL_ERROR_STATUS_MAX_CHARS = 4_000;
+const TOOL_ERROR_STATUS_MAX_CHARS = 20_000;
 
 const RETRYABLE_STREAM_ERROR_STATUS_CODES = new Set([
   408, 429, 500, 502, 503, 504,
@@ -1107,7 +1107,7 @@ export async function handleLocalAgentStream(
 
     // Hard limit on message history to prevent unbounded memory growth in
     // long agent sessions. When exceeded, the oldest messages are trimmed.
-    const MAX_MESSAGE_HISTORY_LENGTH = 500;
+    const MAX_MESSAGE_HISTORY_LENGTH = 2000;
 
     // If there are persisted todos from a previous turn, inject a synthetic
     // user message so the LLM is aware of them. Inserted BEFORE the user's

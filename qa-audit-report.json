@@ -1,0 +1,521 @@
+{
+  "timestamp": "2026-08-19T20:39:31.951Z",
+  "summary": {
+    "passed": 102,
+    "failed": 0,
+    "warned": 0,
+    "total": 102
+  },
+  "results": [
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/types.ts exists"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/types.ts has content (2766 bytes)"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/eventBlocker.ts exists"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/eventBlocker.ts has content (3947 bytes)"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/overlay.css exists"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/overlay.css has content (7105 bytes)"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/AgentOverlay.tsx exists"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/AgentOverlay.tsx has content (7479 bytes)"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/AgentOverlayProvider.tsx exists"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/AgentOverlayProvider.tsx has content (7772 bytes)"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/index.ts exists"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "agent_overlay/index.ts has content (910 bytes)"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "Exports AgentOverlay component"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "Exports AgentOverlayProvider"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "Exports useAgentOverlay hook"
+    },
+    {
+      "component": "Agent Overlay",
+      "status": "PASS",
+      "message": "Exports EventBlocker"
+    },
+    {
+      "component": "Event Blocker",
+      "status": "PASS",
+      "message": "Blocks click event"
+    },
+    {
+      "component": "Event Blocker",
+      "status": "PASS",
+      "message": "Blocks mousedown event"
+    },
+    {
+      "component": "Event Blocker",
+      "status": "PASS",
+      "message": "Blocks keydown event"
+    },
+    {
+      "component": "Event Blocker",
+      "status": "PASS",
+      "message": "Blocks touchstart event"
+    },
+    {
+      "component": "Event Blocker",
+      "status": "PASS",
+      "message": "Blocks pointerdown event"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/types.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/types.ts has content (3393 bytes)"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/zenith.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/zenith.ts has content (30501 bytes)"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/toolDefinitions.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/toolDefinitions.ts has content (12193 bytes)"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/toolExecutor.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/toolExecutor.ts has content (7353 bytes)"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/rendererApi.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/rendererApi.ts has content (5463 bytes)"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/index.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/index.ts has content (1037 bytes)"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/diagnostics/bundles.ts exists"
+    },
+    {
+      "component": "Browser Toolkit",
+      "status": "PASS",
+      "message": "browser_toolkit/diagnostics/bundles.ts has content (1508 bytes)"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has goto() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has back() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has forward() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has reload() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has read() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has html() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has text() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has links() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has images() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has headings() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has find() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has findAll() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has forms() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has buttons() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has inputs() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has click() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has dblclick() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has rightclick() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has fill() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has select() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has check() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has uncheck() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has pressKey() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has focus() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has hover() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has consoleMonitor() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has networkAnalysis() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has contrastCheck() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has imageAudit() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has linkCheck() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has uxAudit() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has visualDiagnosis() method"
+    },
+    {
+      "component": "Zenith Toolkit",
+      "status": "PASS",
+      "message": "Has type() method (type_)"
+    },
+    {
+      "component": "Tool Definitions",
+      "status": "PASS",
+      "message": "Has 20 tool definitions (expected ≥20)"
+    },
+    {
+      "component": "IPC Handlers",
+      "status": "PASS",
+      "message": "Exports registration function"
+    },
+    {
+      "component": "IPC Handlers",
+      "status": "PASS",
+      "message": "Has execute channel"
+    },
+    {
+      "component": "IPC Handlers",
+      "status": "PASS",
+      "message": "Has goto channel"
+    },
+    {
+      "component": "IPC Handlers",
+      "status": "PASS",
+      "message": "Has diagnostics channel"
+    },
+    {
+      "component": "IPC Handlers",
+      "status": "PASS",
+      "message": "Has overlay channels"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "types.ts is substantial (2788 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "eventBlocker.ts is substantial (3949 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "overlay.css is substantial (7107 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "AgentOverlay.tsx is substantial (7501 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "AgentOverlayProvider.tsx is substantial (7774 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "index.ts is substantial (912 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "types.ts is substantial (3395 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "zenith.ts is substantial (33977 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "toolDefinitions.ts is substantial (14955 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "toolExecutor.ts is substantial (7355 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "rendererApi.ts is substantial (7043 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "index.ts is substantial (1039 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "bundles.ts is substantial (1514 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "browser_toolkit_handlers.ts is substantial (10741 bytes)"
+    },
+    {
+      "component": "File Quality",
+      "status": "PASS",
+      "message": "Total codebase is substantial (110050 bytes)"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "types.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "eventBlocker.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "AgentOverlay.tsx avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "AgentOverlayProvider.tsx avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "index.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "types.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "zenith.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "toolDefinitions.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "toolExecutor.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "rendererApi.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "index.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "bundles.ts avoids 'any' types"
+    },
+    {
+      "component": "TypeScript",
+      "status": "PASS",
+      "message": "browser_toolkit_handlers.ts avoids 'any' types"
+    }
+  ]
+}

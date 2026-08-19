@@ -36,10 +36,31 @@ export default defineConfig({
         "node-pty",
         "mustardscript",
         "pg",
+        "playwright",
+        "playwright-core",
+        "chromium-bidi",
+        // Playwright sub-dependencies
+        "chromium-bidi/lib/**",
+        // Catch-all for node_modules that should not be bundled
+        /node_modules\//,
       ],
       output: {
         entryFileNames: "main.js",
       },
+    },
+    rolldownOptions: {
+      external: [
+        ...nodeBuiltins,
+        "better-sqlite3",
+        "dyad-keychain-reader",
+        "node-pty",
+        "mustardscript",
+        "pg",
+        "playwright",
+        "playwright-core",
+        "chromium-bidi",
+        "chromium-bidi/lib/**",
+      ],
     },
   },
   plugins: [],

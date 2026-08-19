@@ -466,6 +466,31 @@ export async function sandboxListFiles(
     .sort();
 }
 
+export async function sandboxHttpRequest(
+  url: string,
+  options: { method: string; headers: Record<string, string>; body?: string } = { method: "GET", headers: {} },
+): Promise<string> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new DyadError(`Invalid URL: ${url}`, DyadErrorKind.Validation);
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new DyadError(
+      `Unsupported protocol "${parsed.protocol}" — only http and https are allowed`,
+      DyadErrorKind.Validation,
+    );
+  }
+  const response = await fetch(url, {
+    method: options.method,
+    headers: options.headers,
+    body: options.body,
+  });
+  const text = await response.text();
+  return JSON.stringify({ status: response.status, body: text });
+}
+
 export function buildSandboxCapabilities(appPath: string) {
   return buildSandboxCapabilitiesWithObserver(appPath);
 }
@@ -504,6 +529,20 @@ export function buildSandboxCapabilitiesWithObserver(
       }
       onHostCall?.({ name: "file_stats", path: guestPath });
       return sandboxFileStats(appPath, guestPath);
+    },
+    http_request: (url: unknown, options?: unknown) => {
+      if (typeof url !== "string") {
+        throw new DyadError(
+          "http_request url must be a string.",
+          DyadErrorKind.Validation,
+        );
+      }
+      const opts = (typeof options === "object" && options !== null) ? options as Record<string, unknown> : {};
+      const method = (typeof opts.method === "string" ? opts.method : "GET").toUpperCase();
+      const headers = (typeof opts.headers === "object" && opts.headers !== null) ? opts.headers as Record<string, string> : {};
+      const body = typeof opts.body === "string" ? opts.body : undefined;
+      onHostCall?.({ name: "http_request", url, method });
+      return sandboxHttpRequest(url, { method, headers, body });
     },
   };
 }

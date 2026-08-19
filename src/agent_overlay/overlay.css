@@ -1,0 +1,351 @@
+/**
+ * Agent Overlay — Styles
+ *
+ * Inspired by Comet.app overlay patterns with animated gradient,
+ * progress indicators, and step-by-step status display.
+ */
+
+.agent-overlay {
+  position: fixed;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #f8fafc;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: agentOverlaySlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes agentOverlaySlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.agent-overlay--hiding {
+  animation: agentOverlaySlideOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes agentOverlaySlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+}
+
+/* Position variants */
+.agent-overlay--top-right {
+  top: 16px;
+  right: 16px;
+}
+
+.agent-overlay--top-left {
+  top: 16px;
+  left: 16px;
+}
+
+.agent-overlay--bottom-right {
+  bottom: 16px;
+  right: 16px;
+}
+
+.agent-overlay--bottom-left {
+  bottom: 16px;
+  left: 16px;
+}
+
+.agent-overlay--center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Main card */
+.agent-overlay__card {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(99, 102, 241, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.agent-overlay__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+}
+
+.agent-overlay__status-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.agent-overlay__status-icon--thinking {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  animation: agentOverlayPulse 1.5s ease-in-out infinite;
+}
+
+.agent-overlay__status-icon--executing {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  animation: agentOverlaySpin 2s linear infinite;
+}
+
+.agent-overlay__status-icon--browsing {
+  background: rgba(6, 182, 212, 0.2);
+  color: #22d3ee;
+  animation: agentOverlayPulse 1s ease-in-out infinite;
+}
+
+.agent-overlay__status-icon--error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.agent-overlay__status-icon--completed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.agent-overlay__status-icon--paused {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+@keyframes agentOverlayPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes agentOverlaySpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.agent-overlay__title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 13px;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-overlay__subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+/* Progress bar */
+.agent-overlay__progress {
+  padding: 0 16px;
+  margin-top: 8px;
+}
+
+.agent-overlay__progress-bar {
+  height: 3px;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.agent-overlay__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.agent-overlay__progress-text {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Steps */
+.agent-overlay__steps {
+  padding: 8px 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.agent-overlay__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.agent-overlay__step-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.agent-overlay__step-icon--pending {
+  background: rgba(107, 114, 128, 0.2);
+  color: #6b7280;
+}
+
+.agent-overlay__step-icon--active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  animation: agentOverlayPulse 1s ease-in-out infinite;
+}
+
+.agent-overlay__step-icon--completed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.agent-overlay__step-icon--failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.agent-overlay__step-label {
+  color: #cbd5e1;
+  flex: 1;
+}
+
+.agent-overlay__step-label--active {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+.agent-overlay__step-detail {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Controls */
+.agent-overlay__controls {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.agent-overlay__btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.1);
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agent-overlay__btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.agent-overlay__btn--danger {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.agent-overlay__btn--danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Scrollbar */
+.agent-overlay__steps::-webkit-scrollbar {
+  width: 4px;
+}
+
+.agent-overlay__steps::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.agent-overlay__steps::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 2px;
+}
+
+/* Animated gradient border (Comet-style) */
+.agent-overlay--active .agent-overlay__card {
+  border-image: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.5),
+    rgba(139, 92, 246, 0.5),
+    rgba(6, 182, 212, 0.5),
+    rgba(99, 102, 241, 0.5)
+  ) 1;
+  animation: agentOverlayBorderGradient 3s linear infinite;
+}
+
+@keyframes agentOverlayBorderGradient {
+  0% { border-color: rgba(99, 102, 241, 0.5); }
+  33% { border-color: rgba(139, 92, 246, 0.5); }
+  66% { border-color: rgba(6, 182, 212, 0.5); }
+  100% { border-color: rgba(99, 102, 241, 0.5); }
+}
+
+/* Dark/Light theme support */
+.agent-overlay--light .agent-overlay__card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
+}
+
+.agent-overlay--light .agent-overlay__title {
+  color: #1e293b;
+}
+
+.agent-overlay--light .agent-overlay__subtitle,
+.agent-overlay--light .agent-overlay__step-detail {
+  color: #64748b;
+}
+
+.agent-overlay--light .agent-overlay__step-label {
+  color: #334155;
+}
+
+.agent-overlay--light .agent-overlay__step-label--active {
+  color: #0f172a;
+}

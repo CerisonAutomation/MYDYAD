@@ -62,8 +62,8 @@ import { formatExploreProgressLog } from "./explore_code_subagent_progress";
 
 const logger = log.scope("explore_code_subagent");
 
-// Use the current model dynamically instead of hardcoded OpenAI model
-// This allows explore_code to work with any configured provider
+// Use the user's currently selected model instead of hardcoded "auto"
+// Falls back to "auto" only if no model is configured (rare)
 const SUBAGENT_MODEL = { provider: "auto", name: "auto" } as const;
 // Max model turns in the agent loop. Each step may issue several parallel tool
 // calls, so this is distinct from the read-only tool-call budget below.
@@ -98,8 +98,11 @@ export async function runExploreCodeSubagent({
 }): Promise<string> {
   const storedSettings = readSettings();
   assertDyadValueAvailable(storedSettings);
+  // Use the parent agent's model (from chat context) rather than hardcoded "auto"
+  // This allows explore_code to work with any configured provider
+  const agentModel = ctx.settings?.selectedModel ?? SUBAGENT_MODEL;
   const selectedModel = await resolveModelSelection({
-    model: SUBAGENT_MODEL,
+    model: agentModel,
     preferredEffortLevel:
       storedSettings.modelEffortPreferences?.[
         getModelPreferenceKey(SUBAGENT_MODEL)
@@ -108,15 +111,15 @@ export async function runExploreCodeSubagent({
   const settings = { ...storedSettings, selectedModel };
 
   const modelInfo = await getModelClient(
-    SUBAGENT_MODEL,
+    agentModel,
     settings,
     selectedModel,
   );
   const maxOutputTokens = Math.min(
-    (await getMaxTokens(SUBAGENT_MODEL)) ?? SUBAGENT_MAX_OUTPUT_TOKENS,
+    (await getMaxTokens(agentModel)) ?? SUBAGENT_MAX_OUTPUT_TOKENS,
     SUBAGENT_MAX_OUTPUT_TOKENS,
   );
-  const temperature = await getTemperature(SUBAGENT_MODEL);
+  const temperature = await getTemperature(agentModel);
   const intent: ExploreIntent = args.intent ?? "locate";
   const observations: SubagentObservation[] = [];
   const candidateRegistry = createCandidateRegistry();

@@ -77,6 +77,7 @@ import {
   useEntityDisposal,
   useRegisterEntityDisposer,
 } from "./state_machines/react";
+import { AgentOverlayProvider } from "./agent_overlay";
 import {
   captureErrorScreenshot,
   getLastErrorScreenshot,
@@ -387,9 +388,11 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <PostHogProvider client={posthogClient}>
-        <EntityDisposalProvider>
-          <App />
-        </EntityDisposalProvider>
+        <AgentOverlayProvider>
+          <EntityDisposalProvider>
+            <App />
+          </EntityDisposalProvider>
+        </AgentOverlayProvider>
       </PostHogProvider>
     </QueryClientProvider>
   </StrictMode>,

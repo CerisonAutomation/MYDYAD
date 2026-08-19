@@ -177,11 +177,11 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
               .replace(/<[^>]+>/g, " ")
               .replace(/\s+/g, " ")
               .trim()
-              .slice(0, 50000);
+              .slice(0, 500000);
           } else if (contentType.includes("application/json")) {
             try {
               const json = JSON.parse(content);
-              content = JSON.stringify(json, null, 2).slice(0, 50000);
+              content = JSON.stringify(json, null, 2).slice(0, 500000);
             } catch {
               /* keep as text */
             }
@@ -239,7 +239,7 @@ export const multifetchTool: ToolDefinition<z.infer<typeof multifetchSchema>> =
       let resultText = `Fetched ${succeeded.length}/${urls.length} URLs successfully.\n\n`;
 
       for (const r of succeeded) {
-        resultText += `## ${r.url} (${r.status})\n${r.content.slice(0, 5000)}\n\n`;
+        resultText += `## ${r.url} (${r.status})\n${r.content.slice(0, 50000)}\n\n`;
       }
 
       if (failed.length > 0) {
