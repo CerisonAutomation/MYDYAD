@@ -131,3 +131,4 @@ benchmark-results/
 benchmarks/code-explorer/repos/
 .playwright-mcp
 .dyad/
+mcp-screenshot-test.png

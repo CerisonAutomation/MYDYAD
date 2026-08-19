@@ -98,14 +98,14 @@ export async function runExploreCodeSubagent({
 }): Promise<string> {
   const storedSettings = readSettings();
   assertDyadValueAvailable(storedSettings);
-  // Use the parent agent's model (from chat context) rather than hardcoded "auto"
-  // This allows explore_code to work with any configured provider
-  const agentModel = ctx.settings?.selectedModel ?? SUBAGENT_MODEL;
+  // Use the user's actual configured model instead of hardcoded "auto"
+  // "auto" fails when no API key is configured for the auto provider
+  const agentModel = storedSettings.selectedModel ?? SUBAGENT_MODEL;
   const selectedModel = await resolveModelSelection({
     model: agentModel,
     preferredEffortLevel:
       storedSettings.modelEffortPreferences?.[
-        getModelPreferenceKey(SUBAGENT_MODEL)
+        getModelPreferenceKey(agentModel)
       ],
   });
   const settings = { ...storedSettings, selectedModel };
