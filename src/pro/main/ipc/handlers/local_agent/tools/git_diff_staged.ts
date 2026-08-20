@@ -17,7 +17,7 @@ const execFileAsync = promisify(execFile);
 
 const gitDiffStagedSchema = z.object({
   app_name: z.string().optional().describe("App to analyze"),
-  stat: z.boolean().optional().describe("Show stat only"),
+  stat: z.coerce.coerce.boolean().optional().describe("Show stat only"),
 });
 
 type GitDiffStagedArgs = z.infer<typeof gitDiffStagedSchema>;

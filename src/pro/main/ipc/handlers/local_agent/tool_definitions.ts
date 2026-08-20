@@ -89,6 +89,8 @@ import { gitCommitTool } from "./tools/git_commit";
 import { gitDiffStagedTool } from "./tools/git_diff_staged";
 import { gitLogFileTool } from "./tools/git_log_file";
 import { healCodebaseTool } from "./tools/heal_codebase";
+import { codeComplexityTool } from "./tools/code_complexity";
+import { apiGeneratorTool } from "./tools/api_generator";
 import { gitStashTool } from "./tools/git_stash";
 import { githubIssuesTool } from "./tools/github_issues";
 import { githubPrsTool } from "./tools/github_prs";
@@ -292,6 +294,8 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   gitDiffStagedTool,
   gitLogFileTool,
   healCodebaseTool,
+  codeComplexityTool,
+  apiGeneratorTool,
   gitStashTool,
   pythonAstSummaryTool,
   withAnalysisGuard(tsAstSummaryTool),

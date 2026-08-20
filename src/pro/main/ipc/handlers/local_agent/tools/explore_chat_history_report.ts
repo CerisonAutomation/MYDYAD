@@ -146,8 +146,8 @@ export function createHistoryObservationRegistry(): HistoryObservationRegistry {
 // ── submit_report contract ─────────────────────────────────────
 
 const evidenceRefSchema = z.object({
-  chat_id: z.number().int().positive(),
-  message_id: z.number().int().positive(),
+  chat_id: z.coerce.coerce.number().int().positive(),
+  message_id: z.coerce.coerce.number().int().positive(),
 });
 
 export const submitHistoryReportSchema = z.object({

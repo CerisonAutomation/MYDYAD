@@ -21,7 +21,7 @@ const busFactorSchema = z.object({
     .number()
     .optional()
     .describe("Minimum commits to count contributor"),
-  time_window_months: z.number().optional().describe("Time window in months"),
+  time_window_months: z.coerce.coerce.number().optional().describe("Time window in months"),
 });
 
 type BusFactorArgs = z.infer<typeof busFactorSchema>;

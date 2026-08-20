@@ -19,7 +19,7 @@ type HealCodebaseArgs = z.infer<typeof healCodebaseSchema>;
 export const healCodebaseTool: ToolDefinition<HealCodebaseArgs> = {
   name: "heal_codebase",
   description:
-    "Scan, fix, and improve the Dyad codebase. Detects gaps, auto-fixes common issues, clones patterns from existing tools, and generates improvement reports.",
+    "Scan, fix, and improve the codebase. Actions: scan (find gaps), fix (auto-fix issues), report (full report), clone (create new tool from template). Always start with scan before fix.",
   inputSchema: healCodebaseSchema,
   defaultConsent: "always",
   modifiesState: (ctx) => true,

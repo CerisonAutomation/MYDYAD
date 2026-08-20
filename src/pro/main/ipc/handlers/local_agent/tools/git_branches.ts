@@ -17,8 +17,8 @@ const execFileAsync = promisify(execFile);
 
 const gitBranchesSchema = z.object({
   app_name: z.string().optional().describe("App to analyze"),
-  show_merged: z.boolean().optional().describe("Show merged branches"),
-  show_remote: z.boolean().optional().describe("Show remote branches"),
+  show_merged: z.coerce.coerce.boolean().optional().describe("Show merged branches"),
+  show_remote: z.coerce.coerce.boolean().optional().describe("Show remote branches"),
 });
 
 type GitBranchesArgs = z.infer<typeof gitBranchesSchema>;

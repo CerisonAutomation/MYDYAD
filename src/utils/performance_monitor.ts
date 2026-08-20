@@ -17,6 +17,7 @@ const logger = log.scope("performance-monitor");
 
 // Constants
 const MONITOR_INTERVAL_MS = 60_000; // 60 seconds (reduced from 30s to lower CPU)
+const MEMORY_PRESSURE_INTERVAL_MS = 30_000; // 30 seconds when memory is high
 const BYTES_PER_MB = 1024 * 1024;
 
 let monitorInterval: NodeJS.Timeout | null = null;
@@ -216,6 +217,10 @@ import { autoScaleLimits } from "@/ipc/utils/dynamic_limits";
 
 function capturePerformanceMetrics() {
   try {
+    // Skip if system CPU is very high to prevent spinning
+    const systemCpu = getSystemCpuUsagePercent();
+    if (systemCpu > 95) return;
+    
     const memoryUsageMB = getMemoryUsageMB();
     const processWorkingSetsMB = getProcessWorkingSetsMB();
     const allProcessesMemoryMB = processWorkingSetsMB
@@ -401,8 +406,20 @@ export function startPerformanceMonitoring() {
   // Capture initial metrics
   capturePerformanceMetrics();
 
-  // Capture every 30 seconds
-  monitorInterval = setInterval(capturePerformanceMetrics, MONITOR_INTERVAL_MS);
+  // Adaptive interval: faster polling when memory is high, slower when healthy
+  function startMonitor() {
+    const systemMemory = getSystemMemoryUsage();
+    const interval = systemMemory.usagePercent > 90 
+      ? MEMORY_PRESSURE_INTERVAL_MS 
+      : MONITOR_INTERVAL_MS;
+    monitorInterval = setInterval(() => {
+      capturePerformanceMetrics();
+      // Restart with adaptive interval
+      if (monitorInterval) clearInterval(monitorInterval);
+      startMonitor();
+    }, interval);
+  }
+  startMonitor();
 }
 
 /**

@@ -96,7 +96,8 @@ CRITICAL REQUIREMENTS FOR USING THIS TOOL:
     // Validate old_string !== new_string
     if (args.old_string === args.new_string) {
       throw new DyadError(
-        "old_string and new_string must be different",
+        "old_string and new_string must be different. You sent the same content for both. " +
+        "To make no change, don't call this tool. To edit code, provide the original in old_string and the modified version in new_string.",
         DyadErrorKind.Validation,
       );
     }

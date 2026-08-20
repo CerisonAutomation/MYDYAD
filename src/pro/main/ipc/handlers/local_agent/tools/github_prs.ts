@@ -19,9 +19,9 @@ const githubPrsSchema = z.object({
     .describe("Operation to perform"),
   owner: z.string().describe("Repository owner"),
   repo: z.string().describe("Repository name"),
-  pr_number: z.number().optional().describe("PR number (for get/files)"),
+  pr_number: z.coerce.coerce.number().optional().describe("PR number (for get/files)"),
   state: z.enum(["open", "closed", "all"]).optional().describe("PR state"),
-  per_page: z.number().optional().describe("Results per page"),
+  per_page: z.coerce.coerce.number().optional().describe("Results per page"),
   title: z.string().optional().describe("PR title (for create)"),
   body: z.string().optional().describe("PR body (for create)"),
   base: z

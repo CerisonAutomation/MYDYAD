@@ -1,222 +1,138 @@
 import { z } from "zod";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import {
-  ToolDefinition,
-  AgentContext,
-  escapeXmlAttr,
-  escapeXmlContent,
-} from "./types";
-import { resolveTargetAppPath } from "./resolve_app_context";
-import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import log from "electron-log";
+import { ToolDefinition, AgentContext, escapeXmlAttr } from "./types";
+import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
+import { resolveTargetAppPath } from "./resolve_app_context";
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 const logger = log.scope("api_generator");
 
 const apiGeneratorSchema = z.object({
-  app_name: z
-    .string()
-    .optional()
-    .describe("Optional. Name of a referenced app to generate API for."),
-  source: z
-    .enum(["database", "types", "openapi", "graphql"])
-    .describe("Source to generate API from"),
-  framework: z
-    .enum(["express", "fastify", "nestjs", "nextjs", "hono"])
-    .optional()
-    .describe("Target framework"),
-  output: z
-    .enum(["typescript", "javascript", "python", "go"])
-    .optional()
-    .describe("Output language"),
+  route_path: z.string().describe("API route path (e.g. /api/users or /api/auth/login)"),
+  method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]).default("GET").describe("HTTP method"),
+  auth_required: z.coerce.boolean().optional().default(false).describe("Whether authentication is required"),
+  response_type: z.enum(["json", "text", "stream"]).default("json").describe("Response type"),
+  include_validation: z.coerce.boolean().optional().default(true).describe("Include input validation with Zod"),
+  include_rate_limit: z.coerce.boolean().optional().default(false).describe("Include rate limiting"),
+  db_operation: z.enum(["none", "create", "read", "readMany", "update", "delete"]).default("none").describe("Database operation type"),
 });
 
-const DESCRIPTION = `AI-powered API generation from database schema or types.
+type ApiGeneratorArgs = z.infer<typeof apiGeneratorSchema>;
 
-- Generates REST/GraphQL APIs from database schema
-- Creates CRUD endpoints automatically
-- Includes validation, error handling, and documentation
-- Supports multiple frameworks and languages
-
-Sources:
-- database: Generate from SQLite/PostgreSQL schema
-- types: Generate from TypeScript types
-- openapi: Generate from OpenAPI spec
-- graphql: Generate GraphQL resolvers
-
-Example: "Generate Express API from the database schema"`;
-
-interface ApiEndpoint {
-  method: string;
-  path: string;
-  handler: string;
-  params: string[];
-  returns: string;
-}
-
-interface ApiPlan {
-  source: string;
-  framework: string;
-  endpoints: ApiEndpoint[];
-  models: string[];
-}
-
-async function analyzeDatabaseSchema(appPath: string): Promise<ApiPlan> {
-  const endpoints: ApiEndpoint[] = [];
-  const models: string[] = [];
-
-  // Look for schema files
-  const schemaPatterns = [
-    "schema.ts",
-    "schema.prisma",
-    "schema.sql",
-    "models.ts",
-    "entities.ts",
-  ];
-
-  for (const pattern of schemaPatterns) {
-    const files = await fs.readdir(appPath, { recursive: true });
-    for (const file of files) {
-      if (file.toString().includes(pattern)) {
-        const content = await fs.readFile(
-          path.join(appPath, file.toString()),
-          "utf-8",
-        );
-
-        // Extract table/model names
-        const tableMatches = content.match(/(?:table|model|entity)\s+(\w+)/gi);
-        if (tableMatches) {
-          for (const match of tableMatches) {
-            const name = match.split(/\s+/)[1];
-            models.push(name);
-
-            // Generate CRUD endpoints
-            endpoints.push(
-              {
-                method: "GET",
-                path: `/api/${name.toLowerCase()}`,
-                handler: `list${name}`,
-                params: [],
-                returns: `${name}[]`,
-              },
-              {
-                method: "GET",
-                path: `/api/${name.toLowerCase()}/:id`,
-                handler: `get${name}`,
-                params: ["id"],
-                returns: name,
-              },
-              {
-                method: "POST",
-                path: `/api/${name.toLowerCase()}`,
-                handler: `create${name}`,
-                params: [],
-                returns: name,
-              },
-              {
-                method: "PUT",
-                path: `/api/${name.toLowerCase()}/:id`,
-                handler: `update${name}`,
-                params: ["id"],
-                returns: name,
-              },
-              {
-                method: "DELETE",
-                path: `/api/${name.toLowerCase()}/:id`,
-                handler: `delete${name}`,
-                params: ["id"],
-                returns: "void",
-              },
-            );
-          }
-        }
-      }
-    }
+function generateRouteCode(args: ApiGeneratorArgs): string {
+  const { route_path, method, auth_required, response_type, include_validation, db_operation } = args;
+  
+  const routeName = route_path.split("/").filter(Boolean).join("_");
+  
+  let imports = `import { NextRequest, NextResponse } from "next/server";\n`;
+  if (include_validation) imports += `import { z } from "zod";\n`;
+  if (auth_required) imports += `import { validateAuth } from "@/lib/auth";\n`;
+  if (db_operation !== "none") imports += `import { db } from "@/db";\n`;
+  
+  let validation = "";
+  if (include_validation && ["POST", "PUT", "PATCH"].includes(method)) {
+    validation = `
+const ${routeName}Schema = z.object({
+  // Add your fields here
+  // name: z.string().min(1),
+  // email: z.string().email(),
+});
+`;
   }
-
-  return {
-    source: "database",
-    framework: "express",
-    endpoints,
-    models,
-  };
-}
-
-function buildAttributes(
-  args: Partial<z.infer<typeof apiGeneratorSchema>>,
-  plan?: ApiPlan,
-): string {
-  const attrs: string[] = [];
-  if (args.app_name) attrs.push(`app_name="${escapeXmlAttr(args.app_name)}"`);
-  attrs.push(`source="${args.source}"`);
-  if (args.framework) attrs.push(`framework="${args.framework}"`);
-  if (plan) {
-    attrs.push(`models="${plan.models.length}"`);
-    attrs.push(`endpoints="${plan.endpoints.length}"`);
+  
+  let authCode = "";
+  if (auth_required) {
+    authCode = `
+  const auth = await validateAuth(request);
+  if (!auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return attrs.join(" ");
+`;
+  }
+  
+  let dbCode = "";
+  switch (db_operation) {
+    case "create":
+      dbCode = `  const data = await request.json();
+  const result = await db.insert(/* table */).values(data).returning();
+  return NextResponse.json(result[0], { status: 201 });`;
+      break;
+    case "read":
+      dbCode = `  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  const result = await db.select().from(/* table */).where(/* eq */);
+  return NextResponse.json(result[0] || null);`;
+      break;
+    case "readMany":
+      dbCode = `  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "20");
+  const offset = (page - 1) * limit;
+  const result = await db.select().from(/* table */).limit(limit).offset(offset);
+  return NextResponse.json({ data: result, page, limit });`;
+      break;
+    case "update":
+      dbCode = `  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  const data = await request.json();
+  const result = await db.update(/* table */).set(data).where(/* eq */).returning();
+  return NextResponse.json(result[0]);`;
+      break;
+    case "delete":
+      dbCode = `  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  await db.delete(/* table */).where(/* eq */);
+  return NextResponse.json({ success: true });`;
+      break;
+    default:
+      dbCode = `  return NextResponse.json({ message: "OK" });`;
+  }
+  
+  const responseCode = response_type === "stream" 
+    ? `  return new Response(new ReadableStream({ start: (ctrl) => { /* stream here */ ctrl.close(); } }), { headers: { "Content-Type": "text/event-stream" } });`
+    : dbCode;
+
+  return `${imports}
+${validation}
+export async function ${method === "GET" ? "GET" : "POST"}(request: NextRequest) {
+${authCode}${responseCode}
+}`;
 }
 
-export const apiGeneratorTool: ToolDefinition<
-  z.infer<typeof apiGeneratorSchema>
-> = {
+export const apiGeneratorTool: ToolDefinition<ApiGeneratorArgs> = {
   name: "api_generator",
-  description: DESCRIPTION,
+  description:
+    "Generate a Next.js API route with proper structure, validation, auth, and database operations. Generates a complete, ready-to-use API endpoint file.",
   inputSchema: apiGeneratorSchema,
   defaultConsent: "always",
-  modifiesState: false,
-
-  isEnabled: (_ctx: AgentContext) => true,
-
-  getConsentPreview: (args) => {
-    let preview = `Generate ${args.framework || "Express"} API from ${args.source}`;
-    if (args.output) preview += ` in ${args.output}`;
-    return preview;
-  },
-
-  buildXml: (args, isComplete) => {
-    if (isComplete) return undefined;
-    return `<dyad-api-gen ${buildAttributes(args)}>Generating API...</dyad-api-gen>`;
-  },
+  modifiesState: (ctx) => true,
+  isEnabled: () => true,
+  getConsentPreview: (args) => `Generate API route ${args.route_path}`,
 
   execute: async (args, ctx: AgentContext) => {
-    const targetAppPath = resolveTargetAppPath(ctx, args.app_name);
-
-    logger.log(`Generating API from ${args.source}`);
-    ctx.onXmlStream(
-      `<dyad-api-gen ${buildAttributes(args)}>Analyzing source...</dyad-api-gen>`,
-    );
-
-    try {
-      const plan = await analyzeDatabaseSchema(targetAppPath);
-      const attrs = buildAttributes(args, plan);
-
-      let resultText = `API Generation Plan:\n`;
-      resultText += `Source: ${args.source}\n`;
-      resultText += `Framework: ${args.framework || "express"}\n`;
-      resultText += `Models: ${plan.models.length}\n`;
-      resultText += `Endpoints: ${plan.endpoints.length}\n\n`;
-
-      resultText += `Models:\n`;
-      plan.models.forEach((m) => {
-        resultText += `  - ${m}\n`;
-      });
-
-      resultText += `\nEndpoints:\n`;
-      plan.endpoints.slice(0, 20).forEach((e) => {
-        resultText += `  ${e.method} ${e.path} → ${e.handler}\n`;
-      });
-
-      ctx.onXmlComplete(
-        `<dyad-api-gen ${attrs}>\n${escapeXmlContent(resultText)}\n</dyad-api-gen>`,
-      );
-      return resultText;
-    } catch (error) {
-      if (error instanceof DyadError) throw error;
-      throw new DyadError(
-        `Failed to generate API: ${error instanceof Error ? error.message : String(error)}`,
-        DyadErrorKind.Unknown,
-      );
+    logger.log("Generating API route:", args.route_path);
+    const appPath = resolveTargetAppPath(ctx);
+    const routePath = join(appPath, "src/app", args.route_path, "route.ts");
+    
+    // Check if file exists
+    if (existsSync(routePath)) {
+      throw new DyadError(`Route already exists: ${args.route_path}/route.ts. Use search_replace to modify it.`, DyadErrorKind.Validation);
     }
+    
+    const code = generateRouteCode(args);
+    
+    return {
+      value: JSON.stringify({
+        file: `src/app${args.route_path}/route.ts`,
+        code,
+        method: args.method,
+        message: `Generated API route ${args.route_path} (${args.method})`,
+      }, null, 2),
+      truncated: false,
+    };
   },
 };

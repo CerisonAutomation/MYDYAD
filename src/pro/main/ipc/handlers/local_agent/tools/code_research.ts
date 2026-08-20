@@ -26,7 +26,7 @@ const codeResearchSchema = z.object({
     .array(z.string())
     .optional()
     .describe("Custom search angles (overrides auto-decomposition)"),
-  max_results: z.number().optional().describe("Maximum results per angle"),
+  max_results: z.coerce.coerce.number().optional().describe("Maximum results per angle"),
   ref: z
     .string()
     .optional()

@@ -27,10 +27,11 @@ const MAX_LIMIT = 250;
 const MAX_LINE_LENGTH = 500;
 
 const grepSchema = z.object({
-  query: z
-    .string()
+  query: z.coerce.string()
+    .optional()
+    .default("")
     .describe(
-      "The regex pattern to search for, or the exact text when literal is true",
+      "The regex pattern to search for, or the exact text when literal is true. Required for most searches but can be omitted when only filtering by file pattern.",
     ),
   app_name: z
     .string()
@@ -49,23 +50,22 @@ const grepSchema = z.object({
     .optional()
     .describe("Glob pattern for files to exclude"),
   include_ignored: z
-    .boolean()
+    .coerce.boolean()
     .optional()
     .describe(
       "Whether to include git-ignored and hidden files/directories such as node_modules (default: false). Use include_pattern to keep this scoped.",
     ),
   case_sensitive: z
-    .boolean()
+    .coerce.boolean()
     .optional()
     .describe("Whether the search should be case sensitive (default: false)"),
   literal: z
-    .boolean()
+    .coerce.boolean()
     .optional()
     .describe(
       "Search query as exact text instead of a regex. Use this for symbols or snippets containing punctuation such as createBooking({, route paths, JSX tags, or import strings.",
     ),
-  limit: z
-    .number()
+  limit: z.coerce.number()
     .min(1)
     .max(MAX_LIMIT)
     .optional()
@@ -73,7 +73,7 @@ const grepSchema = z.object({
       `Maximum number of matches to return (default: ${DEFAULT_LIMIT}, max: ${MAX_LIMIT}). Use include_pattern to narrow results if limit is reached.`,
     ),
   fuzzy: z
-    .boolean()
+    .coerce.boolean()
     .optional()
     .describe(
       "Use fuzzy matching instead of exact regex. Great for typo-tolerant searches and natural language queries (e.g. 'auth middleware' instead of 'auth.*middleware').",

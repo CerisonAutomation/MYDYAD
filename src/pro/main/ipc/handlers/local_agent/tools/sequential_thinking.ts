@@ -8,8 +8,8 @@ const logger = log.scope("sequential_thinking");
 // Official MCP Sequential Thinking schema
 const thoughtDataSchema = z.object({
   thought: z.string().describe("The thinking step"),
-  thoughtNumber: z.number().int().min(1).describe("Current thought number"),
-  totalThoughts: z.number().int().min(1).describe("Total thoughts needed"),
+  thoughtNumber: z.coerce.coerce.coerce.coerce.coerce.number().int().min(1).describe("Current thought number"),
+  totalThoughts: z.coerce.coerce.coerce.coerce.coerce.number().int().min(1).describe("Total thoughts needed"),
   isRevision: z
     .boolean()
     .optional()
@@ -29,7 +29,7 @@ const thoughtDataSchema = z.object({
     .boolean()
     .optional()
     .describe("If true, more thoughts are needed"),
-  nextThoughtNeeded: z.boolean().describe("Whether another thought is needed"),
+  nextThoughtNeeded: z.coerce.boolean().describe("Whether another thought is needed"),
 });
 
 type ThoughtData = z.infer<typeof thoughtDataSchema>;

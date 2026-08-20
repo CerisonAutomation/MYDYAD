@@ -11,7 +11,7 @@ const execFileAsync = promisify(execFile);
 const logger = log.scope("format_code");
 
 const formatCodeSchema = z.object({
-  format: z.boolean().optional().describe("Run code formatter (default: true)"),
+  format: z.coerce.coerce.boolean().optional().describe("Run code formatter (default: true)"),
   lint_fix: z
     .boolean()
     .optional()

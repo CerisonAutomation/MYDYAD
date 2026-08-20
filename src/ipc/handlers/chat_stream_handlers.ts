@@ -241,11 +241,11 @@ export function createObservedChatStreamSender(
   };
   return new Proxy(sender, {
     get(target, property, receiver) {
-      if (property === "id" && targetIsUnavailable()) {
-        // Return the actual id value even when unavailable — the Proxy
-        // invariant requires non-configurable data properties to return
-        // their actual value. Use 0 as a sentinel for "unavailable".
-        return 0;
+      // Proxy invariant: non-configurable data properties MUST return the actual value.
+      // The sender's 'id' is non-configurable — always return target.id.
+      // Unavailability is checked separately in the 'send' trap.
+      if (property === "id") {
+        return target.id;
       }
       // `safeSend` must reach the proxy's `send` trap even if the presentation
       // endpoint disappeared. Actor completion is independent of renderer

@@ -32,8 +32,8 @@ const codeContextGraphSchema = z.object({
   app_name: z.string().optional().describe("App to analyze"),
   file_path: z.string().optional().describe("Specific file to analyze"),
   symbol: z.string().optional().describe("Symbol to trace"),
-  max_depth: z.number().optional().describe("Max traversal depth"),
-  token_budget: z.number().optional().describe("Token budget for context"),
+  max_depth: z.coerce.coerce.number().optional().describe("Max traversal depth"),
+  token_budget: z.coerce.coerce.number().optional().describe("Token budget for context"),
 });
 
 type CodeContextGraphArgs = z.infer<typeof codeContextGraphSchema>;

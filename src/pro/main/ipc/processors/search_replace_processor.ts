@@ -1,4 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
+import Fuse from "fuse.js";
 
 import { parseSearchReplaceBlocks } from "@/pro/shared/search_replace_parser";
 import { normalizeString } from "@/utils/text_normalization";
@@ -66,6 +67,7 @@ const unicodeNormalized: LineComparator = (fileLine, patternLine) =>
  * All matching passes in order of decreasing strictness
  */
 const MATCHING_PASSES: Array<{ name: string; comparator: LineComparator }> = [
+  {
   { name: "exact", comparator: exactMatch },
   {
     name: "trailing-whitespace-ignored",
@@ -73,6 +75,8 @@ const MATCHING_PASSES: Array<{ name: string; comparator: LineComparator }> = [
   },
   { name: "all-edge-whitespace-ignored", comparator: allEdgeWhitespaceIgnored },
   { name: "unicode-normalized", comparator: unicodeNormalized },
+  { name: "fuse-fuzzy", comparator: fuseFuzzyMatch },
+  { name: "content-subset", comparator: contentSubsetMatch },
 ];
 
 /**

@@ -88,11 +88,12 @@ export interface NetworkRequestEntry {
 interface PageActivityState {
   consoleLogs: ConsoleLogEntry[];
   networkEntries: NetworkRequestEntry[];
-  responsesById: Map<string, PlaywrightResponse>;
+  // Store only status codes, not full response objects (prevents memory leak)
+  responseStatusById: Map<string, number>;
 }
 
-const MAX_CONSOLE_LOGS = 500;
-const MAX_NETWORK_ENTRIES = 500;
+const MAX_CONSOLE_LOGS = 100; // Reduced from 500 to prevent memory leak
+const MAX_NETWORK_ENTRIES = 100; // Reduced from 500 to prevent memory leak
 
 const pageState = new WeakMap<Page, PageActivityState>();
 
@@ -101,7 +102,7 @@ export function attachPageListeners(page: Page): void {
   const state: PageActivityState = {
     consoleLogs: [],
     networkEntries: [],
-    responsesById: new Map(),
+    responseStatusById: new Map(),
   };
   pageState.set(page, state);
 
@@ -138,7 +139,7 @@ export function attachPageListeners(page: Page): void {
     });
     if (state.networkEntries.length > MAX_NETWORK_ENTRIES) {
       const removed = state.networkEntries.shift();
-      if (removed) state.responsesById.delete(removed.id);
+      if (removed) state.responseStatusById.delete(removed.id);
     }
   });
 
@@ -153,7 +154,7 @@ export function attachPageListeners(page: Page): void {
     const entry = state.networkEntries.find((e) => e.id === id);
     if (entry) {
       entry.status = res.status();
-      if (id) state.responsesById.set(id, res);
+      if (id) state.responseStatusById.set(id, res.status());
     }
   });
 }
@@ -179,9 +180,15 @@ export async function getNetworkResponseBody(
   page: Page,
   entryId: string,
 ): Promise<{ body: string; contentType: string | null } | null> {
-  const response = pageState.get(page)?.responsesById.get(entryId);
-  if (!response) return null;
+  // Find the response by re-fetching through network entries
+  const state = pageState.get(page);
+  if (!state) return null;
+  // Re-fetch the response from the page's network
+  const entry = state.networkEntries.find((e) => e.id === entryId);
+  if (!entry) return null;
   try {
+    // Re-fetch the URL to get the response body
+    const response = await page.request.get(entry.url);
     const body = await response.text();
     const contentType = response.headers()["content-type"] ?? null;
     return { body, contentType };
@@ -521,6 +528,7 @@ export interface PreviewReadyResult {
 
 // Cache successful probes briefly so batch steps don't hammer the proxy.
 const PREVIEW_PROBE_CACHE_TTL_MS = 5_000;
+const PREVIEW_PROBE_CACHE_MAX_SIZE = 50;
 const previewProbeCache = new Map<string, { at: number; status?: number }>();
 
 /** Clear the probe cache (used by tests between cases). */
@@ -612,6 +620,11 @@ export async function ensurePreviewReady(
     lastProbe = await probePreview(url);
     if (lastProbe.ok) {
       previewProbeCache.set(url, { at: Date.now(), status: lastProbe.status });
+      // Evict oldest entries if cache is full
+      if (previewProbeCache.size > PREVIEW_PROBE_CACHE_MAX_SIZE) {
+        const firstKey = previewProbeCache.keys().next().value;
+        if (firstKey) previewProbeCache.delete(firstKey);
+      }
       return {
         ok: true,
         url,

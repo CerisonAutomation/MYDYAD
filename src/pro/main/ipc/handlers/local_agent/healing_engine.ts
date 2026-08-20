@@ -6,7 +6,7 @@
  */
 
 import log from "electron-log";
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { promises as fs } from "node:fs";
 import { join, extname } from "node:path";
 import type { ToolDefinition, AgentContext } from "./types";
 
@@ -30,14 +30,14 @@ export function detectGaps(projectPath: string): DetectedGap[] {
   const gaps: DetectedGap[] = [];
   const toolsDir = join(projectPath, "src/pro/main/ipc/handlers/local_agent/tools");
   
-  if (!existsSync(toolsDir)) return gaps;
+  if (!await fs.access(toolsDir).then(() => true).catch(() => false)) return gaps;
 
   // Check each tool file
-  const files = readdirSync(toolsDir).filter(f => f.endsWith(".ts") && !f.includes("spec") && !f.includes("test"));
+  const files = await fs.readdir(toolsDir).filter(f => f.endsWith(".ts") && !f.includes("spec") && !f.includes("test"));
   
   for (const file of files) {
     const filePath = join(toolsDir, file);
-    const content = readFileSync(filePath, "utf8");
+    const content = await fs.readFile(filePath, "utf8");
     
     // Gap 1: Missing ToolDefinition export
     if (content.includes("ToolDefinition") && !content.includes("export const") && !content.includes("export function")) {
@@ -179,7 +179,7 @@ export const {{TOOL_NAME}}Tool: ToolDefinition<{{TOOL_NAME_CAP}}Args> = {
     const appPath = resolveTargetAppPath(ctx);
     try {
       const filePath = require("node:path").join(appPath, args.path);
-      if (!require("node:fs").existsSync(filePath)) {
+      if (!require("node:fs").await fs.access(filePath).then(() => true).catch(() => false)) {
         throw new DyadError("File not found: " + args.path, DyadErrorKind.NotFound);
       }
       // Implementation here
@@ -281,13 +281,13 @@ export function autoHeal(projectPath: string): HealingAction[] {
   const actions: HealingAction[] = [];
   const toolsDir = join(projectPath, "src/pro/main/ipc/handlers/local_agent/tools");
   
-  if (!existsSync(toolsDir)) return actions;
+  if (!await fs.access(toolsDir).then(() => true).catch(() => false)) return actions;
 
-  const files = readdirSync(toolsDir).filter(f => f.endsWith(".ts") && !f.includes("spec") && !f.includes("test"));
+  const files = await fs.readdir(toolsDir).filter(f => f.endsWith(".ts") && !f.includes("spec") && !f.includes("test"));
   
   for (const file of files) {
     const filePath = join(toolsDir, file);
-    let content = readFileSync(filePath, "utf8");
+    let content = await fs.readFile(filePath, "utf8");
     let modified = false;
 
     // Fix 1: Add missing log import if logger is used but not imported
@@ -354,7 +354,7 @@ export function autoHeal(projectPath: string): HealingAction[] {
     }
 
     if (modified) {
-      require("node:fs").writeFileSync(filePath, content);
+      require("node:fs").await fs.writeFile(filePath, content);
     }
   }
 

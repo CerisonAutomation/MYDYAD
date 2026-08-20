@@ -17,10 +17,10 @@ const githubIssuesSchema = z.object({
   operation: z.enum(["list", "get", "create"]).describe("Operation to perform"),
   owner: z.string().describe("Repository owner"),
   repo: z.string().describe("Repository name"),
-  issue_number: z.number().optional().describe("Issue number (for get)"),
+  issue_number: z.coerce.coerce.number().optional().describe("Issue number (for get)"),
   state: z.enum(["open", "closed", "all"]).optional().describe("Issue state"),
   labels: z.string().optional().describe("Comma-separated labels"),
-  per_page: z.number().optional().describe("Results per page"),
+  per_page: z.coerce.coerce.number().optional().describe("Results per page"),
   title: z.string().optional().describe("Issue title (for create)"),
   body: z.string().optional().describe("Issue body (for create)"),
 });

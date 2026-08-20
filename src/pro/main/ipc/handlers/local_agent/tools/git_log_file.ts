@@ -18,7 +18,7 @@ const execFileAsync = promisify(execFile);
 const gitLogFileSchema = z.object({
   file_path: z.string().describe("File to show history for"),
   app_name: z.string().optional().describe("App to analyze"),
-  max_commits: z.number().optional().describe("Maximum commits to return"),
+  max_commits: z.coerce.coerce.number().optional().describe("Maximum commits to return"),
 });
 
 type GitLogFileArgs = z.infer<typeof gitLogFileSchema>;

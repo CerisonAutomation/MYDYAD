@@ -531,7 +531,6 @@ if (process.defaultApp) {
  * without a debugger attached. No-op in production builds.
  */
 function debugLog(msg: string) {
-  if (process.env.NODE_ENV !== "development") return;
   const line = `[${new Date().toISOString()}] ${msg}\n`;
   try {
     const debugPath = path.join(app.getPath("userData"), "debug.log");
@@ -540,6 +539,22 @@ function debugLog(msg: string) {
     // Ignore write errors in debug logging
   }
 }
+
+// ── Global error logging ────────────────────────────────────────────
+// Capture ALL errors and write them to debug.log for diagnostics.
+process.on("uncaughtException", (err) => {
+  const msg = `[FATAL] uncaughtException: ${err?.message ?? String(err)}\n${err?.stack ?? ""}`;
+  try {
+    fs.appendFileSync(path.join(app.getPath("userData"), "debug.log"), `[${new Date().toISOString()}] ${msg}\n`);
+  } catch {}
+});
+
+process.on("unhandledRejection", (reason) => {
+  const msg = `[ERROR] unhandledRejection: ${reason instanceof Error ? reason.message : String(reason)}\n${reason instanceof Error ? reason.stack ?? "" : ""}`;
+  try {
+    fs.appendFileSync(path.join(app.getPath("userData"), "debug.log"), `[${new Date().toISOString()}] ${msg}\n`);
+  } catch {}
+});
 
 export async function onReady() {
   debugLog("onReady() STARTED");
@@ -1087,12 +1102,14 @@ const createWindow = ({
     });
   });
   browserWindow.on("unresponsive", () => {
+    logger.warn("Window became unresponsive — renderer may be blocked (Turbopack compilation, heavy computation, or sync IPC)");
     logLifecycle("window:unresponsive", {
       windowId: browserWindow.id,
       windowSessionId,
     });
   });
   browserWindow.on("responsive", () => {
+    logger.info("Window responsive again");
     logLifecycle("window:responsive", {
       windowId: browserWindow.id,
       windowSessionId,

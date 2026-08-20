@@ -15,7 +15,7 @@ export interface WindowEndpoint {
   readonly id: number;
   isDestroyed(): boolean;
   send(channel: string, ...args: unknown[]): void;
-  once?(event: "destroyed", listener: () => void): this | void;
+  once?(event: "destroyed", listener: () => void): this | undefined;
 }
 
 interface MutableCapabilityLease {

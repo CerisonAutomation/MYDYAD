@@ -82,7 +82,7 @@ const promptOptimizerSchema = z.object({
   trainset_path: z.string().optional().describe("Path to JSONL training data"),
   valset_path: z.string().optional().describe("Path to JSONL validation data"),
   // Optimizer parameters
-  num_trials: z.number().optional().describe("Number of optimization trials"),
+  num_trials: z.coerce.coerce.number().optional().describe("Number of optimization trials"),
   max_bootstrapped_demos: z
     .number()
     .optional()
@@ -97,7 +97,7 @@ const promptOptimizerSchema = z.object({
     .describe("Auto optimization level: none, low, medium, high"),
   // Model configuration
   target_model: z.string().optional().describe("Target model for optimization"),
-  temperature: z.number().optional().describe("Temperature for generation"),
+  temperature: z.coerce.coerce.number().optional().describe("Temperature for generation"),
   // Save/Load
   save_path: z.string().optional().describe("Path to save optimized program"),
   load_path: z.string().optional().describe("Path to load optimized program"),
@@ -106,7 +106,7 @@ const promptOptimizerSchema = z.object({
     .string()
     .optional()
     .describe("Path to test data for evaluation"),
-  num_shots: z.number().optional().describe("Number of few-shot examples"),
+  num_shots: z.coerce.coerce.number().optional().describe("Number of few-shot examples"),
 });
 
 type PromptOptimizerArgs = z.infer<typeof promptOptimizerSchema>;

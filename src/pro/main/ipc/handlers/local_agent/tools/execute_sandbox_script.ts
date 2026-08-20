@@ -176,7 +176,10 @@ Recommendations:
 - Avoid defining nested helper functions in the main function.
 
 Unsupported / unavailable:
-- No var, import/export, require, CommonJS, npm packages, Node APIs, browser/DOM APIs, process, module, exports, global, environment variables, subprocesses, network/fetch, timers, setTimeout, setInterval, eval, Function constructor, with, classes, generators, custom iterator authoring, Symbols, WeakMap, WeakSet, typed arrays, ArrayBuffer, shared memory, atomics, Proxy, accessors, full prototype/property-descriptor semantics, or arbitrary filesystem access. Use \`http_request\` for network calls instead of \`fetch\`.
+- **FORBIDDEN: require(), fs, path, os, child_process, process, module, exports, global** — these will FAIL with an error.
+- **FORBIDDEN: console.log, console.error, console.warn, console.info** — these are blocked. Use return value or last expression for output.
+- **FORBIDDEN: import/export, CommonJS, npm packages, Node APIs, browser/DOM APIs, subprocesses, timers, setTimeout, setInterval, eval, Function constructor, classes, generators, Proxy, WeakMap, WeakSet, typed arrays**.
+- Use \`http_request\` for network calls instead of \`fetch\`.
 - String.prototype.localeCompare is not supported; compare with <, >, or === instead.
 - \`console.*\` is not available.
 - Unsupported syntax or unsupported built-in behavior fails closed with an error. Rewrite using simpler JavaScript when that happens.
@@ -331,7 +334,28 @@ export const executeSandboxScriptTool: ToolDefinition<ExecuteSandboxScriptArgs> 
   {
     name: "execute_sandbox_script",
     description:
-      "Run a MustardScript program in a sandbox. Supports file inspection, file writes, and MCP tool calls.",
+      "Run a MustardScript program in a sandbox. Supports file inspection, file writes, and MCP tool calls. " +
+      "SANDBOX RULES — READ THIS FIRST:\n" +
+      "- NEVER use require(), fs, path, os, child_process, or any Node.js module. They are blocked.\n" +
+      "- NEVER use console.log, console.error, console.warn. They are blocked.\n" +
+      "- Use read_file(path) to read files (returns text content).\n" +
+      "- Use list_files(path) to list directory contents.\n" +
+      "- Use write_file(path, content) to write files (if enabled).\n" +
+      "- Use http_request(url, options) to make HTTP requests.\n" +
+      "- Use return() or just the last expression to output results.\n" +
+      "- Use const, let, if/else, for loops, functions, async/await, try/catch.\n" +
+      "- For loops over file contents, use: for (const item of list_files('dir')) { ... }\n" +
+      "- For output: the script's return value or last expression is the result.\n" +
+      "- To inspect files: const content = read_file('path/to/file.ts');\n" +
+      "- To list files: const files = list_files('src/components');\n" +
+      "Example:\n" +
+      "const files = list_files('src/components/fyk/views');\n" +
+      "let count = 0;\n" +
+      "for (const file of files) {\n" +
+      "  const content = read_file(file);\n" +
+      "  if (content.includes('useQuery')) count++;\n" +
+      "}\n" +
+      "return 'Views with React Query: ' + count;",
     inputSchema: executeSandboxScriptSchema,
     defaultConsent: "always",
     modifiesState: (ctx) => ctx.sandboxWriteFileHostEnabled === true,

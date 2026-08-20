@@ -26,12 +26,12 @@ const fdFindSchema = z.object({
     .enum(["file", "directory", "symlink", "executable", "empty", "hidden"])
     .optional()
     .describe("Filter by type"),
-  max_depth: z.number().optional().describe("Maximum search depth"),
+  max_depth: z.coerce.coerce.number().optional().describe("Maximum search depth"),
   exclude: z
     .string()
     .optional()
     .describe("Glob pattern to exclude (e.g. 'node_modules')"),
-  follow_symlinks: z.boolean().optional().describe("Follow symbolic links"),
+  follow_symlinks: z.coerce.coerce.boolean().optional().describe("Follow symbolic links"),
   full_path: z
     .boolean()
     .optional()

@@ -39,7 +39,7 @@ const autoZenithSchema = z.object({
     .number()
     .optional()
     .describe("Maximum retry attempts per failure"),
-  dry_run: z.boolean().optional().describe("Only assess, don't execute"),
+  dry_run: z.coerce.coerce.boolean().optional().describe("Only assess, don't execute"),
 });
 
 type AutoZenithArgs = z.infer<typeof autoZenithSchema>;

@@ -260,8 +260,8 @@ const locatorSchema = z.object({
   placeholder: z.string().optional().describe("Input placeholder text"),
   selector: z.string().optional().describe("CSS selector"),
   testId: z.string().optional().describe("data-testid attribute value"),
-  nth: z.coerce.number().optional().describe("Zero-based index when multiple matches"),
-  exact: z.boolean().optional().describe("Exact text match (default: false)"),
+  nth: z.coerce.coerce.number().optional().describe("Zero-based index when multiple matches"),
+  exact: z.coerce.coerce.boolean().optional().describe("Exact text match (default: false)"),
 });
 
 type Locator = z.infer<typeof locatorSchema>;
@@ -393,13 +393,13 @@ const forwardAction = z.object({
 const focusAction = z.object({
   action: z.literal("focus"),
   selector: z.string().optional().describe("CSS selector for the element to focus"),
-  ref: z.coerce.number().int().min(1).optional().describe("Stable ref number from a prior read_page call"),
+  ref: z.coerce.coerce.coerce.coerce.coerce.number().int().min(1).optional().describe("Stable ref number from a prior read_page call"),
 });
 
 const uploadFileAction = z.object({
   action: z.literal("upload_file"),
   selector: z.string().optional().describe("CSS selector for the <input type=file> element"),
-  ref: z.coerce.number().int().min(1).optional().describe("Stable ref number from a prior read_page call"),
+  ref: z.coerce.coerce.coerce.coerce.coerce.number().int().min(1).optional().describe("Stable ref number from a prior read_page call"),
   file_path: z.string().describe("Absolute path to the file to upload"),
 });
 
@@ -410,8 +410,8 @@ const ariaSnapshotAction = z.object({
 
 const resizeWindowAction = z.object({
   action: z.literal("resize_window"),
-  width: z.coerce.number().optional().describe("Viewport width in pixels"),
-  height: z.coerce.number().optional().describe("Viewport height in pixels"),
+  width: z.coerce.coerce.number().optional().describe("Viewport width in pixels"),
+  height: z.coerce.coerce.number().optional().describe("Viewport height in pixels"),
   preset: z
     .enum(["mobile", "tablet", "desktop"])
     .optional()
@@ -468,6 +468,14 @@ type BrowserControlArgs = z.infer<typeof browserControlSchema>;
 
 const DESCRIPTION = `Control a browser to interact with web pages — click, type, scroll, navigate, take screenshots, read page structure. Use for verifying UI changes, testing web apps, and interacting with live pages.
 
+### RULES (READ FIRST)
+- Always call read_page FIRST to get element refs before clicking/typing.
+- Every click/type action MUST have either selector or ref — never send both empty.
+- ref numbers come from read_page output like [3] button "Sign in".
+- After clicking a link that navigates, call read_page again — refs are invalid after navigation.
+- For forms: read_page → click input → type text → click submit.
+- Screenshots save to .dyad/media/ — the path is in the result.
+
 ### Supported Actions
 
 - **navigate** — Go to a URL. Provide \`url\` (optional — defaults to the running app's preview URL).
@@ -506,6 +514,12 @@ const DESCRIPTION = `Control a browser to interact with web pages — click, typ
 - Taking screenshots of pages for visual documentation
 - Automating form filling or navigation flows for testing
 - Checking accessibility (ARIA) compliance
+
+### Common Mistakes to Avoid
+- Sending click/type without selector or ref → Always call read_page first
+- Using CSS selectors for dynamic content → Use ref numbers from read_page instead
+- Taking screenshot before page loads → Always wait for the page first
+- Clicking before checking if element exists → read_page shows if elements are present
 
 ### Notes
 - A persistent shared headless Chromium session is reused across calls (not launched per invocation). The browser auto-closes after 5 minutes of inactivity and on app quit.
@@ -2157,6 +2171,7 @@ export const browserControlTool: ToolDefinition<BrowserControlArgs> = {
 
       return result;
     } catch (error) {
+      logger.error(`browser_control ${args.action} failed:`, error);
       ctx.onXmlComplete(
         `<dyad-browser action="${escapeXmlAttr(args.action)}"></dyad-browser>`,
       );

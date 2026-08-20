@@ -19,9 +19,9 @@ const execFileAsync = promisify(execFile);
 const gitBlameSchema = z.object({
   file_path: z.string().describe("File to blame"),
   app_name: z.string().optional().describe("App to analyze"),
-  line_start: z.number().optional().describe("Start line number"),
-  line_end: z.number().optional().describe("End line number"),
-  max_lines: z.number().optional().describe("Maximum lines to return"),
+  line_start: z.coerce.coerce.number().optional().describe("Start line number"),
+  line_end: z.coerce.coerce.number().optional().describe("End line number"),
+  max_lines: z.coerce.coerce.number().optional().describe("Maximum lines to return"),
 });
 
 type GitBlameArgs = z.infer<typeof gitBlameSchema>;

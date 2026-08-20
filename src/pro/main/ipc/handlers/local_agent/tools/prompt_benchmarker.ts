@@ -48,7 +48,7 @@ const promptBenchmarkerSchema = z.object({
     .number()
     .optional()
     .describe("Timeout per request in ms (default: 30000)"),
-  cost_limit: z.number().optional().describe("Maximum cost limit in USD"),
+  cost_limit: z.coerce.coerce.number().optional().describe("Maximum cost limit in USD"),
   quality_threshold: z
     .number()
     .optional()
@@ -60,27 +60,27 @@ const promptBenchmarkerSchema = z.object({
     .object({
       "openai:gpt-4": z
         .object({
-          input: z.number().describe("Input cost per 1K tokens"),
-          output: z.number().describe("Output cost per 1K tokens"),
+          input: z.coerce.number().describe("Input cost per 1K tokens"),
+          output: z.coerce.number().describe("Output cost per 1K tokens"),
         })
         .optional(),
       "openai:gpt-4-turbo": z
-        .object({ input: z.number(), output: z.number() })
+        .object({ input: z.coerce.number(), output: z.coerce.number() })
         .optional(),
       "openai:gpt-3.5-turbo": z
-        .object({ input: z.number(), output: z.number() })
+        .object({ input: z.coerce.number(), output: z.coerce.number() })
         .optional(),
       "anthropic:claude-3-opus": z
-        .object({ input: z.number(), output: z.number() })
+        .object({ input: z.coerce.number(), output: z.coerce.number() })
         .optional(),
       "anthropic:claude-3-sonnet": z
-        .object({ input: z.number(), output: z.number() })
+        .object({ input: z.coerce.number(), output: z.coerce.number() })
         .optional(),
       "anthropic:claude-3-haiku": z
-        .object({ input: z.number(), output: z.number() })
+        .object({ input: z.coerce.number(), output: z.coerce.number() })
         .optional(),
       "google:gemini-pro": z
-        .object({ input: z.number(), output: z.number() })
+        .object({ input: z.coerce.number(), output: z.coerce.number() })
         .optional(),
     })
     .optional()
