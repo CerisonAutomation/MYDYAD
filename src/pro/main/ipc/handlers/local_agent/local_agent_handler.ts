@@ -24,6 +24,7 @@ import { parseMcpToolKey, sanitizeMcpName } from "@/ipc/utils/mcp_tool_utils";
 import { eq } from "drizzle-orm";
 import { scheduleChatSearchIndexing } from "./chat_search_indexer";
 import { buildMcpAutoApprove } from "./mcp_auto_consent";
+import { buildMcpToolSummary } from "./mcp_auto_use"; // side-effectful import to prevent tree-shaking
 
 import { detectFrameworkType } from "@/ipc/utils/framework_utils";
 import { getModelClient } from "@/ipc/utils/get_model_client";
@@ -1008,6 +1009,19 @@ export async function handleLocalAgentStream(
     }
     const allTools: ToolSet = { ...agentTools, ...mcpToolsForRegistration };
 
+    // Inject MCP tool summary into system prompt for auto-use
+    const mcpSummary = buildMcpToolSummary(
+        mcpDefs.map((d) => ({
+          serverName: d.serverName,
+          toolName: d.toolName,
+          description: d.description,
+        })),
+        ctx.mcpToolsEnabled,
+      );
+      if (mcpSummary) {
+        systemPrompt += mcpSummary;
+      }
+
     // Wrap tool execution with retry logic for transient failures
     // (network timeouts, file locks, etc.)
     for (const [toolName, tool] of Object.entries(allTools)) {
@@ -1220,7 +1234,7 @@ export async function handleLocalAgentStream(
             }),
             maxOutputTokens,
             temperature,
-            maxRetries: 2,
+            maxRetries: 5,
             instructions: systemPrompt,
             messages: sanitizedAttemptMessages,
             tools: allTools,

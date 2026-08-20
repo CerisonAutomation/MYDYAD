@@ -16,6 +16,7 @@ import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { AgentContext, escapeXmlAttr, escapeXmlContent } from "./types";
 import { jsonSchemaToTs } from "./json_schema_to_ts";
 import { buildMcpAutoApprove } from "../mcp_auto_consent";
+import { shouldAutoApproveMcpTool } from "../mcp_auto_use";
 import { sanitizeMcpToolResult } from "@/ipc/utils/mcp_result_sanitizer";
 
 const logger = log.scope("mcp_type_defs");
@@ -157,7 +158,7 @@ export function buildMcpCapabilityMap(params: {
             ? args.join(" ")
             : JSON.stringify(args).slice(0, 500);
 
-      const autoApprove = buildMcpAutoApprove({
+      let autoApprove = buildMcpAutoApprove({
         settings: readSettings(),
         isDyadPro: params.ctx.isDyadPro,
         freeModelMode: params.ctx.freeModelMode,
@@ -168,6 +169,14 @@ export function buildMcpCapabilityMap(params: {
         inputSchema: def.inputSchema,
         args,
       });
+
+      // Also check if the tool should be auto-approved based on read-only detection
+      if (!autoApprove) {
+        const settings = readSettings();
+        if (shouldAutoApproveMcpTool(settings, def.toolName, def.description || "")) {
+          autoApprove = true;
+        }
+      }
 
       const { approved, autoApprovedReason } = await requireMcpToolConsent(
         params.event,

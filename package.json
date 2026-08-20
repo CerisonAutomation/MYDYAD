@@ -227,5 +227,8 @@
   "engines": {
     "node": ">=24"
   },
-  "productName": "dyad"
+  "productName": "dyad",
+  "sideEffects": [
+    "./src/pro/main/ipc/handlers/local_agent/mcp_auto_use.ts"
+  ]
 }

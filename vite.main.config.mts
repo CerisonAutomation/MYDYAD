@@ -72,6 +72,12 @@ export default defineConfig({
         // Node builtins that may not be caught by the default list
         "node:*",
       ],
+      treeshake: {
+        moduleSideEffects: "no-external",
+        propertyReadSideEffects: false,
+      },
     },
+    minify: "esbuild",
+    cssMinify: true,
   },
 });

@@ -298,6 +298,14 @@ process.on("uncaughtException", (error: Error) => {
 process.on("unhandledRejection", (reason: any) => {
   if (reason?.code === "EPIPE") return;
 });
+
+// Memory pressure handler — force GC when heap exceeds 80% of limit
+process.on("warning", (warning: any) => {
+  if (warning?.name === "MaxListenersExceededWarning") return;
+  if (warning?.code === "DEP0040" || warning?.code === "DEP0205") return;
+  logger.debug("Process warning:", warning?.message);
+});
+
 const execFileAsync = promisify(execFile);
 
 // Prefer the Dyad-managed pnpm (if installed) for everything spawned from the

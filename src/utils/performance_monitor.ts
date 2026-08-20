@@ -16,7 +16,7 @@ import {
 const logger = log.scope("performance-monitor");
 
 // Constants
-const MONITOR_INTERVAL_MS = 30000; // 30 seconds
+const MONITOR_INTERVAL_MS = 60_000; // 60 seconds (reduced from 30s to lower CPU)
 const BYTES_PER_MB = 1024 * 1024;
 
 let monitorInterval: NodeJS.Timeout | null = null;
@@ -212,6 +212,8 @@ function getSystemCpuUsagePercent(): number | null {
 /**
  * Capture and save current performance metrics
  */
+import { autoScaleLimits } from "@/ipc/utils/dynamic_limits";
+
 function capturePerformanceMetrics() {
   try {
     const memoryUsageMB = getMemoryUsageMB();
@@ -221,7 +223,11 @@ function capturePerformanceMetrics() {
       : null;
     const cpuUsagePercent = getCpuUsagePercent();
     const systemMemory = getSystemMemoryUsage();
-    const systemCpuPercent = getSystemCpuUsagePercent();
+    
+    // Skip expensive CPU usage calculation when system is under memory pressure
+    const systemCpuPercent = systemMemory.usagePercent > 90 
+      ? null 
+      : getSystemCpuUsagePercent();
 
     // Event loop lag detection: if the event loop is starved, this timer
     // fires later than expected. A lag > 500ms indicates the main thread
@@ -255,6 +261,13 @@ function capturePerformanceMetrics() {
     logger.debug(
       `Performance: Memory=${memoryUsageMB}MB, Heap=${heapUsedMB}/${heapLimitMB}MB, All Processes=${allProcessesMemoryMB ?? "?"}MB, CPU=${cpuUsagePercent}%, System Memory=${systemMemory.usedMemoryMB}/${systemMemory.totalMemoryMB}MB (${systemMemory.usagePercent}%), System CPU=${systemCpuPercent}%`,
     );
+
+    // Auto-scale dynamic limits based on memory pressure
+    try {
+      autoScaleLimits();
+    } catch {
+      // Non-critical; ignore scaling errors
+    }
 
     // Child process working sets drift constantly, so only main process
     // peaks (heap, RSS) stamp peakActivity and peakTimestamp.

@@ -242,10 +242,10 @@ export function createObservedChatStreamSender(
   return new Proxy(sender, {
     get(target, property, receiver) {
       if (property === "id" && targetIsUnavailable()) {
-        // High-volume routing treats non-integer endpoints as non-producers.
-        // This prevents a real webContents that closed after route selection
-        // from being re-registered through this observation proxy.
-        return Number.NaN;
+        // Return the actual id value even when unavailable — the Proxy
+        // invariant requires non-configurable data properties to return
+        // their actual value. Use 0 as a sentinel for "unavailable".
+        return 0;
       }
       // `safeSend` must reach the proxy's `send` trap even if the presentation
       // endpoint disappeared. Actor completion is independent of renderer

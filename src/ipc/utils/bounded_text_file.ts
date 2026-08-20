@@ -3,11 +3,19 @@ import type { FileHandle } from "node:fs/promises";
 import path from "node:path";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
+import { READ_FILE_LIMIT_BYTES } from "@/ipc/utils/dynamic_limits";
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(0)} MiB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KiB`;
+  return `${bytes} bytes`;
+}
+
 export const APP_FILE_EDITOR_LIMIT_BYTES = 5 * 1024 * 1024;
-export const AGENT_READ_FILE_RESULT_LIMIT_BYTES = 2 * 1024 * 1024;
+export const AGENT_READ_FILE_RESULT_LIMIT_BYTES = READ_FILE_LIMIT_BYTES;
 
 export const AGENT_READ_FILE_TRUNCATION_NOTICE =
-  "\n\n[Output truncated at 2 MiB. Read a smaller range with start_line_one_indexed and end_line_one_indexed_inclusive.]";
+  `\n\n[Output truncated at ${formatBytes(READ_FILE_LIMIT_BYTES)}. Read a smaller range with start_line_one_indexed and end_line_one_indexed_inclusive.]`;
 
 const STREAM_CHUNK_BYTES = 64 * 1024;
 const BINARY_SAMPLE_BYTES = 8 * 1024;
